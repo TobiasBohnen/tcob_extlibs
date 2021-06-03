@@ -10,7 +10,6 @@ file(GLOB LUA_SRC_FILES ${CMAKE_CURRENT_SOURCE_DIR}/lua/*.cpp)
 #physfs
 file(GLOB PHYSFS_SRC_FILES ${CMAKE_CURRENT_SOURCE_DIR}/physfs/*.c)
 
-
 ###########################################################################
 
 add_library(tcob_extlibs INTERFACE)
