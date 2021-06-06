@@ -10,9 +10,11 @@
 #include <math.h>
 #include <float.h>
 
+#ifndef AL_LIBTYPE_STATIC
 #ifdef _MSC_VER
   #define AL_API __declspec(dllexport)
   #define ALC_API __declspec(dllexport)
+#endif
 #endif
 
 #ifndef M_PI
