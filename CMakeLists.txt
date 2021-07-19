@@ -1,8 +1,32 @@
+include(FetchContent)
+set(BUILD_SHARED_LIBS off)
+
 #SDL2
-find_package(SDL2 CONFIG REQUIRED)
+FetchContent_Declare(SDL2
+  GIT_REPOSITORY  https://github.com/libsdl-org/SDL
+  GIT_TAG         release-2.0.14)
+
+FetchContent_MakeAvailable(SDL2)
 
 #WebP
-find_package(WebP CONFIG REQUIRED)
+FetchContent_Declare(webp
+  GIT_REPOSITORY  https://chromium.googlesource.com/webm/libwebp
+  GIT_TAG         v1.2.0)
+
+set(WEBP_BUILD_ANIM_UTILS OFF CACHE BOOL "Build animation utilities." FORCE)
+set(WEBP_BUILD_CWEBP OFF CACHE BOOL "Build the cwebp command line tool." FORCE)
+set(WEBP_BUILD_DWEBP OFF CACHE BOOL "Build the dwebp command line tool." FORCE)
+set(WEBP_BUILD_GIF2WEBP OFF CACHE BOOL "Build the gif2webp conversion tool." FORCE)
+set(WEBP_BUILD_IMG2WEBP OFF CACHE BOOL "Build the img2webp animation tool." FORCE)
+set(WEBP_BUILD_VWEBP OFF CACHE BOOL "Build the vwebp viewer tool." FORCE)
+set(WEBP_BUILD_WEBPINFO OFF CACHE BOOL "Build the webpinfo command line tool." FORCE)
+set(WEBP_BUILD_WEBPMUX OFF CACHE BOOL "Build the webpmux command line tool." FORCE)
+set(WEBP_BUILD_EXTRAS OFF CACHE BOOL "Build extras." FORCE)
+set(WEBP_ENABLE_SIMD ON CACHE BOOL "Enable any SIMD optimization." FORCE)
+set(WEBP_NEAR_LOSSLESS ON CACHE BOOL "Enable near-lossless encoding" FORCE)
+
+FetchContent_MakeAvailable(webp)
+set(WEBP_INCLUDE_DIR ${webp_SOURCE_DIR}/src)
 
 #Lua
 file(GLOB LUA_SRC_FILES ${CMAKE_CURRENT_SOURCE_DIR}/lua/*.cpp)
@@ -59,8 +83,9 @@ target_include_directories(tcob_extlibs
     INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/lua/
     INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/physfs/
     INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/box2d/include/
-    INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/box2d/src/)
+    INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/box2d/src/
+    INTERFACE ${WEBP_INCLUDE_DIR})
 
 target_link_libraries(tcob_extlibs 
-    INTERFACE SDL2::SDL2-static 
-    INTERFACE WebP::webpdemux)
+    INTERFACE SDL2-static 
+    INTERFACE webpdemux)
