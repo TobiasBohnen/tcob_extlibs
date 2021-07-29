@@ -60,9 +60,9 @@ set(STB_SRC_FILES
 
 ###########################################################################
 
-add_library(tcob_extlibs INTERFACE)
+add_library(tcob_extlibs OBJECT)
 
-target_sources(tcob_extlibs INTERFACE     
+target_sources(tcob_extlibs PUBLIC     
     ${LUA_SRC_FILES}
     ${PHYSFS_SRC_FILES}
     ${BOX2D_SRC_FILES}
@@ -74,19 +74,19 @@ target_sources(tcob_extlibs INTERFACE
     ${STB_SRC_FILES}
 )
 
-target_compile_definitions(tcob_extlibs 
-    INTERFACE SPNG_USE_MINIZ 
-    INTERFACE SPNG_STATIC
-    INTERFACE AL_LIBTYPE_STATIC)
+target_compile_definitions(tcob_extlibs PUBLIC
+    SPNG_USE_MINIZ 
+    SPNG_STATIC
+    AL_LIBTYPE_STATIC)
 
-target_include_directories(tcob_extlibs 
-    INTERFACE ${CMAKE_CURRENT_SOURCE_DIR} 
-    INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/lua/
-    INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/physfs/
-    INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/box2d/include/
-    INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/box2d/src/
-    INTERFACE ${WEBP_INCLUDE_DIR})
+target_include_directories(tcob_extlibs PUBLIC
+    ${CMAKE_CURRENT_SOURCE_DIR} 
+    ${CMAKE_CURRENT_SOURCE_DIR}/lua/
+    ${CMAKE_CURRENT_SOURCE_DIR}/physfs/
+    ${CMAKE_CURRENT_SOURCE_DIR}/box2d/include/
+    ${CMAKE_CURRENT_SOURCE_DIR}/box2d/src/
+    ${WEBP_INCLUDE_DIR})
 
-target_link_libraries(tcob_extlibs 
-    INTERFACE SDL2-static 
-    INTERFACE webpdemux)
+target_link_libraries(tcob_extlibs PUBLIC
+    SDL2-static 
+    webpdemux)
