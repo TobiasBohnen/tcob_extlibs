@@ -3,7 +3,8 @@ include(FetchContent)
 #SDL2
 FetchContent_Declare(SDL2
   GIT_REPOSITORY  https://github.com/libsdl-org/SDL
-  GIT_TAG         release-2.0.14)
+  GIT_TAG         release-2.0.14
+)
 
 set(SDL_SHARED_ENABLED_BY_DEFAULT OFF CACHE BOOL "" FORCE)
 
@@ -12,7 +13,8 @@ FetchContent_MakeAvailable(SDL2)
 #WebP
 FetchContent_Declare(webp
   GIT_REPOSITORY  https://chromium.googlesource.com/webm/libwebp
-  GIT_TAG         v1.2.0)
+  GIT_TAG         v1.2.0
+)
 
 set(WEBP_BUILD_ANIM_UTILS OFF CACHE BOOL "Build animation utilities." FORCE)
 set(WEBP_BUILD_CWEBP OFF CACHE BOOL "Build the cwebp command line tool." FORCE)
@@ -77,7 +79,8 @@ target_sources(tcob_extlibs PUBLIC
 target_compile_definitions(tcob_extlibs PUBLIC
     SPNG_USE_MINIZ 
     SPNG_STATIC
-    AL_LIBTYPE_STATIC)
+    AL_LIBTYPE_STATIC
+)
 
 target_include_directories(tcob_extlibs PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR} 
@@ -85,8 +88,10 @@ target_include_directories(tcob_extlibs PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}/physfs/
     ${CMAKE_CURRENT_SOURCE_DIR}/box2d/include/
     ${CMAKE_CURRENT_SOURCE_DIR}/box2d/src/
-    ${WEBP_INCLUDE_DIR})
+    ${WEBP_INCLUDE_DIR}
+)
 
 target_link_libraries(tcob_extlibs PUBLIC
     SDL2-static 
-    webpdemux)
+    webpdemux
+)
