@@ -1,4 +1,11 @@
+MESSAGE(STATUS "----------------")
+MESSAGE(STATUS "entering extlibs")
+
 include(FetchContent)
+
+MESSAGE(STATUS "++++++++++++++++")
+MESSAGE(STATUS "SDL2:")
+MESSAGE(STATUS "++++++++++++++++")
 
 #SDL2
 FetchContent_Declare(SDL2
@@ -9,6 +16,10 @@ FetchContent_Declare(SDL2
 set(SDL_SHARED_ENABLED_BY_DEFAULT OFF CACHE BOOL "" FORCE)
 
 FetchContent_MakeAvailable(SDL2)
+
+MESSAGE(STATUS "++++++++++++++++")
+MESSAGE(STATUS "WebP:")
+MESSAGE(STATUS "++++++++++++++++")
 
 #WebP
 FetchContent_Declare(webp
@@ -95,3 +106,6 @@ target_link_libraries(tcob_extlibs PUBLIC
     SDL2-static 
     webpdemux
 )
+
+MESSAGE(STATUS "exiting extlibs")
+MESSAGE(STATUS "----------------")
