@@ -91,6 +91,7 @@ target_compile_definitions(tcob_extlibs PUBLIC
     SPNG_USE_MINIZ 
     SPNG_STATIC
     AL_LIBTYPE_STATIC
+    SDL_MAIN_HANDLED
 )
 
 target_include_directories(tcob_extlibs PUBLIC
