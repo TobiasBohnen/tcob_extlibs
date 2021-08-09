@@ -1,6 +1,6 @@
 /*
 MP3 audio decoder. Choice of public domain or MIT-0. See license statements at the end of this file.
-dr_mp3 - v0.6.27 - 2021-02-21
+dr_mp3 - v0.6.29 - 2021-08-08
 
 David Reid - mackron@gmail.com
 
@@ -95,7 +95,7 @@ extern "C" {
 
 #define DRMP3_VERSION_MAJOR     0
 #define DRMP3_VERSION_MINOR     6
-#define DRMP3_VERSION_REVISION  27
+#define DRMP3_VERSION_REVISION  29
 #define DRMP3_VERSION_STRING    DRMP3_XSTRINGIFY(DRMP3_VERSION_MAJOR) "." DRMP3_XSTRINGIFY(DRMP3_VERSION_MINOR) "." DRMP3_XSTRINGIFY(DRMP3_VERSION_REVISION)
 
 #include <stddef.h> /* For size_t. */
@@ -124,7 +124,7 @@ typedef unsigned int            drmp3_uint32;
         #pragma GCC diagnostic pop
     #endif
 #endif
-#if defined(__LP64__) || defined(_WIN64) || (defined(__x86_64__) && !defined(__ILP32__)) || defined(_M_X64) || defined(__ia64) || defined (_M_IA64) || defined(__aarch64__) || defined(__powerpc64__)
+#if defined(__LP64__) || defined(_WIN64) || (defined(__x86_64__) && !defined(__ILP32__)) || defined(_M_X64) || defined(__ia64) || defined (_M_IA64) || defined(__aarch64__) || defined(_M_ARM64) || defined(__powerpc64__)
     typedef drmp3_uint64        drmp3_uintptr;
 #else
     typedef drmp3_uint32        drmp3_uintptr;
@@ -701,7 +701,7 @@ static int drmp3_have_simd(void)
 
 #if defined(__ARM_ARCH) && (__ARM_ARCH >= 6) && !defined(__aarch64__) && !defined(_M_ARM64)
 #define DRMP3_HAVE_ARMV6 1
-static __inline__ __attribute__((always_inline)) drmp3_int32 drmp3_clip_int16_arm(int32_t a)
+static __inline__ __attribute__((always_inline)) drmp3_int32 drmp3_clip_int16_arm(drmp3_int32 a)
 {
     drmp3_int32 x = 0;
     __asm__ ("ssat %0, #16, %1" : "=r"(x) : "r"(a));
@@ -1390,12 +1390,22 @@ static void drmp3_L3_midside_stereo(float *left, int n)
     int i = 0;
     float *right = left + 576;
 #if DRMP3_HAVE_SIMD
-    if (drmp3_have_simd()) for (; i < n - 3; i += 4)
+    if (drmp3_have_simd())
     {
-        drmp3_f4 vl = DRMP3_VLD(left + i);
-        drmp3_f4 vr = DRMP3_VLD(right + i);
-        DRMP3_VSTORE(left + i, DRMP3_VADD(vl, vr));
-        DRMP3_VSTORE(right + i, DRMP3_VSUB(vl, vr));
+        for (; i < n - 3; i += 4)
+        {
+            drmp3_f4 vl = DRMP3_VLD(left + i);
+            drmp3_f4 vr = DRMP3_VLD(right + i);
+            DRMP3_VSTORE(left + i, DRMP3_VADD(vl, vr));
+            DRMP3_VSTORE(right + i, DRMP3_VSUB(vl, vr));
+        }
+#ifdef __GNUC__
+        /* Workaround for spurious -Waggressive-loop-optimizations warning from gcc.
+         * For more info see: https://github.com/lieff/minimp3/issues/88
+         */
+        if (__builtin_constant_p(n % 4 == 0) && n % 4 == 0)
+            return;
+#endif
     }
 #endif
     for (; i < n; i++)
@@ -4450,6 +4460,13 @@ counts rather than sample counts.
 /*
 REVISION HISTORY
 ================
+v0.6.29 - 2021-08-08
+  - Bring up to date with minimp3.
+
+v0.6.28 - 2021-07-31
+  - Fix platform detection for ARM64.
+  - Fix a compilation error with C89.
+
 v0.6.27 - 2021-02-21
   - Fix a warning due to referencing _MSC_VER when it is undefined.
 
