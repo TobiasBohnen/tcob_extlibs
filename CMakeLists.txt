@@ -10,7 +10,7 @@ MESSAGE(STATUS "++++++++++++++++")
 #SDL2
 FetchContent_Declare(SDL2
   GIT_REPOSITORY  https://github.com/libsdl-org/SDL
-  GIT_TAG         release-2.0.14
+  GIT_TAG         release-2.0.16
 )
 
 set(SDL_SHARED_ENABLED_BY_DEFAULT OFF CACHE BOOL "" FORCE)
