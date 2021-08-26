@@ -5607,7 +5607,8 @@ int stb_vorbis_decode_memory_float(const uint8* mem, int len, int* channels, int
     if (v == NULL)
         return -1;
     limit = v->channels * 4096;
-    *channels = v->channels;
+    if (channels)
+        *channels = v->channels;
     if (sample_rate)
         *sample_rate = v->sample_rate;
     offset = data_len = 0;
