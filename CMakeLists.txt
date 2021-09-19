@@ -97,6 +97,7 @@ target_compile_definitions(tcob_extlibs PUBLIC
 target_include_directories(tcob_extlibs PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR} 
     ${CMAKE_CURRENT_SOURCE_DIR}/lua/
+    ${CMAKE_CURRENT_SOURCE_DIR}/miniz/
     ${CMAKE_CURRENT_SOURCE_DIR}/physfs/
     ${CMAKE_CURRENT_SOURCE_DIR}/box2d/include/
     ${CMAKE_CURRENT_SOURCE_DIR}/box2d/src/
