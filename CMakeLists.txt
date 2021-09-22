@@ -55,7 +55,9 @@ file(GLOB_RECURSE BOX2D_SRC_FILES ${CMAKE_CURRENT_SOURCE_DIR}/box2d/src/*.cpp)
 set(MOJOAL_SRC_FILES ${CMAKE_CURRENT_SOURCE_DIR}/AL/mojoal.c)
 
 #glad
-set(GLAD_SRC_FILES ${CMAKE_CURRENT_SOURCE_DIR}/glad/gl.c)
+if (TCOB_BACKEND_OPENGL)
+  set(GLAD_SRC_FILES ${CMAKE_CURRENT_SOURCE_DIR}/glad/gl.c)
+endif()
 
 #spng
 set(SPNG_SRC_FILES ${CMAKE_CURRENT_SOURCE_DIR}/spng/spng.c)
@@ -68,45 +70,46 @@ set(DRLIBS_SRC_FILES ${CMAKE_CURRENT_SOURCE_DIR}/dr_libs/dr_libs.c)
 
 #stb
 set(STB_SRC_FILES 
-    ${CMAKE_CURRENT_SOURCE_DIR}/stb/stb_truetype.c 
-    ${CMAKE_CURRENT_SOURCE_DIR}/stb/stb_vorbis.c)
+  ${CMAKE_CURRENT_SOURCE_DIR}/stb/stb_truetype.c 
+  ${CMAKE_CURRENT_SOURCE_DIR}/stb/stb_vorbis.c)
 
 ###########################################################################
 
 add_library(tcob_extlibs OBJECT)
 
 target_sources(tcob_extlibs PUBLIC     
-    ${LUA_SRC_FILES}
-    ${PHYSFS_SRC_FILES}
-    ${BOX2D_SRC_FILES}
-    ${MOJOAL_SRC_FILES}
-    ${GLAD_SRC_FILES}
-    ${SPNG_SRC_FILES}
-    ${MINIZ_SRC_FILES}
-    ${DRLIBS_SRC_FILES}
-    ${STB_SRC_FILES}
+  ${LUA_SRC_FILES}
+  ${PHYSFS_SRC_FILES}
+  ${BOX2D_SRC_FILES}
+  ${MOJOAL_SRC_FILES}
+  ${GLAD_SRC_FILES}
+  ${SPNG_SRC_FILES}
+  ${MINIZ_SRC_FILES}
+  ${DRLIBS_SRC_FILES}
+  ${STB_SRC_FILES}
 )
 
 target_compile_definitions(tcob_extlibs PUBLIC
-    SPNG_USE_MINIZ 
-    SPNG_STATIC
-    AL_LIBTYPE_STATIC
-    SDL_MAIN_HANDLED
+  SPNG_USE_MINIZ 
+  SPNG_STATIC
+  AL_LIBTYPE_STATIC
+  SDL_MAIN_HANDLED
 )
 
 target_include_directories(tcob_extlibs PUBLIC
-    ${CMAKE_CURRENT_SOURCE_DIR} 
-    ${CMAKE_CURRENT_SOURCE_DIR}/lua/
-    ${CMAKE_CURRENT_SOURCE_DIR}/miniz/
-    ${CMAKE_CURRENT_SOURCE_DIR}/physfs/
-    ${CMAKE_CURRENT_SOURCE_DIR}/box2d/include/
-    ${CMAKE_CURRENT_SOURCE_DIR}/box2d/src/
-    ${WEBP_INCLUDE_DIR}
+  ${CMAKE_CURRENT_SOURCE_DIR} 
+  ${CMAKE_CURRENT_SOURCE_DIR}/lua/
+  ${CMAKE_CURRENT_SOURCE_DIR}/miniz/
+  ${CMAKE_CURRENT_SOURCE_DIR}/physfs/
+  ${CMAKE_CURRENT_SOURCE_DIR}/box2d/include/
+  ${CMAKE_CURRENT_SOURCE_DIR}/box2d/src/
+  ${WEBP_INCLUDE_DIR}
 )
 
 target_link_libraries(tcob_extlibs PUBLIC
-    SDL2-static 
-    webpdemux
+  SDL2-static 
+  webpdemux
+  $<$<AND:$<CXX_COMPILER_ID:MSVC>,$<BOOL:TCOB_BACKEND_OPENGL>>:opengl32>
 )
 
 MESSAGE(STATUS "exiting extlibs")
