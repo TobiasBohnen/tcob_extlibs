@@ -55,7 +55,7 @@ file(GLOB_RECURSE BOX2D_SRC_FILES ${CMAKE_CURRENT_SOURCE_DIR}/box2d/src/*.cpp)
 set(MOJOAL_SRC_FILES ${CMAKE_CURRENT_SOURCE_DIR}/AL/mojoal.c)
 
 #glad
-if (TCOB_BACKEND_OPENGL)
+if (TCOB_BACKEND_OPENGL45)
   set(GLAD_SRC_FILES ${CMAKE_CURRENT_SOURCE_DIR}/glad/gl.c)
 endif()
 
@@ -109,7 +109,7 @@ target_include_directories(tcob_extlibs PUBLIC
 target_link_libraries(tcob_extlibs PUBLIC
   SDL2-static 
   webpdemux
-  $<$<AND:$<CXX_COMPILER_ID:MSVC>,$<BOOL:TCOB_BACKEND_OPENGL>>:opengl32>
+  $<$<AND:$<CXX_COMPILER_ID:MSVC>,$<BOOL:TCOB_BACKEND_IS_OPENGL>>:opengl32>
 )
 
 MESSAGE(STATUS "exiting extlibs")
