@@ -1,5 +1,6 @@
 MESSAGE(STATUS "----------------")
 MESSAGE(STATUS "entering extlibs")
+MESSAGE(STATUS "----------------")
 
 include(FetchContent)
 
@@ -14,6 +15,7 @@ FetchContent_Declare(SDL2
 )
 
 set(SDL_SHARED_ENABLED_BY_DEFAULT OFF CACHE BOOL "" FORCE)
+set(LIBC ON CACHE BOOL "" FORCE)
 
 FetchContent_MakeAvailable(SDL2)
 
@@ -73,6 +75,9 @@ set(STB_SRC_FILES
   ${CMAKE_CURRENT_SOURCE_DIR}/stb/stb_truetype.c 
   ${CMAKE_CURRENT_SOURCE_DIR}/stb/stb_vorbis.c)
 
+#TinySoundFont
+set(TSF_SRC_FILES ${CMAKE_CURRENT_SOURCE_DIR}/TinySoundFont/TinySoundFont.c)
+
 ###########################################################################
 
 add_library(tcob_extlibs OBJECT)
@@ -87,6 +92,7 @@ target_sources(tcob_extlibs PUBLIC
   ${MINIZ_SRC_FILES}
   ${DRLIBS_SRC_FILES}
   ${STB_SRC_FILES}
+  ${TSF_SRC_FILES}
 )
 
 target_compile_definitions(tcob_extlibs PUBLIC
@@ -112,5 +118,6 @@ target_link_libraries(tcob_extlibs PUBLIC
   $<$<AND:$<CXX_COMPILER_ID:MSVC>,$<BOOL:TCOB_BACKEND_IS_OPENGL>>:opengl32>
 )
 
+MESSAGE(STATUS "----------------")
 MESSAGE(STATUS "exiting extlibs")
 MESSAGE(STATUS "----------------")
