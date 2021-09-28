@@ -26,8 +26,10 @@
     #include <pthread.h>
 #endif
 
+/* Not build options, edit at your own risk! */
 #define SPNG_READ_SIZE (8192)
 #define SPNG_WRITE_SIZE SPNG_READ_SIZE
+#define SPNG_MAX_CHUNK_COUNT (1000)
 
 #define SPNG_TARGET_CLONES(x)
 
@@ -163,6 +165,7 @@ struct encode_flags
 {
     unsigned interlace:      1;
     unsigned same_layout:    1;
+    unsigned to_bigendian:   1;
     unsigned progressive:    1;
     unsigned finalize:       1;
 
@@ -207,7 +210,7 @@ union spng__decode_plte
     uint32_t align_this;
 };
 
-struct spng__deflate_options
+struct spng__zlib_options
 {
     int compression_level;
     int window_bits;
@@ -256,6 +259,7 @@ struct spng_ctx
     enum spng_state state;
 
     unsigned streaming: 1;
+    unsigned internal_buffer: 1; /* encoding to internal buffer */
 
     unsigned inflate: 1;
     unsigned deflate: 1;
@@ -266,8 +270,8 @@ struct spng_ctx
     unsigned keep_unknown: 1;
     unsigned prev_was_idat: 1;
 
-    struct spng__deflate_options image_options;
-    struct spng__deflate_options text_options;
+    struct spng__zlib_options image_options;
+    struct spng__zlib_options text_options;
 
     spng__undo *undo;
 
@@ -290,6 +294,8 @@ struct spng_ctx
     size_t max_chunk_size;
     size_t chunk_cache_limit;
     size_t chunk_cache_usage;
+    uint32_t chunk_count_limit;
+    uint32_t chunk_count_total;
 
     int crc_action_critical;
     int crc_action_ancillary;
@@ -425,30 +431,24 @@ static void spng__zfree(void *opqaue, void *ptr)
     spng__free(ctx, ptr);
 }
 
-static inline uint16_t read_u16(const void *_data)
+static inline uint16_t read_u16(const void *src)
 {
-    const unsigned char *data = _data;
+    const unsigned char *data = src;
 
     return (data[0] & 0xFFU) << 8 | (data[1] & 0xFFU);
 }
 
-static inline uint32_t read_u32(const void *_data)
+static inline uint32_t read_u32(const void *src)
 {
-    const unsigned char *data = _data;
+    const unsigned char *data = src;
 
     return (data[0] & 0xFFUL) << 24 | (data[1] & 0xFFUL) << 16 |
            (data[2] & 0xFFUL) << 8  | (data[3] & 0xFFUL);
 }
 
-static inline int32_t read_s32(const void *_data)
+static inline int32_t read_s32(const void *src)
 {
-    const unsigned char *data = _data;
-
-    int32_t ret;
-    uint32_t val = (data[0] & 0xFFUL) << 24 | (data[1] & 0xFFUL) << 16 |
-                   (data[2] & 0xFFUL) << 8  | (data[3] & 0xFFUL);
-
-    memcpy(&ret, &val, 4);
+    int32_t ret = (int32_t)read_u32(src);
 
     return ret;
 }
@@ -673,9 +673,17 @@ static int calculate_image_size(spng_ctx *ctx, int fmt, size_t *len)
     return 0;
 }
 
-static int increase_cache_usage(spng_ctx *ctx, size_t bytes)
+static int increase_cache_usage(spng_ctx *ctx, size_t bytes, int new_chunk)
 {
     if(ctx == NULL || !bytes) return SPNG_EINTERNAL;
+
+    if(new_chunk)
+    {
+        ctx->chunk_count_total++;
+        if(ctx->chunk_count_total < 1) return SPNG_EOVERFLOW;
+
+        if(ctx->chunk_count_total > ctx->chunk_count_limit) return SPNG_ECHUNK_LIMITS;
+    }
 
     size_t new_usage = ctx->chunk_cache_usage + bytes;
 
@@ -742,23 +750,6 @@ static inline int read_data(spng_ctx *ctx, size_t bytes)
     return 0;
 }
 
-static void *grow_buffer(void *buf, size_t size, size_t *new_size)
-{
-    if(new_size == NULL) return NULL;
-
-    if(!size) size = SPNG_WRITE_SIZE;
-
-    if(2 > SIZE_MAX / size) return NULL; /* overflow */
-    size *= 2;
-
-    void *temp = realloc(buf, size);
-    if(temp == NULL) return NULL;
-
-    *new_size = size;
-
-    return temp;
-}
-
 /* Ensure there is enough space for encoding starting at ctx->write_ptr  */
 static int require_bytes(spng_ctx *ctx, size_t bytes)
 {
@@ -768,26 +759,46 @@ static int require_bytes(spng_ctx *ctx, size_t bytes)
     {
         if(bytes > ctx->stream_buf_size)
         {
-            size_t new_size;
-            void *temp = grow_buffer(ctx->stream_buf, ctx->stream_buf_size, &new_size);
+            size_t new_size = ctx->stream_buf_size;
+
+            /* Start at default IDAT size + header + crc */
+            if(new_size < (SPNG_WRITE_SIZE + 12)) new_size = SPNG_WRITE_SIZE + 12;
+
+            if(new_size < bytes) new_size = bytes;
+
+            void *temp = spng__realloc(ctx, ctx->stream_buf, new_size);
 
             if(temp == NULL) return encode_err(ctx, SPNG_EMEM);
 
             ctx->stream_buf = temp;
-            ctx->stream_buf_size = new_size;
+            ctx->stream_buf_size = bytes;
             ctx->write_ptr = ctx->stream_buf;
         }
 
         return 0;
     }
 
+    if(!ctx->internal_buffer) return SPNG_ENODST;
+
     size_t required = ctx->bytes_encoded + bytes;
     if(required < bytes) return SPNG_EOVERFLOW;
 
     if(required > ctx->out_png_size)
     {
-        size_t new_size;
-        void *temp = grow_buffer(ctx->out_png, ctx->out_png_size, &new_size);
+        size_t new_size = ctx->out_png_size;
+
+        /* Start with a size that doesn't require a realloc() 100% of the time */
+        if(new_size < (SPNG_WRITE_SIZE * 2)) new_size = SPNG_WRITE_SIZE * 2;
+
+        /* Prefer the next power of two over the requested size */
+        while(new_size < required)
+        {
+            if(new_size / SIZE_MAX > 2) return encode_err(ctx, SPNG_EOVERFLOW);
+
+            new_size *= 2;
+        }
+
+        void *temp = spng__realloc(ctx, ctx->out_png, new_size);
 
         if(temp == NULL) return encode_err(ctx, SPNG_EMEM);
 
@@ -820,8 +831,7 @@ static int write_data(spng_ctx *ctx, const void *data, size_t bytes)
     else
     {
         int ret = require_bytes(ctx, bytes);
-
-        if(ret) return encode_err(ctx, SPNG_EMEM);
+        if(ret) return encode_err(ctx, ret);
 
         memcpy(ctx->write_ptr, data, bytes);
 
@@ -834,10 +844,9 @@ static int write_data(spng_ctx *ctx, const void *data, size_t bytes)
     return 0;
 }
 
-static int write_header(spng_ctx *ctx, const uint8_t chunk_type[4], uint32_t chunk_length, unsigned char **data)
+static int write_header(spng_ctx *ctx, const uint8_t chunk_type[4], size_t chunk_length, unsigned char **data)
 {
     if(ctx == NULL || chunk_type == NULL) return SPNG_EINTERNAL;
-
     if(chunk_length > png_u32max) return SPNG_EINTERNAL;
 
     size_t total = chunk_length + 12;
@@ -849,7 +858,7 @@ static int write_header(spng_ctx *ctx, const uint8_t chunk_type[4], uint32_t chu
     ctx->current_chunk.crc = crc32(crc, chunk_type, 4);
 
     memcpy(&ctx->current_chunk.type, chunk_type, 4);
-    ctx->current_chunk.length = chunk_length;
+    ctx->current_chunk.length = (uint32_t)chunk_length;
 
     if(!data) return SPNG_EINTERNAL;
 
@@ -869,7 +878,7 @@ static int trim_chunk(spng_ctx *ctx, uint32_t length)
     return 0;
 }
 
-static int inline finish_chunk(spng_ctx *ctx)
+static int finish_chunk(spng_ctx *ctx)
 {
     if(ctx == NULL) return SPNG_EINTERNAL;
 
@@ -1113,7 +1122,7 @@ static int discard_chunk_bytes(spng_ctx *ctx, uint32_t bytes)
     return 0;
 }
 
-static int spng__inflate_init(spng_ctx *ctx)
+static int spng__inflate_init(spng_ctx *ctx, int window_bits)
 {
     if(ctx->zstream.state) inflateEnd(&ctx->zstream);
 
@@ -1123,7 +1132,7 @@ static int spng__inflate_init(spng_ctx *ctx)
     ctx->zstream.zfree = spng__zfree;
     ctx->zstream.opaque = ctx;
 
-    if(inflateInit(&ctx->zstream) != Z_OK) return SPNG_EZLIB_INIT;
+    if(inflateInit2(&ctx->zstream, window_bits) != Z_OK) return SPNG_EZLIB_INIT;
 
 #if ZLIB_VERNUM >= 0x1290 && !defined(SPNG_USE_MINIZ)
 
@@ -1149,7 +1158,7 @@ static int spng__inflate_init(spng_ctx *ctx)
     return 0;
 }
 
-static int spng__deflate_init(spng_ctx *ctx, struct spng__deflate_options *options)
+static int spng__deflate_init(spng_ctx *ctx, struct spng__zlib_options *options)
 {
     if(ctx->zstream.state) deflateEnd(&ctx->zstream);
 
@@ -1177,7 +1186,7 @@ static int spng__deflate_init(spng_ctx *ctx, struct spng__deflate_options *optio
 */
 static int spng__inflate_stream(spng_ctx *ctx, char **out, size_t *len, size_t extra, const void *start_buf, size_t start_len)
 {
-    int ret = spng__inflate_init(ctx);
+    int ret = spng__inflate_init(ctx, 15);
     if(ret) return ret;
 
     size_t max = ctx->chunk_cache_limit - ctx->chunk_cache_usage;
@@ -1275,7 +1284,7 @@ static int spng__inflate_stream(spng_ctx *ctx, char **out, size_t *len, size_t e
 
     buf = t;
 
-    (void)increase_cache_usage(ctx, size);
+    (void)increase_cache_usage(ctx, size, 0);
 
     *out = buf;
     *len = size;
@@ -1358,10 +1367,10 @@ static int read_scanline_bytes(spng_ctx *ctx, unsigned char *dest, size_t len)
 
 static uint8_t paeth(uint8_t a, uint8_t b, uint8_t c)
 {
-    int16_t p = (int16_t)a + (int16_t)b - (int16_t)c;
-    int16_t pa = abs(p - (int16_t)a);
-    int16_t pb = abs(p - (int16_t)b);
-    int16_t pc = abs(p - (int16_t)c);
+    int16_t p = a + b - c;
+    int16_t pa = abs(p - a);
+    int16_t pb = abs(p - b);
+    int16_t pc = abs(p - c);
 
     if(pa <= pb && pa <= pc) return a;
     else if(pb <= pc) return b;
@@ -1598,7 +1607,7 @@ static int32_t filter_sum(const unsigned char *prev_scanline, const unsigned cha
 }
 
 static unsigned get_best_filter(const unsigned char *prev_scanline, const unsigned char *scanline,
-                                size_t scanline_width, unsigned bytes_per_pixel, const unsigned choices)
+                                size_t scanline_width, unsigned bytes_per_pixel, const int choices)
 {
     if(!choices) return SPNG_FILTER_NONE;
 
@@ -2140,7 +2149,7 @@ static int check_exif(const struct spng_exif *exif)
 static int check_png_keyword(const char *str)
 {
     if(str == NULL) return 1;
-    char len = strlen(str);
+    size_t len = strlen(str);
     const char *end = str + len;
 
     if(!len) return 1;
@@ -2632,7 +2641,7 @@ static int read_non_idat_chunks(spng_ctx *ctx)
 
                 if(ctx->user.exif) goto discard;
 
-                if(increase_cache_usage(ctx, chunk.length)) return SPNG_ECHUNK_LIMITS;
+                if(increase_cache_usage(ctx, chunk.length, 1)) return SPNG_ECHUNK_LIMITS;
 
                 struct spng_exif exif;
 
@@ -2703,7 +2712,7 @@ static int read_non_idat_chunks(spng_ctx *ctx)
 
                 if(ctx->user.text) goto discard;
 
-                if(increase_cache_usage(ctx, sizeof(struct spng_text2))) return SPNG_ECHUNK_LIMITS;
+                if(increase_cache_usage(ctx, sizeof(struct spng_text2), 1)) return SPNG_ECHUNK_LIMITS;
 
                 ctx->n_text++;
                 if(ctx->n_text < 1) return SPNG_EOVERFLOW;
@@ -2796,7 +2805,7 @@ static int read_non_idat_chunks(spng_ctx *ctx)
                 if(text->compression_flag)
                 {
                     /* cache usage = peek_bytes + decompressed text size + nul */
-                    if(increase_cache_usage(ctx, peek_bytes)) return SPNG_ECHUNK_LIMITS;
+                    if(increase_cache_usage(ctx, peek_bytes, 0)) return SPNG_ECHUNK_LIMITS;
 
                     text->keyword = spng__calloc(ctx, 1, peek_bytes);
                     if(text->keyword == NULL) return SPNG_EMEM;
@@ -2814,7 +2823,7 @@ static int read_non_idat_chunks(spng_ctx *ctx)
                 }
                 else
                 {
-                    if(increase_cache_usage(ctx, chunk.length + 1)) return SPNG_ECHUNK_LIMITS;
+                    if(increase_cache_usage(ctx, chunk.length + 1, 0)) return SPNG_ECHUNK_LIMITS;
 
                     text->keyword = spng__malloc(ctx, chunk.length + 1);
                     if(text->keyword == NULL) return SPNG_EMEM;
@@ -2865,7 +2874,7 @@ static int read_non_idat_chunks(spng_ctx *ctx)
                 ctx->file.splt = 1;
 
                 /* chunk.length + sizeof(struct spng_splt) + splt->n_entries * sizeof(struct spng_splt_entry) */
-                if(increase_cache_usage(ctx, chunk.length + sizeof(struct spng_splt))) return SPNG_ECHUNK_LIMITS;
+                if(increase_cache_usage(ctx, chunk.length + sizeof(struct spng_splt), 1)) return SPNG_ECHUNK_LIMITS;
 
                 ctx->n_splt++;
                 if(ctx->n_splt < 1) return SPNG_EOVERFLOW;
@@ -2934,7 +2943,7 @@ static int read_non_idat_chunks(spng_ctx *ctx)
 
                 list_size *= sizeof(struct spng_splt_entry);
 
-                if(increase_cache_usage(ctx, list_size)) return SPNG_ECHUNK_LIMITS;
+                if(increase_cache_usage(ctx, list_size, 0)) return SPNG_ECHUNK_LIMITS;
 
                 splt->entries = spng__malloc(ctx, list_size);
                 if(splt->entries == NULL)
@@ -2981,7 +2990,7 @@ static int read_non_idat_chunks(spng_ctx *ctx)
                 if(!ctx->keep_unknown) goto discard;
                 if(ctx->user.unknown) goto discard;
 
-                if(increase_cache_usage(ctx, chunk.length + sizeof(struct spng_unknown_chunk))) return SPNG_ECHUNK_LIMITS;
+                if(increase_cache_usage(ctx, chunk.length + sizeof(struct spng_unknown_chunk), 1)) return SPNG_ECHUNK_LIMITS;
 
                 ctx->n_chunks++;
                 if(ctx->n_chunks < 1) return SPNG_EOVERFLOW;
@@ -3473,8 +3482,8 @@ int spng_decode_scanline(spng_ctx *ctx, void *out, size_t len)
     {
         if(ctx->cur_chunk_bytes_left) /* zlib stream ended before an IDAT chunk boundary */
         {/* Discard the rest of the chunk */
-            int ret = discard_chunk_bytes(ctx, ctx->cur_chunk_bytes_left);
-            if(ret) return decode_err(ctx, ret);
+            int error = discard_chunk_bytes(ctx, ctx->cur_chunk_bytes_left);
+            if(error) return decode_err(ctx, error);
         }
 
         ctx->last_idat = ctx->current_chunk;
@@ -3540,6 +3549,16 @@ int spng_decode_row(spng_ctx *ctx, void *out, size_t len)
     return 0;
 }
 
+int spng_decode_chunks(spng_ctx *ctx)
+{
+    if(ctx == NULL) return 1;
+    if(ctx->encode_only) return SPNG_ECTXTYPE;
+    if(ctx->state < SPNG_STATE_INPUT) return SPNG_ENOSRC;
+    if(ctx->state == SPNG_STATE_IEND) return 0;
+
+    return read_chunks(ctx, 0);
+}
+
 int spng_decode_image(spng_ctx *ctx, void *out, size_t len, int fmt, int flags)
 {
     if(ctx == NULL) return 1;
@@ -3562,7 +3581,7 @@ int spng_decode_image(spng_ctx *ctx, void *out, size_t len, int fmt, int flags)
 
     ctx->out_width = ctx->total_out_size / ihdr->height;
 
-    ret = spng__inflate_init(ctx);
+    ret = spng__inflate_init(ctx, ctx->image_options.window_bits);
     if(ret) return decode_err(ctx, ret);
 
     ctx->zstream.avail_in = 0;
@@ -3923,7 +3942,8 @@ static int write_chunks_before_idat(spng_ctx *ctx)
     if(!ctx->stored.ihdr) return SPNG_EINTERNAL;
 
     int ret;
-    uint32_t i, length;
+    uint32_t i;
+    size_t length;
     const struct spng_ihdr *ihdr = &ctx->ihdr;
     unsigned char *data = ctx->decode_plte.raw;
 
@@ -3966,12 +3986,12 @@ static int write_chunks_before_idat(spng_ctx *ctx)
 
     if(ctx->stored.iccp)
     {
-        uLongf dest_len = compressBound(ctx->iccp.profile_len);
+        uLongf dest_len = compressBound((uLong)ctx->iccp.profile_len);
 
         Bytef *buf = spng__malloc(ctx, dest_len);
         if(buf == NULL) return SPNG_EMEM;
 
-        ret = compress2(buf, &dest_len, (void*)ctx->iccp.profile, ctx->iccp.profile_len, Z_DEFAULT_COMPRESSION);
+        ret = compress2(buf, &dest_len, (void*)ctx->iccp.profile, (uLong)ctx->iccp.profile_len, Z_DEFAULT_COMPRESSION);
 
         if(ret != Z_OK)
         {
@@ -3979,7 +3999,7 @@ static int write_chunks_before_idat(spng_ctx *ctx)
             return SPNG_EZLIB;
         }
 
-        uint32_t name_len = strlen(ctx->iccp.profile_name);
+        size_t name_len = strlen(ctx->iccp.profile_name);
 
         length = name_len + 2;
         length += dest_len;
@@ -4290,14 +4310,14 @@ static int write_chunks_before_idat(spng_ctx *ctx)
                 if(ret) return ret;
 
                 z_stream *zstream = &ctx->zstream;
-                uLongf dest_len = deflateBound(zstream, text_length);
+                uLongf dest_len = deflateBound(zstream, (uLong)text_length);
 
                 compressed_text = spng__malloc(ctx, dest_len);
 
                 if(compressed_text == NULL) return SPNG_EMEM;
 
                 zstream->next_in = (void*)text->text;
-                zstream->avail_in = text_length;
+                zstream->avail_in = (uInt)text_length;
 
                 zstream->next_out = compressed_text;
                 zstream->avail_out = dest_len;
@@ -4421,6 +4441,7 @@ static int write_chunks_after_idat(spng_ctx *ctx)
 static int write_idat_bytes(spng_ctx *ctx, const void *scanline, size_t len, int flush)
 {
     if(ctx == NULL || scanline == NULL) return SPNG_EINTERNAL;
+    if(len > UINT_MAX) return SPNG_EINTERNAL;
 
     int ret = 0;
     unsigned char *data = NULL;
@@ -4428,7 +4449,7 @@ static int write_idat_bytes(spng_ctx *ctx, const void *scanline, size_t len, int
     uint32_t idat_length = SPNG_WRITE_SIZE;
 
     zstream->next_in = scanline;
-    zstream->avail_in = len;
+    zstream->avail_in = (uInt)len;
 
     do
     {
@@ -4504,11 +4525,12 @@ static int encode_scanline(spng_ctx *ctx, const void *scanline, size_t len)
     unsigned char *filtered_scanline = ctx->filtered_scanline;
     size_t scanline_width = sub[pass].scanline_width;
 
+    if(len < scanline_width - 1) return SPNG_EINTERNAL;
+
     /* encode_row() interlaces directly to ctx->scanline */
     if(scanline != ctx->scanline) memcpy(ctx->scanline, scanline, scanline_width - 1);
 
-    if(ctx->ihdr.bit_depth == 16 && ctx->fmt != SPNG_FMT_RAW) u16_row_to_bigendian(ctx->scanline, scanline_width - 1);
-
+    if(f.to_bigendian) u16_row_to_bigendian(ctx->scanline, scanline_width - 1);
     const int requires_previous = f.filter_choice & (SPNG_FILTER_CHOICE_UP | SPNG_FILTER_CHOICE_AVG | SPNG_FILTER_CHOICE_PAETH);
 
     /* XXX: exclude 'requires_previous' filters by default for first scanline? */
@@ -4559,10 +4581,11 @@ static int encode_row(spng_ctx *ctx, const void *row, size_t len)
 {
     if(ctx == NULL || row == NULL) return SPNG_EINTERNAL;
 
-    if(!ctx->ihdr.interlace_method) return encode_scanline(ctx, row, len);
+    const int pass = ctx->row_info.pass;
+
+    if(!ctx->ihdr.interlace_method || pass == 6) return encode_scanline(ctx, row, len);
 
     uint32_t k;
-    const int pass = ctx->row_info.pass;
     const unsigned pixel_size = ctx->pixel_size;
     const unsigned bit_depth = ctx->ihdr.bit_depth;
 
@@ -4667,7 +4690,7 @@ int spng_encode_image(spng_ctx *ctx, const void *img, size_t len, int fmt, int f
     if(!ctx->state) return SPNG_EBADSTATE;
     if(!ctx->encode_only) return SPNG_ECTXTYPE;
     if(!ctx->stored.ihdr) return SPNG_ENOIHDR;
-    if(fmt != SPNG_FMT_PNG) return SPNG_EFMT;
+    if( !(fmt == SPNG_FMT_PNG || fmt == SPNG_FMT_RAW) ) return SPNG_EFMT;
 
     int ret = 0;
     size_t img_len = 0;
@@ -4760,6 +4783,8 @@ int spng_encode_image(spng_ctx *ctx, const void *img, size_t len, int fmt, int f
 
     if(fmt & (SPNG_FMT_PNG | SPNG_FMT_RAW) ) encode_flags->same_layout = 1;
 
+    if(ihdr->bit_depth == 16 && fmt != SPNG_FMT_RAW) encode_flags->to_bigendian = 1;
+
     if(flags & SPNG_ENCODE_FINALIZE) encode_flags->finalize = 1;
 
     while(!sub[ri->pass].width || !sub[ri->pass].height) ri->pass++;
@@ -4772,10 +4797,7 @@ int spng_encode_image(spng_ctx *ctx, const void *img, size_t len, int fmt, int f
     else if(fmt == SPNG_FMT_RGB8) ctx->pixel_size = 3;
     else if(fmt == SPNG_FMT_G8) ctx->pixel_size = 1;
     else if(fmt == SPNG_FMT_GA8) ctx->pixel_size = 2;
-    else if(fmt & (SPNG_FMT_PNG | SPNG_FMT_RAW))
-    {
-        if(ihdr->bit_depth >= 8) ctx->pixel_size = ctx->bytes_per_pixel;
-    }
+    else if(fmt & (SPNG_FMT_PNG | SPNG_FMT_RAW)) ctx->pixel_size = ctx->bytes_per_pixel;
 
     ctx->state = SPNG_STATE_ENCODE_INIT;
 
@@ -4832,13 +4854,14 @@ spng_ctx *spng_ctx_new2(struct spng_alloc *alloc, int flags)
 
     ctx->max_chunk_size = png_u32max;
     ctx->chunk_cache_limit = SIZE_MAX;
+    ctx->chunk_count_limit = SPNG_MAX_CHUNK_COUNT;
 
     ctx->state = SPNG_STATE_INIT;
 
     ctx->crc_action_critical = SPNG_CRC_ERROR;
     ctx->crc_action_ancillary = SPNG_CRC_DISCARD;
 
-    const struct spng__deflate_options image_defaults =
+    const struct spng__zlib_options image_defaults =
     {
         .compression_level = Z_DEFAULT_COMPRESSION,
         .window_bits = 15,
@@ -4847,7 +4870,7 @@ spng_ctx *spng_ctx_new2(struct spng_alloc *alloc, int flags)
         .data_type = 0 /* Z_BINARY */
     };
 
-    const struct spng__deflate_options text_defaults =
+    const struct spng__zlib_options text_defaults =
     {
         .compression_level = Z_DEFAULT_COMPRESSION,
         .window_bits = 15,
@@ -4992,16 +5015,12 @@ int spng_set_png_stream(spng_ctx *ctx, spng_rw_fn *rw_func, void *user)
     if(ctx == NULL || rw_func == NULL) return 1;
     if(!ctx->state) return SPNG_EBADSTATE;
 
-    if(ctx->stream_buf != NULL) return SPNG_EBUF_SET;
+    /* SPNG_STATE_OUTPUT shares the same value */
+    if(ctx->state >= SPNG_STATE_INPUT) return SPNG_EBUF_SET;
 
     if(ctx->encode_only)
     {
         if(ctx->out_png != NULL) return SPNG_EBUF_SET;
-
-        ctx->stream_buf_size = SPNG_WRITE_SIZE * 2;
-
-        ctx->stream_buf = spng__malloc(ctx, ctx->stream_buf_size);
-        if(ctx->stream_buf == NULL) return SPNG_EMEM;
 
         ctx->write_fn = rw_func;
         ctx->write_ptr = ctx->stream_buf;
@@ -5139,6 +5158,7 @@ int spng_set_crc_action(spng_ctx *ctx, int critical, int ancillary)
 int spng_set_option(spng_ctx *ctx, enum spng_option option, int value)
 {
     if(ctx == NULL) return 1;
+    if(!ctx->state) return SPNG_EBADSTATE;
 
     switch(option)
     {
@@ -5193,6 +5213,26 @@ int spng_set_option(spng_ctx *ctx, enum spng_option option, int value)
             ctx->encode_flags.filter_choice = value;
             break;
         }
+        case SPNG_CHUNK_COUNT_LIMIT:
+        {
+            if(value < 0) return 1;
+            if(value > ctx->chunk_count_total) return 1;
+            ctx->chunk_count_limit = value;
+            break;
+        }
+        case SPNG_ENCODE_TO_BUFFER:
+        {
+            if(value < 0) return 1;
+            if(!ctx->encode_only) return SPNG_ECTXTYPE;
+            if(ctx->state >= SPNG_STATE_OUTPUT) return SPNG_EOPSTATE;
+
+            if(!value) return 0;
+
+            ctx->internal_buffer = 1;
+            ctx->state = SPNG_STATE_OUTPUT;
+
+            break;
+        }
         default: return 1;
     }
 
@@ -5202,6 +5242,7 @@ int spng_set_option(spng_ctx *ctx, enum spng_option option, int value)
 int spng_get_option(spng_ctx *ctx, enum spng_option option, int *value)
 {
     if(ctx == NULL || value == NULL) return 1;
+    if(!ctx->state) return SPNG_EBADSTATE;
 
     switch(option)
     {
@@ -5253,6 +5294,18 @@ int spng_get_option(spng_ctx *ctx, enum spng_option option, int *value)
         case SPNG_FILTER_CHOICE:
         {
             *value = ctx->encode_flags.filter_choice;
+            break;
+        }
+        case SPNG_CHUNK_COUNT_LIMIT:
+        {
+            *value = ctx->chunk_count_limit;
+            break;
+        }
+        case SPNG_ENCODE_TO_BUFFER:
+        {
+            if(ctx->internal_buffer) *value = 1;
+            else *value = 0;
+
             break;
         }
         default: return 1;
@@ -5643,7 +5696,7 @@ int spng_set_iccp(spng_ctx *ctx, struct spng_iccp *iccp)
     SPNG_SET_CHUNK_BOILERPLATE(iccp);
 
     if(check_png_keyword(iccp->profile_name)) return SPNG_EICCP_NAME;
-    if(!iccp->profile_len) return 1;
+    if(!iccp->profile_len || iccp->profile_len > UINT_MAX) return 1;
 
     if(ctx->iccp.profile && !ctx->user.iccp) spng__free(ctx, ctx->iccp.profile);
 
@@ -5695,15 +5748,16 @@ int spng_set_text(spng_ctx *ctx, struct spng_text *text, uint32_t n_text)
     {
         if(check_png_keyword(text[i].keyword)) return SPNG_ETEXT_KEYWORD;
         if(!text[i].length) return 1;
+        if(text[i].length > UINT_MAX) return 1;
         if(text[i].text == NULL) return 1;
 
         if(text[i].type == SPNG_TEXT)
         {
-            if(check_png_text(text[i].text, text[i].length)) return 1;
+            if(ctx->strict && check_png_text(text[i].text, text[i].length)) return 1;
         }
         else if(text[i].type == SPNG_ZTXT)
         {
-            if(check_png_text(text[i].text, text[i].length)) return 1;
+            if(ctx->strict && check_png_text(text[i].text, text[i].length)) return 1;
 
             if(text[i].compression_method != 0) return SPNG_EZTXT_COMPRESSION_METHOD;
         }
@@ -5883,7 +5937,7 @@ int spng_set_unknown_chunks(spng_ctx *ctx, struct spng_unknown_chunk *chunks, ui
             case SPNG_AFTER_PLTE:
             case SPNG_AFTER_IDAT:
             break;
-            default: return 1;
+            default: return SPNG_ECHUNK_POS;
         }
     }
 
@@ -6033,7 +6087,7 @@ const char *spng_strerror(int err)
 
 const char *spng_version_string(void)
 {
-    return SPNG_VERSION_STRING "-rc3";
+    return SPNG_VERSION_STRING;
 }
 
 #if defined(_MSC_VER)

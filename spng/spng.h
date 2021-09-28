@@ -16,6 +16,12 @@ extern "C" {
     #define SPNG_API
 #endif
 
+#if defined(_MSC_VER)
+    #define SPNG_CDECL __cdecl
+#else
+    #define SPNG_CDECL
+#endif
+
 #include <stdlib.h>
 #include <stdint.h>
 #include <stdio.h>
@@ -401,12 +407,14 @@ enum spng_option
     SPNG_TEXT_COMPRESSION_STRATEGY,
 
     SPNG_FILTER_CHOICE,
+    SPNG_CHUNK_COUNT_LIMIT,
+    SPNG_ENCODE_TO_BUFFER,
 };
 
-typedef void* spng_malloc_fn(size_t size);
-typedef void* spng_realloc_fn(void* ptr, size_t size);
-typedef void* spng_calloc_fn(size_t count, size_t size);
-typedef void spng_free_fn(void* ptr);
+typedef void* SPNG_CDECL spng_malloc_fn(size_t size);
+typedef void* SPNG_CDECL spng_realloc_fn(void* ptr, size_t size);
+typedef void* SPNG_CDECL spng_calloc_fn(size_t count, size_t size);
+typedef void SPNG_CDECL spng_free_fn(void* ptr);
 
 struct spng_alloc
 {
@@ -460,6 +468,7 @@ SPNG_API int spng_decode_image(spng_ctx *ctx, void *out, size_t len, int fmt, in
 /* Progressive decode */
 SPNG_API int spng_decode_scanline(spng_ctx *ctx, void *out, size_t len);
 SPNG_API int spng_decode_row(spng_ctx *ctx, void *out, size_t len);
+SPNG_API int spng_decode_chunks(spng_ctx *ctx);
 
 /* Encode/decode */
 SPNG_API int spng_get_row_info(spng_ctx *ctx, struct spng_row_info *row_info);
