@@ -4,6 +4,14 @@ MESSAGE(STATUS "----------------")
 
 ###########################################################################
 
+set(CMAKE_DISABLE_FIND_PACKAGE_ZLIB ON)
+set(CMAKE_DISABLE_FIND_PACKAGE_PNG ON)
+set(CMAKE_DISABLE_FIND_PACKAGE_JPEG ON)
+set(CMAKE_DISABLE_FIND_PACKAGE_TIFF ON)
+set(CMAKE_DISABLE_FIND_PACKAGE_GIF ON)
+
+###########################################################################
+
 include(FetchContent)
 
 MESSAGE(STATUS "++++++++++++++++")
