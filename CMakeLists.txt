@@ -94,6 +94,9 @@ set(STB_SRC_FILES
 #TinySoundFont
 set(TSF_SRC_FILES ${CMAKE_CURRENT_SOURCE_DIR}/TinySoundFont/TinySoundFont.c)
 
+#cjson
+set(CJSON_SRC_FILES ${CMAKE_CURRENT_SOURCE_DIR}/cJSON/cJSON.c)
+
 ###########################################################################
 
 add_library(tcob_extlibs OBJECT)
@@ -109,6 +112,7 @@ target_sources(tcob_extlibs PUBLIC
   ${DRLIBS_SRC_FILES}
   ${STB_SRC_FILES}
   ${TSF_SRC_FILES}
+  ${CJSON_SRC_FILES}
 )
 
 target_compile_definitions(tcob_extlibs PUBLIC
@@ -116,6 +120,7 @@ target_compile_definitions(tcob_extlibs PUBLIC
   SPNG_STATIC
   AL_LIBTYPE_STATIC
   SDL_MAIN_HANDLED
+  CJSON_HIDE_SYMBOLS
 )
 
 target_include_directories(tcob_extlibs PUBLIC
