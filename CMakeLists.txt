@@ -89,10 +89,13 @@ set(DRLIBS_SRC_FILES ${CMAKE_CURRENT_SOURCE_DIR}/dr_libs/dr_libs.c)
 #stb
 set(STB_SRC_FILES 
   ${CMAKE_CURRENT_SOURCE_DIR}/stb/stb_truetype.c 
-  ${CMAKE_CURRENT_SOURCE_DIR}/stb/stb_vorbis.c)
+  ${CMAKE_CURRENT_SOURCE_DIR}/stb/stb_vorbis.c
+)
 
 #TinySoundFont
-set(TSF_SRC_FILES ${CMAKE_CURRENT_SOURCE_DIR}/TinySoundFont/TinySoundFont.c)
+if (TCOB_SOUNDFONT_ENABLED)
+  set(TSF_SRC_FILES ${CMAKE_CURRENT_SOURCE_DIR}/TinySoundFont/TinySoundFont.c)
+endif()
 
 #cjson
 set(CJSON_SRC_FILES ${CMAKE_CURRENT_SOURCE_DIR}/cJSON/cJSON.c)
