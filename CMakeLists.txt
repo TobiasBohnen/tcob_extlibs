@@ -47,11 +47,19 @@ set(WEBP_BUILD_EXTRAS OFF CACHE BOOL "Build extras." FORCE)
 set(WEBP_ENABLE_SIMD ON CACHE BOOL "Enable any SIMD optimization." FORCE)
 set(WEBP_NEAR_LOSSLESS ON CACHE BOOL "Enable near-lossless encoding" FORCE)
 
+#libyaml
+FetchContent_Declare(libyaml
+  GIT_REPOSITORY https://github.com/yaml/libyaml
+  GIT_TAG        0.2.5
+)
+
+#######
 MESSAGE(STATUS "++++++++++++++++")
 MESSAGE(STATUS "FetchContent_MakeAvailable:")
 MESSAGE(STATUS "++++++++++++++++")
-FetchContent_MakeAvailable(SDL2 webp)
+FetchContent_MakeAvailable(SDL2 webp libyaml)
 MESSAGE(STATUS "++++++++++++++++")
+#######
 
 #Lua
 file(GLOB LUA_SRC_FILES ${CMAKE_CURRENT_SOURCE_DIR}/lua/*.cpp)
@@ -128,12 +136,14 @@ target_include_directories(tcob_extlibs PUBLIC
   ${CMAKE_CURRENT_SOURCE_DIR}/physfs/
   ${CMAKE_CURRENT_SOURCE_DIR}/box2d/include/
   ${CMAKE_CURRENT_SOURCE_DIR}/box2d/src/
-  ${webp_SOURCE_DIR}/src
+  ${webp_SOURCE_DIR}/src/
+  ${libyaml_SOURCE_DIR}/include/
 )
 
 target_link_libraries(tcob_extlibs PUBLIC
   SDL2-static 
   webpdemux
+  yaml
   $<$<AND:$<CXX_COMPILER_ID:MSVC>,$<BOOL:TCOB_BACKEND_IS_OPENGL>>:opengl32>
 )
 
