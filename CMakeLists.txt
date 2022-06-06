@@ -58,6 +58,9 @@ MESSAGE(STATUS "++++++++++++++++")
 #Lua
 file(GLOB LUA_SRC_FILES ${CMAKE_CURRENT_SOURCE_DIR}/lua/*.cpp)
 
+#wren
+file(GLOB WREN_SRC_FILES ${CMAKE_CURRENT_SOURCE_DIR}/wren/src/vm/*.c ${CMAKE_CURRENT_SOURCE_DIR}/wren/src/optional/*.c)
+
 #physfs
 file(GLOB PHYSFS_SRC_FILES ${CMAKE_CURRENT_SOURCE_DIR}/physfs/*.c)
 
@@ -103,6 +106,7 @@ add_library(tcob_extlibs OBJECT)
 
 target_sources(tcob_extlibs PUBLIC     
   ${LUA_SRC_FILES}
+  ${WREN_SRC_FILES}
   ${PHYSFS_SRC_FILES}
   ${BOX2D_SRC_FILES}
   ${MOJOAL_SRC_FILES}
@@ -126,6 +130,9 @@ target_compile_definitions(tcob_extlibs PUBLIC
 target_include_directories(tcob_extlibs PUBLIC
   ${CMAKE_CURRENT_SOURCE_DIR} 
   ${CMAKE_CURRENT_SOURCE_DIR}/lua/
+  ${CMAKE_CURRENT_SOURCE_DIR}/wren/src/include/
+  ${CMAKE_CURRENT_SOURCE_DIR}/wren/src/vm/
+  ${CMAKE_CURRENT_SOURCE_DIR}/wren/src/optional/
   ${CMAKE_CURRENT_SOURCE_DIR}/miniz/
   ${CMAKE_CURRENT_SOURCE_DIR}/physfs/
   ${CMAKE_CURRENT_SOURCE_DIR}/box2d/include/
