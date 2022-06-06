@@ -56,10 +56,14 @@ MESSAGE(STATUS "++++++++++++++++")
 #######
 
 #Lua
-file(GLOB LUA_SRC_FILES ${CMAKE_CURRENT_SOURCE_DIR}/lua/*.cpp)
+if (TCOB_ENABLE_LUA)
+  file(GLOB LUA_SRC_FILES ${CMAKE_CURRENT_SOURCE_DIR}/lua/*.cpp)
+endif()
 
 #wren
-file(GLOB WREN_SRC_FILES ${CMAKE_CURRENT_SOURCE_DIR}/wren/src/vm/*.c ${CMAKE_CURRENT_SOURCE_DIR}/wren/src/optional/*.c)
+if (TCOB_ENABLE_WREN)
+  file(GLOB WREN_SRC_FILES ${CMAKE_CURRENT_SOURCE_DIR}/wren/src/vm/*.c ${CMAKE_CURRENT_SOURCE_DIR}/wren/src/optional/*.c)
+endif()
 
 #physfs
 file(GLOB PHYSFS_SRC_FILES ${CMAKE_CURRENT_SOURCE_DIR}/physfs/*.c)
@@ -98,7 +102,9 @@ if (TCOB_ENABLE_SOUNDFONT)
 endif()
 
 #cjson
-set(CJSON_SRC_FILES ${CMAKE_CURRENT_SOURCE_DIR}/cJSON/cJSON.c)
+if (TCOB_ENABLE_JSON)
+  set(CJSON_SRC_FILES ${CMAKE_CURRENT_SOURCE_DIR}/cJSON/cJSON.c)
+endif()
 
 ###########################################################################
 
