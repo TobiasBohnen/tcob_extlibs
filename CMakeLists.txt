@@ -105,6 +105,11 @@ if(TCOB_ENABLE_JSON)
   set(CJSON_SRC_FILES ${CMAKE_CURRENT_SOURCE_DIR}/cJSON/cJSON.c)
 endif()
 
+# sqlite
+if(TCOB_ENABLE_SQLITE)
+  set(SQLITE_SRC_FILES ${CMAKE_CURRENT_SOURCE_DIR}/sqlite3/sqlite3.c)
+endif()
+
 # ##########################################################################
 add_library(tcob_extlibs OBJECT)
 
@@ -121,6 +126,7 @@ target_sources(tcob_extlibs PUBLIC
   ${STB_SRC_FILES}
   ${TSF_SRC_FILES}
   ${CJSON_SRC_FILES}
+  ${SQLITE_SRC_FILES}
 )
 
 target_compile_definitions(tcob_extlibs PUBLIC
