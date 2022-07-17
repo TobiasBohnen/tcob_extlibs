@@ -30,7 +30,7 @@ set(SDL_LIBC ON CACHE BOOL "" FORCE)
 # WebP
 FetchContent_Declare(webp
   GIT_REPOSITORY https://chromium.googlesource.com/webm/libwebp
-  GIT_TAG v1.2.1
+  GIT_TAG v1.2.3
 )
 
 set(WEBP_BUILD_ANIM_UTILS OFF CACHE BOOL "Build animation utilities." FORCE)
