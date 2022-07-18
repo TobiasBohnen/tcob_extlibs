@@ -13,6 +13,9 @@ set(CMAKE_DISABLE_FIND_PACKAGE_GIF ON)
 include(FetchContent)
 
 # SDL2
+MESSAGE(STATUS "++++++++++++++++")
+MESSAGE(STATUS "SDL2:")
+
 FetchContent_Declare(SDL2
   GIT_REPOSITORY https://github.com/libsdl-org/SDL
   GIT_TAG release-2.0.22
@@ -27,7 +30,12 @@ set(SDL_SHARED OFF CACHE BOOL "" FORCE)
 set(SDL_STATIC ON CACHE BOOL "" FORCE)
 set(SDL_LIBC ON CACHE BOOL "" FORCE)
 
+FetchContent_MakeAvailable(SDL2)
+
 # WebP
+MESSAGE(STATUS "++++++++++++++++")
+MESSAGE(STATUS "WebP:")
+
 FetchContent_Declare(webp
   GIT_REPOSITORY https://chromium.googlesource.com/webm/libwebp
   GIT_TAG v1.2.3
@@ -44,12 +52,11 @@ set(WEBP_BUILD_WEBPMUX OFF CACHE BOOL "Build the webpmux command line tool." FOR
 set(WEBP_BUILD_EXTRAS OFF CACHE BOOL "Build extras." FORCE)
 set(WEBP_ENABLE_SIMD ON CACHE BOOL "Enable any SIMD optimization." FORCE)
 set(WEBP_NEAR_LOSSLESS ON CACHE BOOL "Enable near-lossless encoding" FORCE)
+set(WEBP_LINK_STATIC ON CACHE BOOL "" FORCE)
+
+FetchContent_MakeAvailable(webp)
 
 # ##########################################################################
-MESSAGE(STATUS "++++++++++++++++")
-MESSAGE(STATUS "FetchContent_MakeAvailable:")
-MESSAGE(STATUS "++++++++++++++++")
-FetchContent_MakeAvailable(SDL2 webp)
 MESSAGE(STATUS "++++++++++++++++")
 
 # ##########################################################################
