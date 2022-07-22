@@ -79,6 +79,11 @@ if(TCOB_ENABLE_BOX2D)
   file(GLOB_RECURSE BOX2D_SRC_FILES ${CMAKE_CURRENT_SOURCE_DIR}/box2d/src/*.cpp)
 endif()
 
+# Chipmunk2D
+if(TCOB_ENABLE_CHIPMUNK2D)
+  file(GLOB_RECURSE CHIPMUNK2D_SRC_FILES ${CMAKE_CURRENT_SOURCE_DIR}/chipmunk2d/src/*.cpp)
+endif()
+
 # mojoal
 set(MOJOAL_SRC_FILES ${CMAKE_CURRENT_SOURCE_DIR}/AL/mojoal.c)
 
@@ -125,6 +130,7 @@ target_sources(tcob_extlibs PUBLIC
   ${WREN_SRC_FILES}
   ${PHYSFS_SRC_FILES}
   ${BOX2D_SRC_FILES}
+  ${CHIPMUNK2D_SRC_FILES}
   ${MOJOAL_SRC_FILES}
   ${GLAD_SRC_FILES}
   ${SPNG_SRC_FILES}
@@ -154,6 +160,7 @@ target_include_directories(tcob_extlibs PUBLIC
   ${CMAKE_CURRENT_SOURCE_DIR}/physfs/
   ${CMAKE_CURRENT_SOURCE_DIR}/box2d/include/
   ${CMAKE_CURRENT_SOURCE_DIR}/box2d/src/
+  ${CMAKE_CURRENT_SOURCE_DIR}/chipmunk2d/include/
   ${webp_SOURCE_DIR}/src/
 )
 
