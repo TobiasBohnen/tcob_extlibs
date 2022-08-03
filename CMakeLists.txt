@@ -148,6 +148,7 @@ target_compile_definitions(tcob_extlibs PUBLIC
   AL_LIBTYPE_STATIC
   SDL_MAIN_HANDLED
   CJSON_HIDE_SYMBOLS
+  CP_USE_DOUBLES=0
 )
 
 target_include_directories(tcob_extlibs PUBLIC
