@@ -151,7 +151,7 @@ target_compile_definitions(tcob_extlibs PUBLIC
   CP_USE_DOUBLES=0
 )
 
-target_include_directories(tcob_extlibs PUBLIC
+target_include_directories(tcob_extlibs SYSTEM PUBLIC
   ${CMAKE_CURRENT_SOURCE_DIR}
   ${CMAKE_CURRENT_SOURCE_DIR}/lua/
   ${CMAKE_CURRENT_SOURCE_DIR}/wren/src/include/
@@ -163,13 +163,16 @@ target_include_directories(tcob_extlibs PUBLIC
   ${CMAKE_CURRENT_SOURCE_DIR}/box2d/src/
   ${CMAKE_CURRENT_SOURCE_DIR}/chipmunk2d/include/
   ${webp_SOURCE_DIR}/src/
+  ${SDL2_SOURCE_DIR}/include/
 )
 
-target_link_libraries(tcob_extlibs PUBLIC
-  SDL2-static
-  webpdemux
+target_link_libraries(tcob_extlibs
+  PRIVATE SDL2-static
+  PRIVATE webpdemux
   $<$<AND:$<CXX_COMPILER_ID:MSVC>,$<BOOL:TCOB_BACKEND_IS_OPENGL>>:opengl32>
 )
+
+install(TARGETS sdl-build-options SDL2-static webp webpdemux tcob_extlibs EXPORT tcob)
 
 MESSAGE(STATUS "----------------")
 MESSAGE(STATUS "exiting extlibs")
