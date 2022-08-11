@@ -112,6 +112,11 @@ if(TCOB_ENABLE_SOUNDFONT)
   set(TSF_SRC_FILES ${CMAKE_CURRENT_SOURCE_DIR}/TinySoundFont/TinySoundFont.c)
 endif()
 
+# libxmp-lite
+if(TCOB_ENABLE_LIBXMP)
+  file(GLOB_RECURSE LIBXMP_SRC_FILES ${CMAKE_CURRENT_SOURCE_DIR}/libxmp-lite/src/*.c)
+endif()
+
 # cjson
 if(TCOB_ENABLE_JSON)
   set(CJSON_SRC_FILES ${CMAKE_CURRENT_SOURCE_DIR}/cJSON/cJSON.c)
@@ -140,6 +145,7 @@ target_sources(tcob_extlibs PUBLIC
   ${TSF_SRC_FILES}
   ${CJSON_SRC_FILES}
   ${SQLITE_SRC_FILES}
+  ${LIBXMP_SRC_FILES}
 )
 
 target_compile_definitions(tcob_extlibs PUBLIC
@@ -149,6 +155,9 @@ target_compile_definitions(tcob_extlibs PUBLIC
   SDL_MAIN_HANDLED
   CJSON_HIDE_SYMBOLS
   CP_USE_DOUBLES=0
+  LIBXMP_CORE_PLAYER
+  LIBXMP_NO_DEPACKERS
+  STB_VORBIS_NO_PUSHDATA_API
 )
 
 target_include_directories(tcob_extlibs SYSTEM PUBLIC
@@ -162,6 +171,8 @@ target_include_directories(tcob_extlibs SYSTEM PUBLIC
   ${CMAKE_CURRENT_SOURCE_DIR}/box2d/include/
   ${CMAKE_CURRENT_SOURCE_DIR}/box2d/src/
   ${CMAKE_CURRENT_SOURCE_DIR}/chipmunk2d/include/
+  ${CMAKE_CURRENT_SOURCE_DIR}/libxmp-lite/include/libxmp-lite/
+  ${CMAKE_CURRENT_SOURCE_DIR}/libxmp-lite/src/
   ${webp_SOURCE_DIR}/src/
   ${SDL2_SOURCE_DIR}/include/
 )
