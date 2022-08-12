@@ -35,6 +35,7 @@ FetchContent_MakeAvailable(SDL2)
 list(APPEND TCOB_EXTLIBS_INCDIRS ${SDL2_SOURCE_DIR}/include/)
 list(APPEND TCOB_EXTLIBS_DEFINES SDL_MAIN_HANDLED)
 list(APPEND TCOB_EXTLIBS_LIBS SDL2-static)
+list(APPEND TCOB_EXTLIBS_INSTALLS sdl-build-options SDL2-static)
 
 # WebP
 MESSAGE(STATUS "++++++++++++++++")
@@ -62,6 +63,7 @@ FetchContent_MakeAvailable(webp)
 
 list(APPEND TCOB_EXTLIBS_INCDIRS ${webp_SOURCE_DIR}/src/)
 list(APPEND TCOB_EXTLIBS_LIBS webpdemux)
+list(APPEND TCOB_EXTLIBS_INSTALLS webp webpdemux)
 
 # ##########################################################################
 MESSAGE(STATUS "++++++++++++++++")
@@ -163,7 +165,7 @@ if(TCOB_ENABLE_SQLITE)
 endif()
 
 # ##########################################################################
-add_library(tcob_extlibs OBJECT)
+add_library(tcob_extlibs STATIC)
 target_sources(tcob_extlibs PUBLIC ${TCOB_EXTLIBS_SRCFILES})
 target_compile_definitions(tcob_extlibs PUBLIC ${TCOB_EXTLIBS_DEFINES})
 target_include_directories(tcob_extlibs SYSTEM PUBLIC ${CMAKE_CURRENT_SOURCE_DIR} ${TCOB_EXTLIBS_INCDIRS})
@@ -172,7 +174,7 @@ target_link_libraries(tcob_extlibs
   $<$<AND:$<CXX_COMPILER_ID:MSVC>,$<BOOL:TCOB_BACKEND_IS_OPENGL>>:opengl32>
 )
 
-install(TARGETS sdl-build-options SDL2-static webp webpdemux tcob_extlibs EXPORT tcob)
+install(TARGETS ${TCOB_EXTLIBS_INSTALLS} tcob_extlibs EXPORT tcob)
 
 MESSAGE(STATUS "----------------")
 MESSAGE(STATUS "exiting extlibs")
