@@ -171,7 +171,7 @@ endif()
 # ##########################################################################
 add_library(tcob_extlibs STATIC)
 
-target_sources(tcob_extlibs PUBLIC ${TCOB_EXTLIBS_SRCFILES})
+target_sources(tcob_extlibs PRIVATE ${TCOB_EXTLIBS_SRCFILES})
 target_compile_definitions(tcob_extlibs PUBLIC ${TCOB_EXTLIBS_DEFINES})
 target_include_directories(tcob_extlibs SYSTEM PUBLIC ${CMAKE_CURRENT_SOURCE_DIR} ${TCOB_EXTLIBS_INCDIRS})
 target_link_libraries(tcob_extlibs PRIVATE ${TCOB_EXTLIBS_LIBS})
