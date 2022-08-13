@@ -169,7 +169,7 @@ if(TCOB_ENABLE_SQLITE)
 endif()
 
 # ##########################################################################
-add_library(tcob_extlibs OBJECT)
+add_library(tcob_extlibs STATIC)
 
 target_sources(tcob_extlibs PUBLIC ${TCOB_EXTLIBS_SRCFILES})
 target_compile_definitions(tcob_extlibs PUBLIC ${TCOB_EXTLIBS_DEFINES})
