@@ -165,7 +165,7 @@ if(TCOB_ENABLE_SQLITE)
 endif()
 
 # ##########################################################################
-add_library(tcob_extlibs STATIC)
+add_library(tcob_extlibs OBJECT)
 target_sources(tcob_extlibs PUBLIC ${TCOB_EXTLIBS_SRCFILES})
 target_compile_definitions(tcob_extlibs PUBLIC ${TCOB_EXTLIBS_DEFINES})
 target_include_directories(tcob_extlibs SYSTEM PUBLIC ${CMAKE_CURRENT_SOURCE_DIR} ${TCOB_EXTLIBS_INCDIRS})
