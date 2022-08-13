@@ -117,6 +117,10 @@ list(APPEND TCOB_EXTLIBS_DEFINES AL_LIBTYPE_STATIC)
 # glad
 if(TCOB_BACKEND_OPENGL45)
   list(APPEND TCOB_EXTLIBS_SRCFILES ${CMAKE_CURRENT_SOURCE_DIR}/glad/gl45.c)
+
+  if(MSVC AND TCOB_BACKEND_IS_OPENGL)
+    list(APPEND TCOB_EXTLIBS_LIBS opengl32)
+  endif()
 endif()
 
 # spng
@@ -166,12 +170,15 @@ endif()
 
 # ##########################################################################
 add_library(tcob_extlibs OBJECT)
+
 target_sources(tcob_extlibs PUBLIC ${TCOB_EXTLIBS_SRCFILES})
 target_compile_definitions(tcob_extlibs PUBLIC ${TCOB_EXTLIBS_DEFINES})
 target_include_directories(tcob_extlibs SYSTEM PUBLIC ${CMAKE_CURRENT_SOURCE_DIR} ${TCOB_EXTLIBS_INCDIRS})
-target_link_libraries(tcob_extlibs
-  PRIVATE ${TCOB_EXTLIBS_LIBS}
-  $<$<AND:$<CXX_COMPILER_ID:MSVC>,$<BOOL:TCOB_BACKEND_IS_OPENGL>>:opengl32>
+target_link_libraries(tcob_extlibs PRIVATE ${TCOB_EXTLIBS_LIBS})
+target_compile_options(tcob_extlibs PRIVATE
+  $<$<CXX_COMPILER_ID:MSVC>:/w>
+  $<$<CXX_COMPILER_ID:Clang>:-Wno-everything>
+  $<$<CXX_COMPILER_ID:GNU>:-w>
 )
 
 install(TARGETS ${TCOB_EXTLIBS_INSTALLS} tcob_extlibs EXPORT tcob)
