@@ -42,7 +42,7 @@ MESSAGE(STATUS "WebP:")
 
 FetchContent_Declare(webp
   GIT_REPOSITORY https://chromium.googlesource.com/webm/libwebp
-  GIT_TAG v1.2.3
+  GIT_TAG v1.2.4
 )
 
 set(WEBP_BUILD_ANIM_UTILS OFF CACHE BOOL "Build animation utilities." FORCE)
