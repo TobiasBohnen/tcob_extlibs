@@ -30,12 +30,7 @@ set(SDL_SHARED OFF CACHE BOOL "" FORCE)
 set(SDL_STATIC ON CACHE BOOL "" FORCE)
 set(SDL_LIBC ON CACHE BOOL "" FORCE)
 
-FetchContent_GetProperties(SDL2)
-
-if(NOT SDL2_POPULATED)
-  FetchContent_Populate(SDL2)
-  add_subdirectory(${SDL2_SOURCE_DIR} ${SDL2_BINARY_DIR} EXCLUDE_FROM_ALL)
-endif()
+FetchContent_MakeAvailable(SDL2)
 
 list(APPEND TCOB_EXTLIBS_INCDIRS ${SDL2_SOURCE_DIR}/include/)
 list(APPEND TCOB_EXTLIBS_DEFINES SDL_MAIN_HANDLED)
@@ -64,12 +59,7 @@ set(WEBP_ENABLE_SIMD ON CACHE BOOL "Enable any SIMD optimization." FORCE)
 set(WEBP_NEAR_LOSSLESS ON CACHE BOOL "Enable near-lossless encoding" FORCE)
 set(WEBP_LINK_STATIC ON CACHE BOOL "" FORCE)
 
-FetchContent_GetProperties(webp)
-
-if(NOT webp_POPULATED)
-  FetchContent_Populate(webp)
-  add_subdirectory(${webp_SOURCE_DIR} ${webp_BINARY_DIR} EXCLUDE_FROM_ALL)
-endif()
+FetchContent_MakeAvailable(webp)
 
 list(APPEND TCOB_EXTLIBS_INCDIRS ${webp_SOURCE_DIR}/src/)
 list(APPEND TCOB_EXTLIBS_LIBS webpdemux)
