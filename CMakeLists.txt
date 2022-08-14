@@ -35,7 +35,6 @@ FetchContent_MakeAvailable(SDL2)
 list(APPEND TCOB_EXTLIBS_INCDIRS ${SDL2_SOURCE_DIR}/include/)
 list(APPEND TCOB_EXTLIBS_DEFINES SDL_MAIN_HANDLED)
 list(APPEND TCOB_EXTLIBS_LIBS SDL2-static)
-list(APPEND TCOB_EXTLIBS_INSTALLS sdl-build-options SDL2-static)
 
 # WebP
 MESSAGE(STATUS "++++++++++++++++")
@@ -63,7 +62,6 @@ FetchContent_MakeAvailable(webp)
 
 list(APPEND TCOB_EXTLIBS_INCDIRS ${webp_SOURCE_DIR}/src/)
 list(APPEND TCOB_EXTLIBS_LIBS webpdemux)
-list(APPEND TCOB_EXTLIBS_INSTALLS webp webpdemux)
 
 # ##########################################################################
 MESSAGE(STATUS "++++++++++++++++")
@@ -180,8 +178,6 @@ target_compile_options(tcob_extlibs PRIVATE
   $<$<CXX_COMPILER_ID:Clang>:-Wno-everything>
   $<$<CXX_COMPILER_ID:GNU>:-w>
 )
-
-install(TARGETS ${TCOB_EXTLIBS_INSTALLS} tcob_extlibs EXPORT tcob)
 
 MESSAGE(STATUS "----------------")
 MESSAGE(STATUS "exiting extlibs")
