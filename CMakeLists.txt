@@ -187,6 +187,13 @@ target_compile_options(tcob_extlibs PRIVATE
   $<$<CXX_COMPILER_ID:GNU>:-w>
 )
 
+if(MSVC AND TCOB_USE_DEFAULT_MSVC_OPTIONS)
+  set_target_properties(tcob_extlibs PROPERTIES
+    INTERPROCEDURAL_OPTIMIZATION TRUE
+    DEBUG_POSTFIX "_d"
+  )
+endif()
+
 MESSAGE(STATUS "----------------")
 MESSAGE(STATUS "exiting extlibs")
 MESSAGE(STATUS "----------------")
