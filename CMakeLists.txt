@@ -48,34 +48,36 @@ list(APPEND TCOB_EXTLIBS_DEFINES SDL_MAIN_HANDLED)
 list(APPEND TCOB_EXTLIBS_LIBS SDL2-static)
 
 # WebP
-MESSAGE(STATUS "++++++++++++++++")
-MESSAGE(STATUS "WebP:")
+if(TCOB_ENABLE_WEBP)
+  MESSAGE(STATUS "++++++++++++++++")
+  MESSAGE(STATUS "WebP:")
 
-FetchContent_Declare(webp
-  GIT_REPOSITORY https://chromium.googlesource.com/webm/libwebp
-  GIT_TAG v1.2.4
-)
+  FetchContent_Declare(webp
+    GIT_REPOSITORY https://chromium.googlesource.com/webm/libwebp
+    GIT_TAG v1.2.4
+  )
 
-set(WEBP_BUILD_ANIM_UTILS OFF CACHE BOOL "Build animation utilities." FORCE)
-set(WEBP_BUILD_CWEBP OFF CACHE BOOL "Build the cwebp command line tool." FORCE)
-set(WEBP_BUILD_DWEBP OFF CACHE BOOL "Build the dwebp command line tool." FORCE)
-set(WEBP_BUILD_GIF2WEBP OFF CACHE BOOL "Build the gif2webp conversion tool." FORCE)
-set(WEBP_BUILD_IMG2WEBP OFF CACHE BOOL "Build the img2webp animation tool." FORCE)
-set(WEBP_BUILD_VWEBP OFF CACHE BOOL "Build the vwebp viewer tool." FORCE)
-set(WEBP_BUILD_WEBPINFO OFF CACHE BOOL "Build the webpinfo command line tool." FORCE)
-set(WEBP_BUILD_WEBPMUX OFF CACHE BOOL "Build the webpmux command line tool." FORCE)
-set(WEBP_BUILD_EXTRAS OFF CACHE BOOL "Build extras." FORCE)
-set(WEBP_ENABLE_SIMD ON CACHE BOOL "Enable any SIMD optimization." FORCE)
-set(WEBP_NEAR_LOSSLESS ON CACHE BOOL "Enable near-lossless encoding" FORCE)
+  set(WEBP_BUILD_ANIM_UTILS OFF CACHE BOOL "Build animation utilities." FORCE)
+  set(WEBP_BUILD_CWEBP OFF CACHE BOOL "Build the cwebp command line tool." FORCE)
+  set(WEBP_BUILD_DWEBP OFF CACHE BOOL "Build the dwebp command line tool." FORCE)
+  set(WEBP_BUILD_GIF2WEBP OFF CACHE BOOL "Build the gif2webp conversion tool." FORCE)
+  set(WEBP_BUILD_IMG2WEBP OFF CACHE BOOL "Build the img2webp animation tool." FORCE)
+  set(WEBP_BUILD_VWEBP OFF CACHE BOOL "Build the vwebp viewer tool." FORCE)
+  set(WEBP_BUILD_WEBPINFO OFF CACHE BOOL "Build the webpinfo command line tool." FORCE)
+  set(WEBP_BUILD_WEBPMUX OFF CACHE BOOL "Build the webpmux command line tool." FORCE)
+  set(WEBP_BUILD_EXTRAS OFF CACHE BOOL "Build extras." FORCE)
+  set(WEBP_ENABLE_SIMD ON CACHE BOOL "Enable any SIMD optimization." FORCE)
+  set(WEBP_NEAR_LOSSLESS ON CACHE BOOL "Enable near-lossless encoding" FORCE)
 
-if(NOT BUILD_SHARED_LIBS)
-  set(WEBP_LINK_STATIC ON CACHE BOOL "" FORCE)
+  if(NOT BUILD_SHARED_LIBS)
+    set(WEBP_LINK_STATIC ON CACHE BOOL "" FORCE)
+  endif()
+
+  FetchContent_MakeAvailable(webp)
+
+  list(APPEND TCOB_EXTLIBS_INCDIRS ${webp_SOURCE_DIR}/src/)
+  list(APPEND TCOB_EXTLIBS_LIBS webpdemux)
 endif()
-
-FetchContent_MakeAvailable(webp)
-
-list(APPEND TCOB_EXTLIBS_INCDIRS ${webp_SOURCE_DIR}/src/)
-list(APPEND TCOB_EXTLIBS_LIBS webpdemux)
 
 # ##########################################################################
 MESSAGE(STATUS "++++++++++++++++")
@@ -136,8 +138,10 @@ if(TCOB_BACKEND_OPENGL45)
 endif()
 
 # spng
-list(APPEND TCOB_EXTLIBS_SRCFILES ${CMAKE_CURRENT_SOURCE_DIR}/spng/spng.c)
-list(APPEND TCOB_EXTLIBS_DEFINES SPNG_USE_MINIZ SPNG_STATIC)
+if(TCOB_ENABLE_WEBP)
+  list(APPEND TCOB_EXTLIBS_SRCFILES ${CMAKE_CURRENT_SOURCE_DIR}/spng/spng.c)
+  list(APPEND TCOB_EXTLIBS_DEFINES SPNG_USE_MINIZ SPNG_STATIC)
+endif()
 
 # miniz
 list(APPEND TCOB_EXTLIBS_SRCFILES ${CMAKE_CURRENT_SOURCE_DIR}/miniz/miniz.c)
