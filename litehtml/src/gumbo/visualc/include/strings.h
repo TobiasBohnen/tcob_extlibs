@@ -1,4 +1,6 @@
 /*Dummy file to satisfy source file dependencies on Windows platform*/
-#define strcasecmp _stricmp
-#define strncasecmp _strnicmp
-#define inline __inline
+#if defined(_MSC_VER)
+    #define strcasecmp _stricmp
+    #define strncasecmp _strnicmp
+    #define inline __inline
+#endif
