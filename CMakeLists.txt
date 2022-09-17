@@ -192,8 +192,12 @@ if(TCOB_ENABLE_LITEHTML)
     ${CMAKE_CURRENT_SOURCE_DIR}/litehtml/include/litehtml/
     ${CMAKE_CURRENT_SOURCE_DIR}/litehtml/src/gumbo/include/
     ${CMAKE_CURRENT_SOURCE_DIR}/litehtml/src/gumbo/include/gumbo/
-    ${CMAKE_CURRENT_SOURCE_DIR}/litehtml/src/gumbo/visualc/include/
   )
+
+  if(MSVC)
+    list(APPEND TCOB_EXTLIBS_INCDIRS ${CMAKE_CURRENT_SOURCE_DIR}/litehtml/src/gumbo/visualc/include/)
+  endif()
+
   list(APPEND TCOB_EXTLIBS_DEFINES LITEHTML_UTF8)
 endif()
 
