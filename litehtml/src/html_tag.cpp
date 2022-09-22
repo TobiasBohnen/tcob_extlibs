@@ -899,11 +899,6 @@ void litehtml::html_tag::draw_background(uint_ptr hdc, int x, int y, const posit
 
 bool litehtml::html_tag::set_pseudo_class( const tchar_t* pclass, bool add )
 {
-    if(m_tag == _t("a"))
-    {
-        int i = 0;
-        i++;
-    }
 	bool ret = false;
 	if(add)
 	{

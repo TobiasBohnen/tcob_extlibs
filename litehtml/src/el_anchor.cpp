@@ -13,14 +13,15 @@ void litehtml::el_anchor::on_click()
 	if(href)
 	{
 		get_document()->container()->on_anchor_click(href, shared_from_this());
+		set_pseudo_class(_t("visited"), true);
 	}
 }
 
 void litehtml::el_anchor::apply_stylesheet( const litehtml::css& stylesheet )
 {
 	if( get_attr(_t("href")) )
-	{
-		m_pseudo_classes.push_back(_t("link"));
+	{			
+		set_pseudo_class(_t("link"), true);
 	}
 	html_tag::apply_stylesheet(stylesheet);
 }
