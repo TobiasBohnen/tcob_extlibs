@@ -133,6 +133,15 @@ litehtml::document::ptr litehtml::document::createFromUTF8(const char* str, lite
 	return doc;
 }
 
+void litehtml::document::refresh_render_tree()
+{
+	m_root->parse_attributes();
+	m_root->parse_styles();
+	m_root_render = m_root->create_render_item(nullptr);
+    fix_tables_layout();
+	m_root_render = m_root_render->init();
+}
+
 litehtml::uint_ptr litehtml::document::add_font( const tchar_t* name, int size, const tchar_t* weight, const tchar_t* style, const tchar_t* decoration, font_metrics* fm )
 {
 	uint_ptr ret = 0;
