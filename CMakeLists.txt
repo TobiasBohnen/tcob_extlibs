@@ -19,10 +19,11 @@ include(FetchContent)
 
 # ##########################################################################
 # #required
-# physfs
+# physfs @3.2.0
 file(GLOB PHYSFS_SRC_FILES ${CMAKE_CURRENT_SOURCE_DIR}/physfs/*.c)
 list(APPEND TCOB_EXTLIBS_SRCFILES ${PHYSFS_SRC_FILES})
 list(APPEND TCOB_EXTLIBS_INCDIRS ${CMAKE_CURRENT_SOURCE_DIR}/physfs/)
+list(APPEND TCOB_EXTLIBS_DEFINES PHYSFS_STATIC)
 
 # mojoal
 list(APPEND TCOB_EXTLIBS_SRCFILES ${CMAKE_CURRENT_SOURCE_DIR}/AL/mojoal.c)
