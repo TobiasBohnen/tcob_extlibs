@@ -135,8 +135,9 @@ litehtml::document::ptr litehtml::document::createFromUTF8(const char* str, lite
 
 void litehtml::document::refresh_render_tree()
 {
-	//m_root->parse_attributes();
 	m_root->parse_styles();
+	m_root->m_renders.clear();
+	m_tabular_elements.clear();
 	m_root_render = m_root->create_render_item(nullptr);
     fix_tables_layout();
 	m_root_render = m_root_render->init();
