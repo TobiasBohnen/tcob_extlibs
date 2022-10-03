@@ -200,6 +200,15 @@ void litehtml::element::add_render(const std::shared_ptr<render_item>& ri)
     m_renders.push_back(ri);
 }
 
+void litehtml::element::clear_renders_recursive()
+{
+    m_renders.clear();
+	for(auto& el : m_children)
+	{
+        el->clear_renders_recursive();
+	}
+}
+
 bool litehtml::element::find_styles_changes( position::vector& redraw_boxes)
 {
     if(css().get_display() == display_inline_text)
