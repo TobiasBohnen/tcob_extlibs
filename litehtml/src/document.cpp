@@ -143,6 +143,11 @@ void litehtml::document::refresh_render_tree()
 	m_root_render = m_root_render->init();
 }
 
+litehtml::css& litehtml::document::css()
+{
+	return m_styles;
+}
+
 litehtml::uint_ptr litehtml::document::add_font( const tchar_t* name, int size, const tchar_t* weight, const tchar_t* style, const tchar_t* decoration, font_metrics* fm )
 {
 	uint_ptr ret = 0;

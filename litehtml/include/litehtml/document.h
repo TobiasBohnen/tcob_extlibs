@@ -104,7 +104,9 @@ namespace litehtml
 		static litehtml::document::ptr createFromString(const tchar_t* str, litehtml::document_container* objPainter, litehtml::context* ctx, litehtml::css* user_styles = nullptr);
 		static litehtml::document::ptr createFromUTF8(const char* str, litehtml::document_container* objPainter, litehtml::context* ctx, litehtml::css* user_styles = nullptr);
 	
-		void 						   refresh_render_tree();
+	//ADDED
+		void							refresh_render_tree();
+		litehtml::css&					css();
 
 	private:
 		litehtml::uint_ptr	add_font(const tchar_t* name, int size, const tchar_t* weight, const tchar_t* style, const tchar_t* decoration, font_metrics* fm);
