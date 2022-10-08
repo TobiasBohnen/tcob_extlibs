@@ -228,9 +228,8 @@ target_compile_options(tcob_extlibs PRIVATE
   $<$<CXX_COMPILER_ID:GNU>:-w>
 )
 
-if(MSVC AND TCOB_USE_DEFAULT_MSVC_OPTIONS)
+if(MSVC)
   set_target_properties(tcob_extlibs PROPERTIES
-    INTERPROCEDURAL_OPTIMIZATION TRUE
     DEBUG_POSTFIX "_d"
   )
 endif()
