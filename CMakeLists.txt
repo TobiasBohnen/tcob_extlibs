@@ -36,9 +36,8 @@ list(APPEND TCOB_EXTLIBS_INCDIRS ${CMAKE_CURRENT_SOURCE_DIR}/miniz/)
 # dr_libs @dr_flac: 0.12.39 @dr_mp3: 0.6.34 @dr_wav: 0.13.7
 list(APPEND TCOB_EXTLIBS_SRCFILES ${CMAKE_CURRENT_SOURCE_DIR}/dr_libs/dr_libs.c)
 
-# stb @stb_vorbis: 1.22 @stb_truetype: 1.26
+# stb @stb_vorbis: 1.22
 list(APPEND TCOB_EXTLIBS_SRCFILES
-  ${CMAKE_CURRENT_SOURCE_DIR}/stb/stb_truetype.c
   ${CMAKE_CURRENT_SOURCE_DIR}/stb/stb_vorbis.c
 )
 list(APPEND TCOB_EXTLIBS_DEFINES STB_VORBIS_NO_PUSHDATA_API)
@@ -110,10 +109,10 @@ if(TCOB_ENABLE_CHIPMUNK2D)
 endif()
 
 # glad
-if(TCOB_BACKEND_OPENGL45)
+if(TCOB_RENDER_BACKEND_OPENGL45)
   list(APPEND TCOB_EXTLIBS_SRCFILES ${CMAKE_CURRENT_SOURCE_DIR}/glad/gl45.c)
 
-  if(MSVC AND TCOB_BACKEND_IS_OPENGL)
+  if(MSVC AND TCOB_RENDER_BACKEND_IS_OPENGL)
     list(APPEND TCOB_EXTLIBS_LIBS opengl32)
   endif()
 endif()
@@ -149,6 +148,20 @@ endif()
 # sqlite @3.39.3
 if(TCOB_ENABLE_SQLITE)
   list(APPEND TCOB_EXTLIBS_SRCFILES ${CMAKE_CURRENT_SOURCE_DIR}/sqlite3/sqlite3.c)
+endif()
+
+# stb @stb_truetype: 1.26
+if(TCOB_TTF_BACKEND_STB)
+  list(APPEND TCOB_EXTLIBS_SRCFILES
+    ${CMAKE_CURRENT_SOURCE_DIR}/stb/stb_truetype.c
+  )
+endif()
+
+# libschrift @0.10.2
+if(TCOB_TTF_BACKEND_LIBSCHRIFT)
+  list(APPEND TCOB_EXTLIBS_SRCFILES
+    ${CMAKE_CURRENT_SOURCE_DIR}/libschrift/schrift.c
+  )
 endif()
 
 # WebP @v1.2.4
