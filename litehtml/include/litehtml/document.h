@@ -106,7 +106,6 @@ namespace litehtml
 	
 	//ADDED
 		void							refresh_render_tree();
-		litehtml::css&					css();
 
 	private:
 		litehtml::uint_ptr	add_font(const tchar_t* name, int size, const tchar_t* weight, const tchar_t* style, const tchar_t* decoration, font_metrics* fm);
