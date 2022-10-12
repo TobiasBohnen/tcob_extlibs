@@ -343,3 +343,4 @@ void litehtml::line_box::new_width( int left, int right, std::vector< std::share
         }
     }
 }
+
