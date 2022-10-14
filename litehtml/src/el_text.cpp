@@ -83,7 +83,7 @@ void litehtml::el_text::parse_styles(bool is_reparse)
 		{
 			m_transformed_text = _t("");
 		} else {
-		   m_transformed_text = _t(" ");
+			m_transformed_text = _t(" ");
 		}
 		m_use_transformed = true;
 	} else
@@ -107,7 +107,8 @@ void litehtml::el_text::parse_styles(bool is_reparse)
 		font = el_parent->css().get_font();
         fm = el_parent->css().get_font_metrics();
 	}
-	if(m_text == _t("\n") || m_text == _t("\r"))
+
+	if(is_break())
 	{
 		m_size.height	= 0;
 		m_size.width	= 0;
