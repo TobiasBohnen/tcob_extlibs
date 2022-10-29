@@ -45,7 +45,7 @@ MESSAGE(STATUS "SDL2:")
 
 FetchContent_Declare(SDL2
   GIT_REPOSITORY https://github.com/libsdl-org/SDL
-  GIT_TAG release-2.24.0
+  GIT_TAG release-2.24.1
 )
 
 set(SDL_RENDER OFF CACHE BOOL "" FORCE)
