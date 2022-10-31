@@ -214,6 +214,12 @@ litehtml::uint_ptr litehtml::document::add_font( const char* name, int size, con
 			case litehtml::fontWeight700:
 				fw = 700;
 				break;
+			case litehtml::fontWeight800:
+				fw = 800;
+				break;
+			case litehtml::fontWeight900:
+				fw = 900;
+				break;
 			}
 		} else
 		{
