@@ -208,6 +208,7 @@ void litehtml::element::clear_renders_recursive()
         el->clear_renders_recursive();
 	}
 }
+
 bool litehtml::element::find_styles_changes( position::vector& redraw_boxes)
 {
     if(css().get_display() == display_inline_text)
