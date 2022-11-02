@@ -103,8 +103,6 @@ namespace litehtml
 
 		static litehtml::document::ptr	createFromString(const char* str, litehtml::document_container* objPainter, const char* master_styles = litehtml::master_css, const char* user_styles = "");
 	
-		//ADDED
-		void							refresh_render_tree();
 	private:
 		uint_ptr	add_font(const char* name, int size, const char* weight, const char* style, const char* decoration, font_metrics* fm);
 

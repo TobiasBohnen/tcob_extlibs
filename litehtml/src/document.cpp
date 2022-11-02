@@ -135,16 +135,6 @@ litehtml::document::ptr litehtml::document::createFromString( const char* str, d
 	return doc;
 }
 
-void litehtml::document::refresh_render_tree()
-{
-	//FIXME:
-	m_root->clear_renders_recursive();
-	m_tabular_elements.clear();
-	m_root_render = m_root->create_render_item(nullptr);
-    fix_tables_layout();
-	m_root_render = m_root_render->init();
-}
-
 litehtml::uint_ptr litehtml::document::add_font( const char* name, int size, const char* weight, const char* style, const char* decoration, font_metrics* fm )
 {
 	uint_ptr ret = 0;
