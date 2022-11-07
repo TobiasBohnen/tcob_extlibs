@@ -213,7 +213,7 @@ int litehtml::render_item_inline_context::new_box(const std::shared_ptr<render_i
     int text_indent = 0;
     if(src_el()->css().get_text_indent().val() != 0)
     {
-        if(!m_line_boxes.empty())
+        if(m_line_boxes.empty())
         {
             text_indent = src_el()->css().get_text_indent().calc_percent(max_width);
         }
