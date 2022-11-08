@@ -76,12 +76,6 @@ void litehtml::css::parse_stylesheet(const char* str, const char* baseurl, const
 void litehtml::css::parse_css_url( const string& str, string& url )
 {
 	url = "";
-	if (str.find("url") == string::npos)
-	{
-		url = str;
-		return;
-	}
-
 	size_t pos1 = str.find('(');
 	size_t pos2 = str.find(')');
 	if(pos1 != string::npos && pos2 != string::npos)
