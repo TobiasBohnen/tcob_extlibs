@@ -37,6 +37,7 @@ FetchContent_MakeAvailable(physfs)
 
 list(APPEND TCOB_EXTLIBS_INCDIRS ${physfs_SOURCE_DIR}/src/)
 list(APPEND TCOB_EXTLIBS_DEFINES PHYSFS_STATIC)
+list(APPEND TCOB_EXTLIBS_LIBS physfs-static)
 
 # mojoal
 list(APPEND TCOB_EXTLIBS_SRCFILES ${CMAKE_CURRENT_SOURCE_DIR}/AL/mojoal.c)
