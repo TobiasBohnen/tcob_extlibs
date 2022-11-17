@@ -22,7 +22,8 @@ include(FetchContent)
 # physfs @3.2.0
 MESSAGE(STATUS "physfs:")
 
-FetchContent_Declare(physfs
+FetchContent_Declare(
+  physfs
   GIT_REPOSITORY https://github.com/icculus/physfs
   GIT_TAG release-3.2.0
 )
@@ -57,7 +58,8 @@ list(APPEND TCOB_EXTLIBS_DEFINES STB_VORBIS_NO_PUSHDATA_API)
 # SDL2 @2.24.0
 MESSAGE(STATUS "SDL2:")
 
-FetchContent_Declare(SDL2
+FetchContent_Declare(
+  SDL2
   GIT_REPOSITORY https://github.com/libsdl-org/SDL
   GIT_TAG release-2.24.1
 )
@@ -130,7 +132,7 @@ if(TCOB_RENDER_BACKEND_OPENGL45)
 endif()
 
 # spng @v0.7.2
-if(TCOB_ENABLE_WEBP)
+if(TCOB_ENABLE_SPNG)
   list(APPEND TCOB_EXTLIBS_SRCFILES ${CMAKE_CURRENT_SOURCE_DIR}/spng/spng.c)
   list(APPEND TCOB_EXTLIBS_DEFINES SPNG_USE_MINIZ SPNG_STATIC)
 endif()
@@ -176,7 +178,8 @@ endif()
 if(TCOB_ENABLE_WEBP)
   MESSAGE(STATUS "WebP:")
 
-  FetchContent_Declare(webp
+  FetchContent_Declare(
+    webp
     GIT_REPOSITORY https://chromium.googlesource.com/webm/libwebp
     GIT_TAG v1.2.4
   )
