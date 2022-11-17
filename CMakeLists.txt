@@ -20,23 +20,10 @@ include(FetchContent)
 # ##########################################################################
 # #required
 # physfs @3.2.0
-MESSAGE(STATUS "physfs:")
-
-FetchContent_Declare(physfs
-  GIT_REPOSITORY https://github.com/icculus/physfs
-  GIT_TAG release-3.2.0
-)
-
-set(PHYSFS_BUILD_STATIC ON CACHE BOOL "" FORCE)
-set(PHYSFS_BUILD_SHARED OFF CACHE BOOL "" FORCE)
-set(PHYSFS_BUILD_DOCS OFF CACHE BOOL "" FORCE)
-set(PHYSFS_BUILD_TEST OFF CACHE BOOL "" FORCE)
-
-FetchContent_MakeAvailable(physfs)
-
-list(APPEND TCOB_EXTLIBS_INCDIRS ${physfs_SOURCE_DIR}/src/)
+file(GLOB PHYSFS_SRC_FILES ${CMAKE_CURRENT_SOURCE_DIR}/physfs/*.c)
+list(APPEND TCOB_EXTLIBS_SRCFILES ${PHYSFS_SRC_FILES})
+list(APPEND TCOB_EXTLIBS_INCDIRS ${CMAKE_CURRENT_SOURCE_DIR}/physfs/)
 list(APPEND TCOB_EXTLIBS_DEFINES PHYSFS_STATIC)
-list(APPEND TCOB_EXTLIBS_LIBS physfs-static)
 
 # mojoal
 list(APPEND TCOB_EXTLIBS_SRCFILES ${CMAKE_CURRENT_SOURCE_DIR}/AL/mojoal.c)
