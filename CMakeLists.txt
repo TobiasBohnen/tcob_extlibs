@@ -39,6 +39,14 @@ set(PHYSFS_DISABLE_INSTALL ON CACHE BOOL "" FORCE)
 
 FetchContent_MakeAvailable(physfs)
 
+if(TARGET physfs-static)
+  target_compile_options(physfs-static PRIVATE
+    $<$<CXX_COMPILER_ID:MSVC>:/w>
+    $<$<CXX_COMPILER_ID:Clang>:-Wno-everything>
+    $<$<CXX_COMPILER_ID:GNU>:-w>
+  )
+endif()
+
 list(APPEND TCOB_EXTLIBS_INCDIRS ${physfs_SOURCE_DIR}/src/)
 list(APPEND TCOB_EXTLIBS_DEFINES PHYSFS_STATIC)
 list(APPEND TCOB_EXTLIBS_LIBS physfs-static)
@@ -83,6 +91,14 @@ if(NOT BUILD_SHARED_LIBS)
 endif()
 
 FetchContent_MakeAvailable(SDL2)
+
+if(TARGET SDL2-static)
+  target_compile_options(SDL2-static PRIVATE
+    $<$<CXX_COMPILER_ID:MSVC>:/w>
+    $<$<CXX_COMPILER_ID:Clang>:-Wno-everything>
+    $<$<CXX_COMPILER_ID:GNU>:-w>
+  )
+endif()
 
 list(APPEND TCOB_EXTLIBS_INCDIRS ${SDL2_SOURCE_DIR}/include/)
 list(APPEND TCOB_EXTLIBS_DEFINES SDL_MAIN_HANDLED)
