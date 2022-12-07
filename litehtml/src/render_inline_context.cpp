@@ -136,12 +136,9 @@ int litehtml::render_item_inline_context::fix_line_width( int max_width, element
                 line_left += sz_font;
             }
 
-            if(src_el()->css().get_text_indent().val() != 0)
+            if(m_line_boxes.size() == 1 && src_el()->css().get_text_indent().val() != 0)
             {
-                if(!m_line_boxes.empty())
-                {
-                    line_left += src_el()->css().get_text_indent().calc_percent(max_width);
-                }
+                line_left += src_el()->css().get_text_indent().calc_percent(max_width);
             }
 
             els.clear();
