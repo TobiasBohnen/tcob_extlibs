@@ -138,7 +138,7 @@ TCPsocket SDLNet_TCP_Open(IPaddress *ip)
 #ifdef TCP_NODELAY
     /* Set the nodelay TCP option for real-time games */
     { int yes = 1;
-  //  setsockopt(sock->channel, IPPROTO_TCP, TCP_NODELAY, (char*)&yes, sizeof(yes));
+    setsockopt(sock->channel, IPPROTO_TCP, TCP_NODELAY, (char*)&yes, sizeof(yes));
     }
 #else
 #warning Building without TCP_NODELAY
