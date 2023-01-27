@@ -160,13 +160,13 @@ endif()
 if(TCOB_RENDER_BACKEND_OPENGL45) # gl 4.5
   list(APPEND TCOB_EXTLIBS_SRCFILES ${CMAKE_CURRENT_SOURCE_DIR}/glad/gl45.c)
 
-  if(MSVC)
+  if(WIN32)
     list(APPEND TCOB_EXTLIBS_LIBS opengl32)
   endif()
 elseif(TCOB_RENDER_BACKEND_OPENGLES30) # gl es 3.0
   list(APPEND TCOB_EXTLIBS_SRCFILES ${CMAKE_CURRENT_SOURCE_DIR}/glad/gles30.c)
 
-  if(MSVC)
+  if(WIN32)
     list(APPEND TCOB_EXTLIBS_LIBS opengl32)
   endif()
 endif()
