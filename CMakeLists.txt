@@ -204,14 +204,14 @@ if(TCOB_ENABLE_SQLITE)
   list(APPEND TCOB_EXTLIBS_SRCFILES ${CMAKE_CURRENT_SOURCE_DIR}/sqlite3/sqlite3.c)
 endif()
 
-# WebP @v1.2.4
+# WebP @v1.3.0
 if(TCOB_ENABLE_WEBP)
   MESSAGE(STATUS "WebP:")
 
   FetchContent_Declare(
     webp
     GIT_REPOSITORY https://chromium.googlesource.com/webm/libwebp
-    GIT_TAG v1.2.4
+    GIT_TAG v1.3.0
   )
 
   set(WEBP_BUILD_ANIM_UTILS OFF CACHE BOOL "Build animation utilities." FORCE)
