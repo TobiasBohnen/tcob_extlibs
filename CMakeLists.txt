@@ -174,6 +174,7 @@ endif()
 # vulkan
 if(TCOB_RENDER_BACKEND_VULKAN13) # vulkan 1.3
   include(FindVulkan)
+  list(APPEND TCOB_EXTLIBS_INCDIRS ${Vulkan_INCLUDE_DIRS})
   list(APPEND TCOB_EXTLIBS_LIBS Vulkan::Vulkan)
 endif()
 
