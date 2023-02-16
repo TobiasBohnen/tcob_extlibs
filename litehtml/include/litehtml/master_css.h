@@ -52,9 +52,17 @@ b, strong {
 	font-weight:bold;
 }
 
-i, em {
+i, em, cite {
 	display:inline; 
 	font-style:italic;
+}
+
+ins, u {
+	text-decoration:underline
+}
+
+del, s, strike {
+	text-decoration:line-through
 }
 
 center 
@@ -330,6 +338,15 @@ article, aside, footer, header, hgroup, nav, section
 	display: block;
 }
 
+sub {
+	vertical-align: sub;
+	font-size: smaller;
+}
+
+sup {
+	vertical-align: super;
+	font-size: smaller;
+}
 
 )##"; }
 #endif  // LH_MASTER_CSS_H
