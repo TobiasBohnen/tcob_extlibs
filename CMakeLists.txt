@@ -171,19 +171,6 @@ elseif(TCOB_RENDER_BACKEND_OPENGLES30) # gl es 3.0
   endif()
 endif()
 
-# vulkan
-if(TCOB_RENDER_BACKEND_VULKAN13) # vulkan 1.3
-  include(FindVulkan)
-  list(APPEND TCOB_EXTLIBS_INCDIRS ${Vulkan_INCLUDE_DIRS})
-  list(APPEND TCOB_EXTLIBS_LIBS Vulkan::Vulkan)
-
-  # SPIRV-Reflect @sdk-1.3.239.0
-  list(APPEND TCOB_EXTLIBS_SRCFILES ${CMAKE_CURRENT_SOURCE_DIR}/spirv-reflect/spirv_reflect.cpp)
-
-  # VulkanMemoryAllocator @3.0.1
-  list(APPEND TCOB_EXTLIBS_SRCFILES ${CMAKE_CURRENT_SOURCE_DIR}/VulkanMemoryAllocator/VmaUsage.cpp)
-endif()
-
 # spng @v0.7.3
 if(TCOB_ENABLE_SPNG)
   list(APPEND TCOB_EXTLIBS_SRCFILES ${CMAKE_CURRENT_SOURCE_DIR}/spng/spng.c)
