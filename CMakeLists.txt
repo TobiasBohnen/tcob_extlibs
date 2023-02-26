@@ -105,7 +105,7 @@ if(TCOB_ENABLE_TTF_FREETYPE)
 
   FetchContent_Declare(
     freetype
-    GIT_REPOSITORY https://gitlab.freedesktop.org/freetype/freetype
+    GIT_REPOSITORY https://github.com/freetype/freetype
     GIT_TAG VER-2-13-0
   )
 
