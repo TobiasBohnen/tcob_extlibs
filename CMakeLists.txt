@@ -116,10 +116,10 @@ if(TCOB_ENABLE_TTF_FREETYPE)
   set(FT_DISABLE_BROTLI ON CACHE BOOL "" FORCE)
 
   FetchContent_MakeAvailable(freetype)
-endif()
 
-list(APPEND TCOB_EXTLIBS_INCDIRS ${freetype_SOURCE_DIR}/include/)
-list(APPEND TCOB_EXTLIBS_LIBS freetype)
+  list(APPEND TCOB_EXTLIBS_INCDIRS ${freetype_SOURCE_DIR}/include/)
+  list(APPEND TCOB_EXTLIBS_LIBS freetype)
+endif()
 
 # stb @stb_truetype: 1.26
 if(TCOB_ENABLE_TTF_STBTT)
