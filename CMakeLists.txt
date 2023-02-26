@@ -96,6 +96,31 @@ list(APPEND TCOB_EXTLIBS_INCDIRS ${SDL2_SOURCE_DIR}/include/)
 list(APPEND TCOB_EXTLIBS_DEFINES SDL_MAIN_HANDLED)
 list(APPEND TCOB_EXTLIBS_LIBS SDL2-static)
 
+# ##########################################################################
+# #optional
+
+# FreeType @2.13
+if(TCOB_ENABLE_TTF_FREETYPE)
+  MESSAGE(STATUS "FreeType:")
+
+  FetchContent_Declare(
+    freetype
+    GIT_REPOSITORY https://gitlab.freedesktop.org/freetype/freetype
+    GIT_TAG VER-2-13-0
+  )
+
+  set(FT_DISABLE_ZLIB ON CACHE BOOL "" FORCE)
+  set(FT_DISABLE_BZIP2 ON CACHE BOOL "" FORCE)
+  set(FT_DISABLE_PNG ON CACHE BOOL "" FORCE)
+  set(FT_DISABLE_HARFBUZZ ON CACHE BOOL "" FORCE)
+  set(FT_DISABLE_BROTLI ON CACHE BOOL "" FORCE)
+
+  FetchContent_MakeAvailable(freetype)
+endif()
+
+list(APPEND TCOB_EXTLIBS_INCDIRS ${freetype_SOURCE_DIR}/include/)
+list(APPEND TCOB_EXTLIBS_LIBS freetype)
+
 # stb @stb_truetype: 1.26
 if(TCOB_ENABLE_TTF_STBTT)
   list(APPEND TCOB_EXTLIBS_SRCFILES ${CMAKE_CURRENT_SOURCE_DIR}/stb/stb_truetype.c)
@@ -106,8 +131,6 @@ if(TCOB_ENABLE_TTF_LIBSCHRIFT)
   list(APPEND TCOB_EXTLIBS_SRCFILES ${CMAKE_CURRENT_SOURCE_DIR}/libschrift/schrift.c)
 endif()
 
-# ##########################################################################
-# #optional
 # dr_libs @dr_flac: 0.12.39 @dr_mp3: 0.6.34 @dr_wav: 0.13.7
 if(TCOB_ENABLE_FILETYPES_AUDIO_DRLIBS)
   list(APPEND TCOB_EXTLIBS_SRCFILES ${CMAKE_CURRENT_SOURCE_DIR}/dr_libs/dr_libs.c)
