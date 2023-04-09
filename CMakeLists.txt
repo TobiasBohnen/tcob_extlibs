@@ -167,6 +167,38 @@ if(TCOB_ENABLE_ADDON_SCRIPTING_WREN)
   )
 endif()
 
+# Squirrel @3.2 -> 43370e97db82d1159327e7d4e11640887aaaab54
+if(TCOB_ENABLE_ADDON_SCRIPTING_SQUIRREL)
+  MESSAGE(STATUS "Squirrel:")
+
+  FetchContent_Declare(
+    squirrel
+    GIT_REPOSITORY https://github.com/albertodemichelis/squirrel
+    GIT_TAG 43370e97db82d1159327e7d4e11640887aaaab54
+  )
+
+  set(SQ_DISABLE_INTERPRETER ON CACHE BOOL "" FORCE)
+  set(SQ_DISABLE_INSTALLER ON CACHE BOOL "" FORCE)
+  set(SQ_DISABLE_CMAKE_INSTALLER ON CACHE BOOL "" FORCE)
+  set(SQ_DISABLE_HEADER_INSTALLER ON CACHE BOOL "" FORCE)
+
+  if(BUILD_SHARED_LIBS)
+    set(DISABLE_STATIC ON CACHE BOOL "" FORCE)
+    set(DISABLE_SHARED OFF CACHE BOOL "" FORCE)
+    list(APPEND TCOB_EXTLIBS_LIBS squirrel sqstdlib)
+  else()
+    set(DISABLE_STATIC OFF CACHE BOOL "" FORCE)
+    set(DISABLE_SHARED ON CACHE BOOL "" FORCE)
+    list(APPEND TCOB_EXTLIBS_LIBS squirrel_static sqstdlib_static)
+  endif()
+
+  FetchContent_MakeAvailable(squirrel)
+
+  list(APPEND TCOB_EXTLIBS_INCDIRS ${squirrel_SOURCE_DIR}/include/)
+
+  # list(APPEND TCOB_EXTLIBS_DEFINES SQUSEDOUBLE=1)
+endif()
+
 # box2d @v2.4.1
 if(TCOB_ENABLE_ADDON_PHYSICS_BOX2D)
   file(GLOB_RECURSE BOX2D_SRC_FILES ${CMAKE_CURRENT_SOURCE_DIR}/box2d/src/*.cpp)
