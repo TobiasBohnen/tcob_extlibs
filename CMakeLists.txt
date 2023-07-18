@@ -357,12 +357,7 @@ target_compile_options(tcob_extlibs PRIVATE
   $<$<CXX_COMPILER_ID:Clang>:-Wno-everything>
   $<$<CXX_COMPILER_ID:GNU>:-w>
 )
-
-if(MSVC)
-  set_target_properties(tcob_extlibs PROPERTIES
-    DEBUG_POSTFIX "_d"
-  )
-endif()
+set_target_properties(tcob_extlibs PROPERTIES DEBUG_POSTFIX "_d")
 
 MESSAGE(STATUS "----------------")
 MESSAGE(STATUS "exiting extlibs")
