@@ -17,17 +17,6 @@ set(CMAKE_DISABLE_FIND_PACKAGE_GIF ON)
 # ##########################################################################
 include(FetchContent)
 
-function(mark_all_as_advanced name)
-  get_cmake_property(_variableNames VARIABLES)
-  list(SORT _variableNames)
-
-  foreach(_variableName ${_variableNames})
-    if(_variableName MATCHES ${name})
-      mark_as_advanced(FORCE ${_variableName})
-    endif()
-  endforeach()
-endfunction()
-
 # ##########################################################################
 # #required
 # physfs @3.2.0
@@ -58,7 +47,7 @@ if(TARGET physfs-static)
   )
 endif()
 
-mark_all_as_advanced("^PHYSFS_")
+tcob_mark_all_as_advanced("^PHYSFS_")
 
 list(APPEND TCOB_EXTLIBS_INCDIRS ${physfs_SOURCE_DIR}/src/)
 list(APPEND TCOB_EXTLIBS_DEFINES PHYSFS_STATIC)
@@ -105,8 +94,8 @@ if(TARGET SDL2-static)
   )
 endif()
 
-mark_all_as_advanced("^SDL2_")
-mark_all_as_advanced("^SDL_")
+tcob_mark_all_as_advanced("^SDL2_")
+tcob_mark_all_as_advanced("^SDL_")
 
 list(APPEND TCOB_EXTLIBS_INCDIRS ${SDL2_SOURCE_DIR}/include/)
 list(APPEND TCOB_EXTLIBS_DEFINES SDL_MAIN_HANDLED)
@@ -140,7 +129,7 @@ if(TCOB_ENABLE_TTF_FREETYPE)
 
   FetchContent_MakeAvailable(freetype)
 
-  mark_all_as_advanced("^FT_")
+  tcob_mark_all_as_advanced("^FT_")
 
   list(APPEND TCOB_EXTLIBS_INCDIRS ${freetype_SOURCE_DIR}/include/)
   list(APPEND TCOB_EXTLIBS_LIBS freetype)
@@ -210,8 +199,8 @@ if(TCOB_ENABLE_ADDON_SCRIPTING_SQUIRREL)
     list(APPEND TCOB_EXTLIBS_LIBS squirrel_static sqstdlib_static)
   endif()
 
-  mark_all_as_advanced("^SQ_")
-  mark_all_as_advanced("^DISABLE_")
+  tcob_mark_all_as_advanced("^SQ_")
+  tcob_mark_all_as_advanced("^DISABLE_")
   FetchContent_MakeAvailable(squirrel)
 
   list(APPEND TCOB_EXTLIBS_INCDIRS ${squirrel_SOURCE_DIR}/include/)
@@ -304,7 +293,7 @@ if(TCOB_ENABLE_FILETYPES_GFX_WEBP)
 
   FetchContent_MakeAvailable(webp)
 
-  mark_all_as_advanced("^WEBP_")
+  tcob_mark_all_as_advanced("^WEBP_")
 
   list(APPEND TCOB_EXTLIBS_INCDIRS ${webp_SOURCE_DIR}/src/)
   list(APPEND TCOB_EXTLIBS_LIBS webpdemux)
