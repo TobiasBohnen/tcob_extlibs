@@ -104,10 +104,17 @@ list(APPEND TCOB_EXTLIBS_LIBS SDL2-static)
 # ##########################################################################
 # #optional
 
-# libogg @1.3.1 libtheora @1.1.1
+# libogg @1.3.5
 if(TCOB_ENABLE_FILETYPES_GFX_THEORA)
-  file(GLOB_RECURSE OGG_SRC_FILES ${CMAKE_CURRENT_SOURCE_DIR}/oggtheora/*.c)
+  file(GLOB_RECURSE OGG_SRC_FILES ${CMAKE_CURRENT_SOURCE_DIR}/ogg/*.c)
   list(APPEND TCOB_EXTLIBS_SRCFILES ${OGG_SRC_FILES})
+  list(APPEND TCOB_EXTLIBS_INCDIRS ${CMAKE_CURRENT_SOURCE_DIR}/ogg/)
+endif()
+
+# libtheora @1.1.1
+if(TCOB_ENABLE_FILETYPES_GFX_THEORA)
+  file(GLOB_RECURSE OGGTHEORA_SRC_FILES ${CMAKE_CURRENT_SOURCE_DIR}/oggtheora/*.c)
+  list(APPEND TCOB_EXTLIBS_SRCFILES ${OGGTHEORA_SRC_FILES})
   list(APPEND TCOB_EXTLIBS_INCDIRS ${CMAKE_CURRENT_SOURCE_DIR}/oggtheora/)
 endif()
 
