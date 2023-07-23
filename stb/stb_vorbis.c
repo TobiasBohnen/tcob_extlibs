@@ -92,7 +92,7 @@ extern int filehack_fread(void* dst, int s, int c, filehack* f);
 extern int filehack_fseek(filehack* f, int idx, int base);
 extern int filehack_ftell(filehack* f);
 extern int filehack_fclose(filehack* f);
-#define FILE filehack
+#define FILEHACK filehack
 #define fgetc filehack_fgetc
 #define fread filehack_fread
 #define fseek filehack_fseek
@@ -286,7 +286,7 @@ extern stb_vorbis* stb_vorbis_open_filename(const char* filename,
 // create an ogg vorbis decoder from a filename via fopen(). on failure,
 // returns NULL and sets *error (possibly to VORBIS_file_open_failure).
 
-extern stb_vorbis* stb_vorbis_open_file(FILE* f, int close_handle_on_close,
+extern stb_vorbis* stb_vorbis_open_file(FILEHACK* f, int close_handle_on_close,
                                         int* error, const stb_vorbis_alloc* alloc_buffer);
 // create an ogg vorbis decoder from an open FILE *, looking for a stream at
 // the _current_ seek point (ftell). on failure, returns NULL and sets *error.
@@ -296,7 +296,7 @@ extern stb_vorbis* stb_vorbis_open_file(FILE* f, int close_handle_on_close,
 // owns the _entire_ rest of the file after the start point. Use the next
 // function, stb_vorbis_open_file_section(), to limit it.
 
-extern stb_vorbis* stb_vorbis_open_file_section(FILE* f, int close_handle_on_close,
+extern stb_vorbis* stb_vorbis_open_file_section(FILEHACK* f, int close_handle_on_close,
                                                 int* error, const stb_vorbis_alloc* alloc_buffer, unsigned int len);
 // create an ogg vorbis decoder from an open FILE *, looking for a stream at
 // the _current_ seek point (ftell); the stream will be of length 'len' bytes.
@@ -797,7 +797,7 @@ struct stb_vorbis {
 
     // input config
 #ifndef STB_VORBIS_NO_STDIO
-    FILE* f;
+    FILEHACK* f;
     uint32 f_start;
     int close_on_free;
 #endif
@@ -5274,7 +5274,7 @@ int stb_vorbis_get_frame_float(stb_vorbis* f, int* channels, float*** output)
 
 #ifndef STB_VORBIS_NO_STDIO
 
-stb_vorbis* stb_vorbis_open_file_section(FILE* file, int close_on_free, int* error, const stb_vorbis_alloc* alloc, unsigned int length)
+stb_vorbis* stb_vorbis_open_file_section(FILEHACK* file, int close_on_free, int* error, const stb_vorbis_alloc* alloc, unsigned int length)
 {
     stb_vorbis *f, p;
     vorbis_init(&p, alloc);
@@ -5296,7 +5296,7 @@ stb_vorbis* stb_vorbis_open_file_section(FILE* file, int close_on_free, int* err
     return NULL;
 }
 
-stb_vorbis* stb_vorbis_open_file(FILE* file, int close_on_free, int* error, const stb_vorbis_alloc* alloc)
+stb_vorbis* stb_vorbis_open_file(FILEHACK* file, int close_on_free, int* error, const stb_vorbis_alloc* alloc)
 {
     unsigned int len, start;
     start = (unsigned int)ftell(file);
@@ -5308,7 +5308,7 @@ stb_vorbis* stb_vorbis_open_file(FILE* file, int close_on_free, int* error, cons
 
 stb_vorbis* stb_vorbis_open_filename(const char* filename, int* error, const stb_vorbis_alloc* alloc)
 {
-    FILE* f;
+    FILEHACK* f;
 #if defined(_WIN32) && defined(__STDC_WANT_SECURE_LIB__)
     if (0 != fopen_s(&f, filename, "rb"))
         f = NULL;
