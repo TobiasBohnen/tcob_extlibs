@@ -105,7 +105,7 @@ list(APPEND TCOB_EXTLIBS_LIBS SDL2-static)
 # #optional
 
 # libogg @1.3.5
-if(TCOB_ENABLE_FILETYPES_GFX_THEORA)
+if(TCOB_ENABLE_FILETYPES_GFX_THEORA OR TCOB_ENABLE_FILETYPES_AUDIO_OPUS)
   file(GLOB_RECURSE OGG_SRC_FILES ${CMAKE_CURRENT_SOURCE_DIR}/ogg/*.c)
   list(APPEND TCOB_EXTLIBS_SRCFILES ${OGG_SRC_FILES})
   list(APPEND TCOB_EXTLIBS_INCDIRS ${CMAKE_CURRENT_SOURCE_DIR}/ogg/)
@@ -116,6 +116,35 @@ if(TCOB_ENABLE_FILETYPES_GFX_THEORA)
   file(GLOB_RECURSE OGGTHEORA_SRC_FILES ${CMAKE_CURRENT_SOURCE_DIR}/oggtheora/*.c)
   list(APPEND TCOB_EXTLIBS_SRCFILES ${OGGTHEORA_SRC_FILES})
   list(APPEND TCOB_EXTLIBS_INCDIRS ${CMAKE_CURRENT_SOURCE_DIR}/oggtheora/)
+endif()
+
+# opus @libopus: 1.4 @opusfile: 0.12
+if(TCOB_ENABLE_FILETYPES_AUDIO_OPUS)
+  MESSAGE(STATUS "libopus:")
+
+  FetchContent_Declare(
+    libopus
+    GIT_REPOSITORY https://github.com/xiph/opus
+    GIT_TAG v1.4
+  )
+
+  FetchContent_MakeAvailable(libopus)
+
+  target_compile_options(opus PRIVATE
+    $<$<CXX_COMPILER_ID:MSVC>:/w>
+    $<$<CXX_COMPILER_ID:Clang>:-Wno-everything>
+    $<$<CXX_COMPILER_ID:GNU>:-w>
+  )
+
+  tcob_mark_all_as_advanced("^OPUS_")
+
+  list(APPEND TCOB_EXTLIBS_INCDIRS ${libopus_SOURCE_DIR}/include/)
+  list(APPEND TCOB_EXTLIBS_LIBS opus)
+
+  # opusfile
+  file(GLOB_RECURSE OGGOPUS_SRC_FILES ${CMAKE_CURRENT_SOURCE_DIR}/opusfile/*.c)
+  list(APPEND TCOB_EXTLIBS_SRCFILES ${OGGOPUS_SRC_FILES})
+  list(APPEND TCOB_EXTLIBS_INCDIRS ${CMAKE_CURRENT_SOURCE_DIR}/opusfile/)
 endif()
 
 # FreeType @2.13
