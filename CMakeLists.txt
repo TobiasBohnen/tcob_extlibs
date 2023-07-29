@@ -301,14 +301,14 @@ if(TCOB_ENABLE_FILETYPES_GFX_QOI)
   list(APPEND TCOB_EXTLIBS_SRCFILES ${CMAKE_CURRENT_SOURCE_DIR}/qoi/qoi.c)
 endif()
 
-# WebP @1.3.0
+# WebP @1.3.1
 if(TCOB_ENABLE_FILETYPES_GFX_WEBP)
   MESSAGE(STATUS "WebP:")
 
   FetchContent_Declare(
     webp
     GIT_REPOSITORY https://chromium.googlesource.com/webm/libwebp
-    GIT_TAG v1.3.0
+    GIT_TAG v1.3.1
   )
 
   set(WEBP_BUILD_ANIM_UTILS OFF CACHE BOOL "Build animation utilities." FORCE)
@@ -332,7 +332,7 @@ if(TCOB_ENABLE_FILETYPES_GFX_WEBP)
   tcob_mark_all_as_advanced("^WEBP_")
 
   list(APPEND TCOB_EXTLIBS_INCDIRS ${webp_SOURCE_DIR}/src/)
-  list(APPEND TCOB_EXTLIBS_LIBS webpdemux)
+  list(APPEND TCOB_EXTLIBS_LIBS webp libwebpmux webpdemux)
 endif()
 
 # litehtml @0.7
