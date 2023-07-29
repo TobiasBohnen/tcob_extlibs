@@ -210,14 +210,14 @@ if(TCOB_ENABLE_ADDON_SCRIPTING_WREN)
   )
 endif()
 
-# Squirrel @3.2 -> 936eb07d4ef4fde7f393332571158466731b5a5a
+# Squirrel @3.2 -> 1c1fd9a3709a8b46f64e52fa10bd87e896c0b502
 if(TCOB_ENABLE_ADDON_SCRIPTING_SQUIRREL)
   MESSAGE(STATUS "Squirrel:")
 
   FetchContent_Declare(
     squirrel
     GIT_REPOSITORY https://github.com/albertodemichelis/squirrel
-    GIT_TAG 936eb07d4ef4fde7f393332571158466731b5a5a
+    GIT_TAG 1c1fd9a3709a8b46f64e52fa10bd87e896c0b502
   )
 
   set(SQ_DISABLE_INTERPRETER ON CACHE BOOL "" FORCE)
