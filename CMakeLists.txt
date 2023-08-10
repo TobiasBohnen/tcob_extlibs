@@ -2,6 +2,8 @@ MESSAGE(STATUS "----------------")
 MESSAGE(STATUS "entering extlibs")
 MESSAGE(STATUS "----------------")
 
+set(CMAKE_WARN_DEPRECATED OFF CACHE BOOL "" FORCE)
+
 set(TCOB_EXTLIBS_SRCFILES "")
 set(TCOB_EXTLIBS_DEFINES "")
 set(TCOB_EXTLIBS_INCDIRS "")
