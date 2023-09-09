@@ -63,13 +63,13 @@ list(APPEND TCOB_EXTLIBS_DEFINES AL_LIBTYPE_STATIC)
 list(APPEND TCOB_EXTLIBS_SRCFILES ${CMAKE_CURRENT_SOURCE_DIR}/miniz/miniz.c)
 list(APPEND TCOB_EXTLIBS_INCDIRS ${CMAKE_CURRENT_SOURCE_DIR}/miniz/)
 
-# SDL2 @2.28.2
+# SDL2 @2.28.3
 MESSAGE(STATUS "SDL2:")
 
 FetchContent_Declare(
   SDL2
   GIT_REPOSITORY https://github.com/libsdl-org/SDL
-  GIT_TAG release-2.28.2
+  GIT_TAG release-2.28.3
 )
 
 set(SDL_SENSOR OFF CACHE BOOL "" FORCE)
@@ -153,14 +153,14 @@ if(TCOB_ENABLE_FILETYPES_AUDIO_OPUS)
   list(APPEND TCOB_EXTLIBS_INCDIRS ${CMAKE_CURRENT_SOURCE_DIR}/opusfile/)
 endif()
 
-# FreeType @2.13
+# FreeType @2.13.2
 if(TCOB_ENABLE_TTF_FREETYPE)
   MESSAGE(STATUS "FreeType:")
 
   FetchContent_Declare(
     freetype
     GIT_REPOSITORY https://github.com/freetype/freetype
-    GIT_TAG VER-2-13-0
+    GIT_TAG VER-2-13-2
   )
 
   set(FT_DISABLE_ZLIB ON CACHE BOOL "" FORCE)
@@ -187,7 +187,7 @@ if(TCOB_ENABLE_TTF_LIBSCHRIFT)
   list(APPEND TCOB_EXTLIBS_SRCFILES ${CMAKE_CURRENT_SOURCE_DIR}/libschrift/schrift.c)
 endif()
 
-# dr_libs @dr_flac: 0.12.39 @dr_mp3: 0.6.34 @dr_wav: 0.13.7
+# dr_libs @dr_flac: 0.12.41 @dr_mp3: 0.6.37 @dr_wav: 0.13.12
 if(TCOB_ENABLE_FILETYPES_AUDIO_DRLIBS)
   list(APPEND TCOB_EXTLIBS_SRCFILES ${CMAKE_CURRENT_SOURCE_DIR}/dr_libs/dr_libs.c)
 endif()
@@ -286,7 +286,7 @@ if(TCOB_ENABLE_FILETYPES_AUDIO_LIBXMP)
   list(APPEND TCOB_EXTLIBS_DEFINES LIBXMP_CORE_PLAYER LIBXMP_NO_DEPACKERS LIBXMP_STATIC)
 endif()
 
-# sqlite @3.42.0
+# sqlite @3.43.0
 if(TCOB_ENABLE_ADDON_DATA_SQLITE)
   list(APPEND TCOB_EXTLIBS_SRCFILES ${CMAKE_CURRENT_SOURCE_DIR}/sqlite3/sqlite3.c)
 endif()
