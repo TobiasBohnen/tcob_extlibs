@@ -350,21 +350,6 @@ if(TCOB_ENABLE_ADDON_GFX_LITEHTML)
   list(APPEND TCOB_EXTLIBS_DEFINES LITEHTML_UTF8)
 endif()
 
-# SDL_net @2.2.0
-if(TCOB_ENABLE_ADDON_NETWORK_SDLNET)
-  list(APPEND TCOB_EXTLIBS_SRCFILES
-    ${CMAKE_CURRENT_SOURCE_DIR}/SDL_net/SDLnet.c
-    ${CMAKE_CURRENT_SOURCE_DIR}/SDL_net/SDLnetselect.c
-    ${CMAKE_CURRENT_SOURCE_DIR}/SDL_net/SDLnetTCP.c
-    ${CMAKE_CURRENT_SOURCE_DIR}/SDL_net/SDLnetUDP.c
-  )
-
-  if(WIN32)
-    list(APPEND TCOB_EXTLIBS_LIBS ws2_32 iphlpapi)
-    list(APPEND TCOB_EXTLIBS_DEFINES _WINSOCK_DEPRECATED_NO_WARNINGS)
-  endif()
-endif()
-
 # ##########################################################################
 add_library(tcob_extlibs STATIC)
 
