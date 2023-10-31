@@ -40,6 +40,7 @@ set(PHYSFS_BUILD_TEST OFF CACHE BOOL "" FORCE)
 set(PHYSFS_DISABLE_INSTALL ON CACHE BOOL "" FORCE)
 
 FetchContent_MakeAvailable(physfs)
+tcob_mark_all_as_advanced("^PHYSFS_")
 
 if(TARGET physfs-static)
   target_compile_options(physfs-static PRIVATE
@@ -48,8 +49,6 @@ if(TARGET physfs-static)
     $<$<CXX_COMPILER_ID:GNU>:-w>
   )
 endif()
-
-tcob_mark_all_as_advanced("^PHYSFS_")
 
 list(APPEND TCOB_EXTLIBS_INCDIRS ${physfs_SOURCE_DIR}/src/)
 list(APPEND TCOB_EXTLIBS_DEFINES PHYSFS_STATIC)
@@ -87,6 +86,8 @@ if(NOT BUILD_SHARED_LIBS)
 endif()
 
 FetchContent_MakeAvailable(SDL2)
+tcob_mark_all_as_advanced("^SDL2_")
+tcob_mark_all_as_advanced("^SDL_")
 
 if(TARGET SDL2-static)
   target_compile_options(SDL2-static PRIVATE
@@ -95,9 +96,6 @@ if(TARGET SDL2-static)
     $<$<CXX_COMPILER_ID:GNU>:-w>
   )
 endif()
-
-tcob_mark_all_as_advanced("^SDL2_")
-tcob_mark_all_as_advanced("^SDL_")
 
 list(APPEND TCOB_EXTLIBS_INCDIRS ${SDL2_SOURCE_DIR}/include/)
 list(APPEND TCOB_EXTLIBS_DEFINES SDL_MAIN_HANDLED)
@@ -135,14 +133,13 @@ if(TCOB_ENABLE_FILETYPES_AUDIO_OPUS)
   set(OPUS_INSTALL_CMAKE_CONFIG_MODULE OFF CACHE BOOL "" FORCE)
 
   FetchContent_MakeAvailable(libopus)
+  tcob_mark_all_as_advanced("^OPUS_")
 
   target_compile_options(opus PRIVATE
     $<$<CXX_COMPILER_ID:MSVC>:/w>
     $<$<CXX_COMPILER_ID:Clang>:-Wno-everything>
     $<$<CXX_COMPILER_ID:GNU>:-w>
   )
-
-  tcob_mark_all_as_advanced("^OPUS_")
 
   list(APPEND TCOB_EXTLIBS_INCDIRS ${libopus_SOURCE_DIR}/include/)
   list(APPEND TCOB_EXTLIBS_LIBS opus)
@@ -170,7 +167,6 @@ if(TCOB_ENABLE_TTF_FREETYPE)
   set(FT_DISABLE_BROTLI ON CACHE BOOL "" FORCE)
 
   FetchContent_MakeAvailable(freetype)
-
   tcob_mark_all_as_advanced("^FT_")
 
   list(APPEND TCOB_EXTLIBS_INCDIRS ${freetype_SOURCE_DIR}/include/)
@@ -230,28 +226,82 @@ if(TCOB_ENABLE_ADDON_SCRIPTING_SQUIRREL)
     list(APPEND TCOB_EXTLIBS_LIBS squirrel_static sqstdlib_static)
   endif()
 
+  FetchContent_MakeAvailable(squirrel)
   tcob_mark_all_as_advanced("^SQ_")
   tcob_mark_all_as_advanced("^DISABLE_")
-  FetchContent_MakeAvailable(squirrel)
 
   list(APPEND TCOB_EXTLIBS_INCDIRS ${squirrel_SOURCE_DIR}/include/)
 endif()
 
 # box2d @2.4.1
 if(TCOB_ENABLE_ADDON_PHYSICS_BOX2D)
-  file(GLOB_RECURSE BOX2D_SRC_FILES ${CMAKE_CURRENT_SOURCE_DIR}/box2d/src/*.cpp)
-  list(APPEND TCOB_EXTLIBS_SRCFILES ${BOX2D_SRC_FILES})
-  list(APPEND TCOB_EXTLIBS_INCDIRS
-    ${CMAKE_CURRENT_SOURCE_DIR}/box2d/include/
-    ${CMAKE_CURRENT_SOURCE_DIR}/box2d/src/
+  MESSAGE(STATUS "box2d:")
+
+  FetchContent_Declare(
+    box2d
+    GIT_REPOSITORY https://github.com/erincatto/box2d
+    GIT_TAG v2.4.1
   )
+
+  set(BOX2D_BUILD_UNIT_TESTS OFF CACHE BOOL "" FORCE)
+  set(BOX2D_BUILD_TESTBED OFF CACHE BOOL "" FORCE)
+  set(BOX2D_BUILD_DOCS OFF CACHE BOOL "" FORCE)
+  set(BOX2D_USER_SETTINGS OFF CACHE BOOL "" FORCE)
+
+  FetchContent_MakeAvailable(box2d)
+  tcob_mark_all_as_advanced("^BOX2D_")
+
+  target_compile_options(box2d PRIVATE
+    $<$<CXX_COMPILER_ID:MSVC>:/w>
+    $<$<CXX_COMPILER_ID:Clang>:-Wno-everything>
+    $<$<CXX_COMPILER_ID:GNU>:-w>
+  )
+
+  list(APPEND TCOB_EXTLIBS_INCDIRS ${box2d_SOURCE_DIR}/include/)
+  list(APPEND TCOB_EXTLIBS_LIBS box2d)
 endif()
 
 # Chipmunk2D @7.0.3
 if(TCOB_ENABLE_ADDON_PHYSICS_CHIPMUNK2D)
-  file(GLOB_RECURSE CHIPMUNK2D_SRC_FILES ${CMAKE_CURRENT_SOURCE_DIR}/chipmunk2d/src/*.cpp)
-  list(APPEND TCOB_EXTLIBS_SRCFILES ${CHIPMUNK2D_SRC_FILES})
-  list(APPEND TCOB_EXTLIBS_INCDIRS ${CMAKE_CURRENT_SOURCE_DIR}/chipmunk2d/include/)
+  MESSAGE(STATUS "chipmunk2d:")
+
+  FetchContent_Declare(
+    chipmunk2d
+    GIT_REPOSITORY https://github.com/slembcke/Chipmunk2D
+    GIT_TAG Chipmunk-7.0.3
+  )
+
+  set(BUILD_DEMOS OFF CACHE BOOL "" FORCE)
+  set(INSTALL_DEMOS OFF CACHE BOOL "" FORCE)
+  set(INSTALL_STATIC OFF CACHE BOOL "" FORCE)
+
+  if(BUILD_SHARED_LIBS)
+    set(BUILD_SHARED ON CACHE BOOL "" FORCE)
+    set(BUILD_STATIC OFF CACHE BOOL "" FORCE)
+    list(APPEND TCOB_EXTLIBS_LIBS chipmunk)
+  else()
+    set(BUILD_SHARED OFF CACHE BOOL "" FORCE)
+    set(BUILD_STATIC ON CACHE BOOL "" FORCE)
+    list(APPEND TCOB_EXTLIBS_LIBS chipmunk_static)
+  endif()
+
+  FetchContent_MakeAvailable(chipmunk2d)
+
+  if(BUILD_SHARED_LIBS)
+    target_compile_options(chipmunk PRIVATE
+      $<$<CXX_COMPILER_ID:MSVC>:/w>
+      $<$<CXX_COMPILER_ID:Clang>:-Wno-everything>
+      $<$<CXX_COMPILER_ID:GNU>:-w>
+    )
+  else()
+    target_compile_options(chipmunk_static PRIVATE
+      $<$<CXX_COMPILER_ID:MSVC>:/w>
+      $<$<CXX_COMPILER_ID:Clang>:-Wno-everything>
+      $<$<CXX_COMPILER_ID:GNU>:-w>
+    )
+  endif()
+
+  list(APPEND TCOB_EXTLIBS_INCDIRS ${chipmunk2d_SOURCE_DIR}/include/)
   list(APPEND TCOB_EXTLIBS_DEFINES CP_USE_DOUBLES=0)
 endif()
 
@@ -323,7 +373,6 @@ if(TCOB_ENABLE_FILETYPES_GFX_WEBP)
   endif()
 
   FetchContent_MakeAvailable(webp)
-
   tcob_mark_all_as_advanced("^WEBP_")
 
   list(APPEND TCOB_EXTLIBS_INCDIRS ${webp_SOURCE_DIR}/src/)
