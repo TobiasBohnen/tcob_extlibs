@@ -43,11 +43,7 @@ FetchContent_MakeAvailable(physfs)
 tcob_mark_all_as_advanced("^PHYSFS_")
 
 if(TARGET physfs-static)
-  target_compile_options(physfs-static PRIVATE
-    $<$<CXX_COMPILER_ID:MSVC>:/w>
-    $<$<CXX_COMPILER_ID:Clang>:-Wno-everything>
-    $<$<CXX_COMPILER_ID:GNU>:-w>
-  )
+  tcob_disable_warnings(physfs-static)
 endif()
 
 list(APPEND TCOB_EXTLIBS_INCDIRS ${physfs_SOURCE_DIR}/src/)
@@ -90,11 +86,7 @@ tcob_mark_all_as_advanced("^SDL2_")
 tcob_mark_all_as_advanced("^SDL_")
 
 if(TARGET SDL2-static)
-  target_compile_options(SDL2-static PRIVATE
-    $<$<CXX_COMPILER_ID:MSVC>:/w>
-    $<$<CXX_COMPILER_ID:Clang>:-Wno-everything>
-    $<$<CXX_COMPILER_ID:GNU>:-w>
-  )
+  tcob_disable_warnings(SDL2-static)
 endif()
 
 list(APPEND TCOB_EXTLIBS_INCDIRS ${SDL2_SOURCE_DIR}/include/)
@@ -135,11 +127,7 @@ if(TCOB_ENABLE_FILETYPES_AUDIO_OPUS)
   FetchContent_MakeAvailable(libopus)
   tcob_mark_all_as_advanced("^OPUS_")
 
-  target_compile_options(opus PRIVATE
-    $<$<CXX_COMPILER_ID:MSVC>:/w>
-    $<$<CXX_COMPILER_ID:Clang>:-Wno-everything>
-    $<$<CXX_COMPILER_ID:GNU>:-w>
-  )
+  tcob_disable_warnings(opus)
 
   list(APPEND TCOB_EXTLIBS_INCDIRS ${libopus_SOURCE_DIR}/include/)
   list(APPEND TCOB_EXTLIBS_LIBS opus)
@@ -250,12 +238,7 @@ if(TCOB_ENABLE_ADDON_PHYSICS_BOX2D)
 
   FetchContent_MakeAvailable(box2d)
   tcob_mark_all_as_advanced("^BOX2D_")
-
-  target_compile_options(box2d PRIVATE
-    $<$<CXX_COMPILER_ID:MSVC>:/w>
-    $<$<CXX_COMPILER_ID:Clang>:-Wno-everything>
-    $<$<CXX_COMPILER_ID:GNU>:-w>
-  )
+  tcob_disable_warnings(box2d)
 
   list(APPEND TCOB_EXTLIBS_INCDIRS ${box2d_SOURCE_DIR}/include/)
   list(APPEND TCOB_EXTLIBS_LIBS box2d)
@@ -263,45 +246,9 @@ endif()
 
 # Chipmunk2D @7.0.3
 if(TCOB_ENABLE_ADDON_PHYSICS_CHIPMUNK2D)
-  MESSAGE(STATUS "chipmunk2d:")
-
-  FetchContent_Declare(
-    chipmunk2d
-    GIT_REPOSITORY https://github.com/slembcke/Chipmunk2D
-    GIT_TAG Chipmunk-7.0.3
-  )
-
-  set(BUILD_DEMOS OFF CACHE BOOL "" FORCE)
-  set(INSTALL_DEMOS OFF CACHE BOOL "" FORCE)
-  set(INSTALL_STATIC OFF CACHE BOOL "" FORCE)
-
-  if(BUILD_SHARED_LIBS)
-    set(BUILD_SHARED ON CACHE BOOL "" FORCE)
-    set(BUILD_STATIC OFF CACHE BOOL "" FORCE)
-    list(APPEND TCOB_EXTLIBS_LIBS chipmunk)
-  else()
-    set(BUILD_SHARED OFF CACHE BOOL "" FORCE)
-    set(BUILD_STATIC ON CACHE BOOL "" FORCE)
-    list(APPEND TCOB_EXTLIBS_LIBS chipmunk_static)
-  endif()
-
-  FetchContent_MakeAvailable(chipmunk2d)
-
-  if(BUILD_SHARED_LIBS)
-    target_compile_options(chipmunk PRIVATE
-      $<$<CXX_COMPILER_ID:MSVC>:/w>
-      $<$<CXX_COMPILER_ID:Clang>:-Wno-everything>
-      $<$<CXX_COMPILER_ID:GNU>:-w>
-    )
-  else()
-    target_compile_options(chipmunk_static PRIVATE
-      $<$<CXX_COMPILER_ID:MSVC>:/w>
-      $<$<CXX_COMPILER_ID:Clang>:-Wno-everything>
-      $<$<CXX_COMPILER_ID:GNU>:-w>
-    )
-  endif()
-
-  list(APPEND TCOB_EXTLIBS_INCDIRS ${chipmunk2d_SOURCE_DIR}/include/)
+  file(GLOB_RECURSE CHIPMUNK2D_SRC_FILES ${CMAKE_CURRENT_SOURCE_DIR}/chipmunk2d/src/*.cpp)
+  list(APPEND TCOB_EXTLIBS_SRCFILES ${CHIPMUNK2D_SRC_FILES})
+  list(APPEND TCOB_EXTLIBS_INCDIRS ${CMAKE_CURRENT_SOURCE_DIR}/chipmunk2d/include/)
   list(APPEND TCOB_EXTLIBS_DEFINES CP_USE_DOUBLES=0)
 endif()
 
@@ -406,11 +353,7 @@ target_sources(tcob_extlibs PRIVATE ${TCOB_EXTLIBS_SRCFILES})
 target_compile_definitions(tcob_extlibs PUBLIC ${TCOB_EXTLIBS_DEFINES})
 target_include_directories(tcob_extlibs SYSTEM PUBLIC ${CMAKE_CURRENT_SOURCE_DIR} ${TCOB_EXTLIBS_INCDIRS})
 target_link_libraries(tcob_extlibs PRIVATE ${TCOB_EXTLIBS_LIBS})
-target_compile_options(tcob_extlibs PRIVATE
-  $<$<CXX_COMPILER_ID:MSVC>:/w>
-  $<$<CXX_COMPILER_ID:Clang>:-Wno-everything>
-  $<$<CXX_COMPILER_ID:GNU>:-w>
-)
+tcob_disable_warnings(tcob_extlibs)
 set_target_properties(tcob_extlibs PROPERTIES DEBUG_POSTFIX "_d")
 
 MESSAGE(STATUS "----------------")
