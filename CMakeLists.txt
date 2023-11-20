@@ -209,17 +209,21 @@ if(TCOB_ENABLE_ADDON_SCRIPTING_SQUIRREL)
 
   if(BUILD_SHARED_LIBS)
     set(DISABLE_STATIC ON CACHE BOOL "" FORCE)
-    set(DISABLE_SHARED OFF CACHE BOOL "" FORCE)
+    set(DISABLE_DYNAMIC OFF CACHE BOOL "" FORCE)
     list(APPEND TCOB_EXTLIBS_LIBS squirrel sqstdlib)
   else()
     set(DISABLE_STATIC OFF CACHE BOOL "" FORCE)
-    set(DISABLE_SHARED ON CACHE BOOL "" FORCE)
+    set(DISABLE_DYNAMIC ON CACHE BOOL "" FORCE)
     list(APPEND TCOB_EXTLIBS_LIBS squirrel_static sqstdlib_static)
   endif()
 
   FetchContent_MakeAvailable(squirrel)
   tcob_mark_all_as_advanced("^SQ_")
   tcob_mark_all_as_advanced("^DISABLE_")
+
+  if(TARGET sqstdlib_static)
+    tcob_disable_warnings(sqstdlib_static)
+  endif()
 
   list(APPEND TCOB_EXTLIBS_INCDIRS ${squirrel_SOURCE_DIR}/include/)
 endif()
@@ -342,7 +346,7 @@ if(TCOB_ENABLE_ADDON_GFX_LITEHTML)
     ${CMAKE_CURRENT_SOURCE_DIR}/litehtml/src/gumbo/include/gumbo/
   )
 
-  if(MSVC)
+  if(WIN32)
     list(APPEND TCOB_EXTLIBS_INCDIRS ${CMAKE_CURRENT_SOURCE_DIR}/litehtml/src/gumbo/visualc/include/)
   endif()
 
