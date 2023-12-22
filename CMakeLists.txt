@@ -230,6 +230,10 @@ if(TCOB_ENABLE_ADDON_SCRIPTING_SQUIRREL)
   tcob_mark_all_as_advanced("^SQ_")
   tcob_mark_all_as_advanced("^DISABLE_")
 
+  if(TARGET squirrel_static)
+    tcob_disable_warnings(squirrel_static)
+  endif()
+
   if(TARGET sqstdlib_static)
     tcob_disable_warnings(sqstdlib_static)
   endif()
