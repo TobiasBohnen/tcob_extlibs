@@ -96,6 +96,27 @@ list(APPEND TCOB_EXTLIBS_INCDIRS ${SDL2_SOURCE_DIR}/include/)
 list(APPEND TCOB_EXTLIBS_DEFINES SDL_MAIN_HANDLED)
 list(APPEND TCOB_EXTLIBS_LIBS SDL2-static)
 
+# FreeType @2.13.2
+MESSAGE(STATUS "FreeType:")
+
+FetchContent_Declare(
+  freetype
+  GIT_REPOSITORY https://github.com/freetype/freetype
+  GIT_TAG VER-2-13-2
+)
+
+set(FT_DISABLE_ZLIB ON CACHE BOOL "" FORCE)
+set(FT_DISABLE_BZIP2 ON CACHE BOOL "" FORCE)
+set(FT_DISABLE_PNG ON CACHE BOOL "" FORCE)
+set(FT_DISABLE_HARFBUZZ ON CACHE BOOL "" FORCE)
+set(FT_DISABLE_BROTLI ON CACHE BOOL "" FORCE)
+
+FetchContent_MakeAvailable(freetype)
+tcob_mark_all_as_advanced("^FT_")
+
+list(APPEND TCOB_EXTLIBS_INCDIRS ${freetype_SOURCE_DIR}/include/)
+list(APPEND TCOB_EXTLIBS_LIBS freetype)
+
 # ##########################################################################
 # #optional
 
@@ -154,39 +175,6 @@ if(TCOB_ENABLE_FILETYPES_AUDIO_VORBIS)
   list(APPEND TCOB_EXTLIBS_SRCFILES ${VORBIS_SRC_FILES})
   list(APPEND TCOB_EXTLIBS_INCDIRS ${CMAKE_CURRENT_SOURCE_DIR}/XiphOrg/vorbis/src)
   list(APPEND TCOB_EXTLIBS_INCDIRS ${CMAKE_CURRENT_SOURCE_DIR}/XiphOrg/vorbis/include)
-endif()
-
-# FreeType @2.13.2
-if(TCOB_ENABLE_TTF_FREETYPE)
-  MESSAGE(STATUS "FreeType:")
-
-  FetchContent_Declare(
-    freetype
-    GIT_REPOSITORY https://github.com/freetype/freetype
-    GIT_TAG VER-2-13-2
-  )
-
-  set(FT_DISABLE_ZLIB ON CACHE BOOL "" FORCE)
-  set(FT_DISABLE_BZIP2 ON CACHE BOOL "" FORCE)
-  set(FT_DISABLE_PNG ON CACHE BOOL "" FORCE)
-  set(FT_DISABLE_HARFBUZZ ON CACHE BOOL "" FORCE)
-  set(FT_DISABLE_BROTLI ON CACHE BOOL "" FORCE)
-
-  FetchContent_MakeAvailable(freetype)
-  tcob_mark_all_as_advanced("^FT_")
-
-  list(APPEND TCOB_EXTLIBS_INCDIRS ${freetype_SOURCE_DIR}/include/)
-  list(APPEND TCOB_EXTLIBS_LIBS freetype)
-endif()
-
-# stb @stb_truetype: 1.26
-if(TCOB_ENABLE_TTF_STBTT)
-  list(APPEND TCOB_EXTLIBS_SRCFILES ${CMAKE_CURRENT_SOURCE_DIR}/stb/stb_truetype.c)
-endif()
-
-# libschrift @0.10.2
-if(TCOB_ENABLE_TTF_LIBSCHRIFT)
-  list(APPEND TCOB_EXTLIBS_SRCFILES ${CMAKE_CURRENT_SOURCE_DIR}/libschrift/schrift.c)
 endif()
 
 # dr_libs @dr_flac: 0.12.41 @dr_mp3: 0.6.37 @dr_wav: 0.13.12
@@ -290,7 +278,7 @@ endif()
 # TinySoundFont @92a8f0e9fe3c98358be7d8564db21fc4b1142d04 @stb_vorbis: 1.22
 if(TCOB_ENABLE_ADDON_AUDIO_TINYSOUNDFONT)
   list(APPEND TCOB_EXTLIBS_SRCFILES ${CMAKE_CURRENT_SOURCE_DIR}/TinySoundFont/TinySoundFont.c)
-  list(APPEND TCOB_EXTLIBS_SRCFILES ${CMAKE_CURRENT_SOURCE_DIR}/stb/stb_vorbis.c)
+  list(APPEND TCOB_EXTLIBS_SRCFILES ${CMAKE_CURRENT_SOURCE_DIR}/TinySoundFont/stb_vorbis.c)
   list(APPEND TCOB_EXTLIBS_DEFINES STB_VORBIS_NO_PUSHDATA_API)
 endif()
 
