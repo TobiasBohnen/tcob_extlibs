@@ -134,14 +134,14 @@ if(TCOB_ENABLE_FILETYPES_GFX_THEORA)
   list(APPEND TCOB_EXTLIBS_INCDIRS ${CMAKE_CURRENT_SOURCE_DIR}/XiphOrg/theora/)
 endif()
 
-# opus @libopus: 1.4 @opusfile: 0.12 @libopusenc: 0.2.1
+# opus @libopus: 1.5.2 @opusfile: 0.12 @libopusenc: 0.2.1
 if(TCOB_ENABLE_FILETYPES_AUDIO_OPUS)
   MESSAGE(STATUS "libopus:")
 
   FetchContent_Declare(
     libopus
     GIT_REPOSITORY https://github.com/xiph/opus
-    GIT_TAG v1.4
+    GIT_TAG v1.5.2
   )
 
   set(OPUS_BUILD_TESTING OFF CACHE BOOL "" FORCE)
