@@ -28,6 +28,7 @@ FetchContent_Declare(
   physfs
   GIT_REPOSITORY https://github.com/icculus/physfs
   GIT_TAG release-3.2.0
+  EXCLUDE_FROM_ALL
 )
 
 if(NOT BUILD_SHARED_LIBS)
@@ -68,6 +69,7 @@ FetchContent_Declare(
   SDL2
   GIT_REPOSITORY https://github.com/libsdl-org/SDL
   GIT_TAG release-2.30.2
+  EXCLUDE_FROM_ALL
 )
 
 set(SDL_SENSOR OFF CACHE BOOL "" FORCE)
@@ -103,6 +105,7 @@ FetchContent_Declare(
   freetype
   GIT_REPOSITORY https://github.com/freetype/freetype
   GIT_TAG VER-2-13-2
+  EXCLUDE_FROM_ALL
 )
 
 set(FT_DISABLE_ZLIB ON CACHE BOOL "" FORCE)
@@ -142,6 +145,7 @@ if(TCOB_ENABLE_FILETYPES_AUDIO_OPUS)
     libopus
     GIT_REPOSITORY https://github.com/xiph/opus
     GIT_TAG v1.5.2
+    EXCLUDE_FROM_ALL
   )
 
   set(OPUS_BUILD_TESTING OFF CACHE BOOL "" FORCE)
@@ -197,6 +201,7 @@ if(TCOB_ENABLE_ADDON_SCRIPTING_SQUIRREL)
     squirrel
     GIT_REPOSITORY https://github.com/albertodemichelis/squirrel
     GIT_TAG 1c1fd9a3709a8b46f64e52fa10bd87e896c0b502
+    EXCLUDE_FROM_ALL
   )
 
   set(SQ_DISABLE_INTERPRETER ON CACHE BOOL "" FORCE)
@@ -237,6 +242,7 @@ if(TCOB_ENABLE_ADDON_PHYSICS_BOX2D)
     box2d
     GIT_REPOSITORY https://github.com/erincatto/box2d
     GIT_TAG v2.4.1
+    EXCLUDE_FROM_ALL
   )
 
   set(BOX2D_BUILD_UNIT_TESTS OFF CACHE BOOL "" FORCE)
@@ -311,6 +317,7 @@ if(TCOB_ENABLE_FILETYPES_GFX_WEBP)
     webp
     GIT_REPOSITORY https://chromium.googlesource.com/webm/libwebp
     GIT_TAG v1.4.0
+    EXCLUDE_FROM_ALL
   )
 
   set(WEBP_BUILD_ANIM_UTILS OFF CACHE BOOL "Build animation utilities." FORCE)
