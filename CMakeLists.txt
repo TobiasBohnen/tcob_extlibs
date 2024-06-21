@@ -62,13 +62,13 @@ list(APPEND TCOB_EXTLIBS_INCDIRS ${CMAKE_CURRENT_SOURCE_DIR}/miniz/)
 # utfcpp @4.0.2
 list(APPEND TCOB_EXTLIBS_INCDIRS ${CMAKE_CURRENT_SOURCE_DIR}/utf8/)
 
-# SDL2 @2.30.2
+# SDL2 @2.30.4
 MESSAGE(STATUS "SDL2:")
 
 FetchContent_Declare(
   SDL2
   GIT_REPOSITORY https://github.com/libsdl-org/SDL
-  GIT_TAG release-2.30.2
+  GIT_TAG release-2.30.4
   EXCLUDE_FROM_ALL
 )
 
