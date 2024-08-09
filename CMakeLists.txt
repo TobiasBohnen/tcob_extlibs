@@ -62,13 +62,13 @@ list(APPEND TCOB_EXTLIBS_INCDIRS ${CMAKE_CURRENT_SOURCE_DIR}/miniz/)
 # utfcpp @4.0.2
 list(APPEND TCOB_EXTLIBS_INCDIRS ${CMAKE_CURRENT_SOURCE_DIR}/utf8/)
 
-# SDL2 @2.30.5
+# SDL2 @2.30.6
 MESSAGE(STATUS "SDL2:")
 
 FetchContent_Declare(
   SDL2
   GIT_REPOSITORY https://github.com/libsdl-org/SDL
-  GIT_TAG release-2.30.5
+  GIT_TAG release-2.30.6
   EXCLUDE_FROM_ALL
 )
 
@@ -238,14 +238,14 @@ if(TCOB_ENABLE_ADDON_SCRIPTING_SQUIRREL)
   list(APPEND TCOB_EXTLIBS_INCDIRS ${squirrel_SOURCE_DIR}/include/)
 endif()
 
-# box2d @2.4.1
+# box2d @2.4.2
 if(TCOB_ENABLE_ADDON_PHYSICS_BOX2D)
   MESSAGE(STATUS "box2d:")
 
   FetchContent_Declare(
     box2d
     GIT_REPOSITORY https://github.com/erincatto/box2d
-    GIT_TAG v2.4.1
+    GIT_TAG v2.4.2
     EXCLUDE_FROM_ALL
   )
 
