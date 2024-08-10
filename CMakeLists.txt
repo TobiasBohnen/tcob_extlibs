@@ -347,7 +347,7 @@ if(TCOB_ENABLE_FILETYPES_GFX_WEBP)
   list(APPEND TCOB_EXTLIBS_LIBS webp libwebpmux webpdemux)
 endif()
 
-# litehtml @0.7
+# litehtml @0.9
 if(TCOB_ENABLE_ADDON_GFX_LITEHTML)
   file(GLOB_RECURSE LITEHTML_SRC_FILES ${CMAKE_CURRENT_SOURCE_DIR}/litehtml/src/*.cpp)
   list(APPEND TCOB_EXTLIBS_SRCFILES ${LITEHTML_SRC_FILES})
@@ -375,7 +375,10 @@ target_compile_definitions(tcob_extlibs PUBLIC ${TCOB_EXTLIBS_DEFINES})
 target_include_directories(tcob_extlibs SYSTEM PUBLIC ${CMAKE_CURRENT_SOURCE_DIR} ${TCOB_EXTLIBS_INCDIRS})
 target_link_libraries(tcob_extlibs PRIVATE ${TCOB_EXTLIBS_LIBS})
 tcob_disable_warnings(tcob_extlibs)
-set_target_properties(tcob_extlibs PROPERTIES DEBUG_POSTFIX "_d")
+set_target_properties(tcob_extlibs PROPERTIES
+  DEBUG_POSTFIX "_d"
+  CXX_STANDARD 20
+  CXX_STANDARD_REQUIRED TRUE)
 
 MESSAGE(STATUS "----------------")
 MESSAGE(STATUS "exiting extlibs")

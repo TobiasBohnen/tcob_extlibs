@@ -7,16 +7,16 @@
 
 namespace litehtml
 {
-    class render_item;
+	class render_item;
 
 	struct table_row
 	{
-		typedef std::vector<table_row>	vector;
+		using vector = std::vector<table_row>;
 
 		int				height;
 		int				border_top;
 		int				border_bottom;
-        std::shared_ptr<render_item>	el_row;
+		std::shared_ptr<render_item>	el_row;
 		int				top;
 		int				bottom;
 		css_length		css_height;
@@ -63,7 +63,7 @@ namespace litehtml
 
 	struct table_column
 	{
-		typedef std::vector<table_column>	vector;
+		using vector = std::vector<table_column>;
 		
 		int			min_width;
 		int			max_width;
@@ -140,7 +140,7 @@ namespace litehtml
 
 	struct table_cell
 	{
-        std::shared_ptr<render_item>	el;
+		std::shared_ptr<render_item>	el;
 		int				colspan;
 		int				rowspan;
 		int				min_width;
@@ -179,7 +179,7 @@ namespace litehtml
 		}
 
 		table_cell(table_cell&& val) noexcept
-        {
+		{
 			el = std::move(val.el);
 			colspan = val.colspan;
 			rowspan = val.rowspan;
@@ -196,7 +196,7 @@ namespace litehtml
 	class table_grid
 	{
 	public:
-		typedef std::vector< std::vector<table_cell> >	rows;
+		using rows = std::vector<std::vector<table_cell>>;
 	private:
 		int						m_rows_count;
 		int						m_cols_count;
@@ -204,14 +204,16 @@ namespace litehtml
 		table_column::vector	m_columns;
 		table_row::vector		m_rows;
 		std::vector<std::shared_ptr<render_item>> m_captions;
-		int						m_captions_height;
+		int						m_top_captions_height;
+		int						m_bottom_captions_height;
 	public:
 
-		table_grid()
+		table_grid() :
+			m_rows_count(0),
+			m_cols_count(0),
+			m_top_captions_height(0),
+			m_bottom_captions_height(0)
 		{
-			m_rows_count	= 0;
-			m_cols_count	= 0;
-			m_captions_height = 0;
 		}
 
 		void			clear();
@@ -222,13 +224,15 @@ namespace litehtml
 		table_cell*		cell(int t_col, int t_row);
 		table_column&	column(int c)	{ return m_columns[c];	}
 		table_row&		row(int r)		{ return m_rows[r];		}
-        std::vector<std::shared_ptr<render_item>>& captions()		{ return m_captions; }
+		std::vector<std::shared_ptr<render_item>>& captions()		{ return m_captions; }
 
 		int				rows_count() const	{ return m_rows_count;	}
 		int				cols_count() const	{ return m_cols_count; }
 
-		void			captions_height(int height) { m_captions_height = height; }
-		int				captions_height() const { return m_captions_height; }
+		void			top_captions_height(int height) { m_top_captions_height = height; }
+		int				top_captions_height() const { return m_top_captions_height; }
+		void			bottom_captions_height(int height) { m_bottom_captions_height = height; }
+		int				bottom_captions_height() const { return m_bottom_captions_height; }
 
 		void			distribute_max_width(int width, int start, int end);
 		void			distribute_min_width(int width, int start, int end);

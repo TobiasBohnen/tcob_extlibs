@@ -1,28 +1,61 @@
 #ifndef LH_TYPES_H
 #define LH_TYPES_H
 
-#include <cstdlib>
+#include <cstdint>
 #include <memory>
-#include <map>
+#include <string>
 #include <vector>
+#include <map>
+#include <list>
+#include <set>
+#include <variant>
+#include <optional>
 
 namespace litehtml
 {
+	using uint_ptr = std::uintptr_t;
+	using std::string;
+	using std::vector;
+	using std::shared_ptr;
+	using std::make_shared;
+	using std::optional;
+	using std::min;
+	using std::max;
+	using std::swap;
+	using std::abs;
+
 	class document;
 	class element;
 
-	typedef std::map<string, string>					string_map;
-	typedef std::vector< std::shared_ptr<element> >		elements_vector;
-	typedef std::vector<int>							int_vector;
-	typedef std::vector<string>							string_vector;
+	using string_map = std::map<string, string>;
+	using elements_list = std::list<std::shared_ptr<element>>;
+	using int_vector = std::vector<int>;
+	using string_vector = std::vector<string>;
+
+	template <class... Types>
+	struct variant : std::variant<Types...>
+	{
+		using base = variant<Types...>; // for derived class ctors
+		using std::variant<Types...>::variant; // inherit ctors
+		template<class T> bool is() const { return std::holds_alternative<T>(*this); }
+		template<class T> const T& get() const { return std::get<T>(*this); }
+		template<class T> T& get() { return std::get<T>(*this); }
+	};
+
+	enum document_mode
+	{
+		no_quirks_mode,
+		quirks_mode,
+		limited_quirks_mode
+	};
 
 	const unsigned int font_decoration_none			= 0x00;
 	const unsigned int font_decoration_underline	= 0x01;
 	const unsigned int font_decoration_linethrough	= 0x02;
 	const unsigned int font_decoration_overline		= 0x04;
 
-	typedef unsigned char	byte;
-	typedef unsigned int	ucode_t;
+	using byte = unsigned char;
+	using ucode_t = unsigned int;
 
 	struct margins
 	{
@@ -36,8 +69,19 @@ namespace litehtml
 			left = right = top = bottom = 0;
 		}
 
-		int width()		const	{ return left + right; } 
-		int height()	const	{ return top + bottom; } 
+		int width()		const	{ return left + right; }
+		int height()	const	{ return top + bottom; }
+	};
+
+	struct pointF
+	{
+		float x;
+		float y;
+
+		pointF() : x(0), y(0) {}
+		pointF(float _x, float _y) : x(_x), y(_y) {}
+
+		void set(float _x, float _y) { x = _x; y = _y; }
 	};
 
 	struct size
@@ -56,7 +100,7 @@ namespace litehtml
 
 	struct position
 	{
-		typedef std::vector<position>	vector;
+		using vector = std::vector<position>;
 
 		int	x;
 		int	y;
@@ -107,10 +151,10 @@ namespace litehtml
 			height	= sz.height;
 		}
 
-		void move_to(int x, int y)
+		void move_to(int _x, int _y)
 		{
-			this->x = x;
-			this->y = y;
+			x = _x;
+			y = _y;
 		}
 
 		bool does_intersect(const position* val) const
@@ -118,14 +162,14 @@ namespace litehtml
 			if(!val) return true;
 
 			return (
-				left()			<= val->right()		&& 
-				right()			>= val->left()		&& 
-				bottom()		>= val->top()		&& 
+				left()			<= val->right()		&&
+				right()			>= val->left()		&&
+				bottom()		>= val->top()		&&
 				top()			<= val->bottom()	)
 				|| (
-				val->left()		<= right()			&& 
-				val->right()	>= left()			&& 
-				val->bottom()	>= top()			&& 
+				val->left()		<= right()			&&
+				val->right()	>= left()			&&
+				val->bottom()	>= top()			&&
 				val->top()		<= bottom()			);
 		}
 
@@ -138,9 +182,9 @@ namespace litehtml
 			return false;
 		}
 
-		bool is_point_inside(int x, int y) const
+		bool is_point_inside(int _x, int _y) const
 		{
-			if(x >= left() && x <= right() && y >= top() && y <= bottom())
+			if(_x >= left() && _x < right() && _y >= top() && _y < bottom())
 			{
 				return true;
 			}
@@ -173,7 +217,7 @@ namespace litehtml
 		font_metrics	metrics;
 	};
 
-	typedef std::map<string, font_item> fonts_map;
+	using fonts_map = std::map<string, font_item>;
 
 	enum draw_flag
 	{
@@ -194,10 +238,20 @@ namespace litehtml
 			cbc_value_type_none,		// min/max width/height of containing block is defined as none
 		};
 
+		enum cbc_size_mode
+		{
+			size_mode_normal = 0x00,
+			size_mode_exact_width = 0x01,
+			size_mode_exact_height = 0x02,
+			size_mode_content = 0x04,
+		};
+
 		struct typed_int
 		{
 			int 			value;
 			cbc_value_type	type;
+
+			typed_int(const typed_int& v) = default;
 
 			typed_int(int val, cbc_value_type tp)
 			{
@@ -216,12 +270,7 @@ namespace litehtml
 				return *this;
 			}
 
-			typed_int& operator=(const typed_int& v)
-			{
-				value = v.value;
-				type = v.type;
-				return *this;
-			}
+			typed_int& operator=(const typed_int& v) = default;
 		};
 
 		typed_int width;						// width of the containing block
@@ -234,6 +283,7 @@ namespace litehtml
 		typed_int max_height;
 
 		int context_idx;
+		uint32_t size_mode;
 
 		containing_block_context() :
 				width(0, cbc_value_type_auto),
@@ -243,17 +293,26 @@ namespace litehtml
 				height(0, cbc_value_type_auto),
 				min_height(0, cbc_value_type_none),
 				max_height(0, cbc_value_type_none),
-				context_idx(0)
+				context_idx(0),
+				size_mode(size_mode_normal)
 		{}
 
-		containing_block_context new_width(int w) const
+		containing_block_context new_width(int w, uint32_t _size_mode = size_mode_normal) const
 		{
 			containing_block_context ret = *this;
-			//if(ret.width.type != cbc_value_type_absolute)
-			{
-				ret.render_width = w - (ret.width - ret.render_width);
-				ret.width = w;
-			}
+			ret.render_width = w - (ret.width - ret.render_width);
+			ret.width = w;
+			ret.size_mode = _size_mode;
+			return ret;
+		}
+
+		containing_block_context new_width_height(int w, int h, uint32_t _size_mode = size_mode_normal) const
+		{
+			containing_block_context ret = *this;
+			ret.render_width = w - (ret.width - ret.render_width);
+			ret.width = w;
+			ret.height = h;
+			ret.size_mode = _size_mode;
 			return ret;
 		}
 	};
@@ -320,7 +379,7 @@ namespace litehtml
 		font_variant_small_caps
 	};
 
-#define  font_weight_strings	"normal;bold;bolder;lighter;100;200;300;400;500;600;700;800;900"
+#define  font_weight_strings	"normal;bold;bolder;lighter"
 
 	enum font_weight
 	{
@@ -328,15 +387,6 @@ namespace litehtml
 		font_weight_bold,
 		font_weight_bolder,
 		font_weight_lighter,
-		font_weight_100,
-		font_weight_200,
-		font_weight_300,
-		font_weight_400,
-		font_weight_500,
-		font_weight_600,
-		font_weight_700,
-		font_weight_800,
-		font_weight_900
 	};
 
 #define  list_style_type_strings	"none;circle;disc;square;armenian;cjk-ideographic;decimal;decimal-leading-zero;georgian;hebrew;hiragana;hiragana-iroha;katakana;katakana-iroha;lower-alpha;lower-greek;lower-latin;lower-roman;upper-alpha;upper-latin;upper-roman"
@@ -437,9 +487,9 @@ namespace litehtml
 		clear_both
 	};
 
-#define  css_units_strings	"none;%;in;cm;mm;em;ex;pt;pc;px;dpi;dpcm;vw;vh;vmin;vmax;rem"
+#define  css_units_strings	"none;%;in;cm;mm;em;ex;pt;pc;px;vw;vh;vmin;vmax;rem"
 
-	enum css_units : byte
+	enum css_units : byte // see css_length
 	{
 		css_units_none,
 		css_units_percentage,
@@ -451,8 +501,6 @@ namespace litehtml
 		css_units_pt,
 		css_units_pc,
 		css_units_px,
-		css_units_dpi,
-		css_units_dpcm,
 		css_units_vw,
 		css_units_vh,
 		css_units_vmin,
@@ -478,6 +526,7 @@ namespace litehtml
 		background_repeat_no_repeat
 	};
 
+// https://drafts.csswg.org/css-box-4/#typedef-visual-box
 #define  background_box_strings	"border-box;padding-box;content-box"
 
 	enum background_box
@@ -487,14 +536,15 @@ namespace litehtml
 		background_box_content
 	};
 
-#define  background_position_strings	"top;bottom;left;right;center"
+#define  background_position_strings				"left;right;top;bottom;center"
+	const float background_position_percentages[] =	 {0,   100,  0,  100,    50};
 
 	enum background_position
 	{
-		background_position_top,
-		background_position_bottom,
 		background_position_left,
 		background_position_right,
+		background_position_top,
+		background_position_bottom,
 		background_position_center,
 	};
 
@@ -555,7 +605,7 @@ namespace litehtml
 
 	enum background_size
 	{
-		background_size_auto,
+		background_size_auto,	// must be first, see parse_bg_size
 		background_size_cover,
 		background_size_contain,
 	};
@@ -598,6 +648,7 @@ namespace litehtml
 		element_clear	                clear_floats;
 		std::shared_ptr<render_item>	el;
 		int								context;
+		int 							min_width;
 
 		floated_box() = default;
 		floated_box(const floated_box& val)
@@ -607,16 +658,11 @@ namespace litehtml
 			clear_floats = val.clear_floats;
 			el = val.el;
 			context = val.context;
+			min_width = val.min_width;
 		}
-		floated_box& operator=(const floated_box& val)
-		{
-			pos = val.pos;
-			float_side = val.float_side;
-			clear_floats = val.clear_floats;
-			el = val.el;
-			context = val.context;
-			return *this;
-		}
+
+		floated_box& operator=(const floated_box& val) = default;
+
 		floated_box(floated_box&& val)
 		{
 			pos = val.pos;
@@ -624,6 +670,7 @@ namespace litehtml
 			clear_floats = val.clear_floats;
 			el = std::move(val.el);
 			context = val.context;
+			min_width = val.min_width;
 		}
 		void operator=(floated_box&& val)
 		{
@@ -632,6 +679,7 @@ namespace litehtml
 			clear_floats = val.clear_floats;
 			el = std::move(val.el);
 			context = val.context;
+			min_width = val.min_width;
 		}
 	};
 
@@ -682,12 +730,17 @@ namespace litehtml
 			m_is_default	= true;
 			m_val			= def_val;
 		}
+		def_value(const def_value<T>& val)
+		{
+			m_is_default	= val.m_is_default;
+			m_val			= val.m_val;
+		}
 		void reset(T def_val)
 		{
 			m_is_default	= true;
 			m_val			= def_val;
 		}
-		bool is_default()
+		bool is_default() const
 		{
 			return m_is_default;
 		}
@@ -697,69 +750,78 @@ namespace litehtml
 			m_is_default	= false;
 			return m_val;
 		}
-		operator T()
+		def_value<T>& operator=(const def_value<T>& val)
+		{
+			m_is_default	= val.m_is_default;
+			m_val			= val.m_val;
+			return *this;
+		}
+		operator T() const
 		{
 			return m_val;
 		}
 	};
 
-
-#define media_orientation_strings		"portrait;landscape"
-
-	enum media_orientation
+	class baseline
 	{
-		media_orientation_portrait,
-		media_orientation_landscape,
+	public:
+		enum _baseline_type
+		{
+			baseline_type_none,
+			baseline_type_top,
+			baseline_type_bottom,
+		};
+
+	public:
+		baseline() : m_value(0), m_type(baseline_type_none) {}
+		baseline(int _value, _baseline_type _type) : m_value(_value), m_type(_type) {}
+
+		int value() const				{ return m_value; 	}
+		void value(int _value) 			{ m_value = _value; }
+		_baseline_type type() const		{ return m_type; 	}
+		void type(_baseline_type _type)	{ m_type = _type; 	}
+
+		operator int() const	{ return m_value; 	}
+		baseline& operator=(int _value) { m_value = _value; return *this; }
+
+		void set(int _value, _baseline_type _type)	{ m_value = _value; m_type =_type; }
+		/**
+		 * Get baseline offset from top of element with specified height
+		 * @param height - element height
+		 * @return baseline offset
+		 */
+		int get_offset_from_top(int height) const
+		{
+			if(m_type == baseline_type_top) return m_value;
+			return height - m_value;
+		}
+		/**
+		 * Get baseline offset from bottom of element with specified height
+		 * @param height - element height
+		 * @return baseline offset
+		 */
+		int get_offset_from_bottom(int height) const
+		{
+			if(m_type == baseline_type_bottom) return m_value;
+			return height - m_value;
+		}
+		/**
+		 * Calculate baseline by top and bottom positions of element aligned by baseline == 0
+		 * @param top - top of the aligned element
+		 * @param bottom - bottom of the aligned element
+		 */
+		void calc(int top, int bottom)
+		{
+			if(m_type == baseline_type_top)
+				m_value = -top;
+			else if(m_type == baseline_type_bottom)
+				m_value = bottom;
+		}
+	private:
+		int m_value;
+		_baseline_type m_type;
 	};
 
-#define media_feature_strings		"none;width;min-width;max-width;height;min-height;max-height;device-width;min-device-width;max-device-width;device-height;min-device-height;max-device-height;orientation;aspect-ratio;min-aspect-ratio;max-aspect-ratio;device-aspect-ratio;min-device-aspect-ratio;max-device-aspect-ratio;color;min-color;max-color;color-index;min-color-index;max-color-index;monochrome;min-monochrome;max-monochrome;resolution;min-resolution;max-resolution"
-
-	enum media_feature
-	{
-		media_feature_none,
-
-		media_feature_width,
-		media_feature_min_width,
-		media_feature_max_width,
-
-		media_feature_height,
-		media_feature_min_height,
-		media_feature_max_height,
-
-		media_feature_device_width,
-		media_feature_min_device_width,
-		media_feature_max_device_width,
-
-		media_feature_device_height,
-		media_feature_min_device_height,
-		media_feature_max_device_height,
-
-		media_feature_orientation,
-
-		media_feature_aspect_ratio,
-		media_feature_min_aspect_ratio,
-		media_feature_max_aspect_ratio,
-
-		media_feature_device_aspect_ratio,
-		media_feature_min_device_aspect_ratio,
-		media_feature_max_device_aspect_ratio,
-
-		media_feature_color,
-		media_feature_min_color,
-		media_feature_max_color,
-
-		media_feature_color_index,
-		media_feature_min_color_index,
-		media_feature_max_color_index,
-
-		media_feature_monochrome,
-		media_feature_min_monochrome,
-		media_feature_max_monochrome,
-
-		media_feature_resolution,
-		media_feature_min_resolution,
-		media_feature_max_resolution,
-	};
 
 #define box_sizing_strings		"content-box;border-box"
 
@@ -769,22 +831,18 @@ namespace litehtml
 		box_sizing_border_box,
 	};
 
-
-#define media_type_strings		"none;all;screen;print;braille;embossed;handheld;projection;speech;tty;tv"
+// https://drafts.csswg.org/mediaqueries/#media-types
+// User agents must recognize the following media types as valid, but must make them match nothing.
+#define deprecated_media_type_strings	"tty;tv;projection;handheld;braille;embossed;aural;speech"
+#define media_type_strings				"all;print;screen;" deprecated_media_type_strings
 
 	enum media_type
 	{
-		media_type_none,
+		media_type_unknown,
 		media_type_all,
-		media_type_screen,
 		media_type_print,
-		media_type_braille,
-		media_type_embossed,
-		media_type_handheld,
-		media_type_projection,
-		media_type_speech,
-		media_type_tty,
-		media_type_tv,
+		media_type_screen,
+		media_type_first_deprecated
 	};
 
 	struct media_features
@@ -801,8 +859,8 @@ namespace litehtml
 
 		media_features()
 		{
-			type = media_type::media_type_none,
-			width =0;
+			type = media_type_unknown;
+			width = 0;
 			height = 0;
 			device_width = 0;
 			device_height = 0;
@@ -819,6 +877,8 @@ namespace litehtml
 		render_no_fixed,
 		render_fixed_only,
 	};
+
+	const char* const split_delims_spaces = " \t\r\n\f\v";
 
 	// List of the Void Elements (can't have any contents)
 	const char* const void_elements = "area;base;br;col;command;embed;hr;img;input;keygen;link;meta;param;source;track;wbr";
@@ -842,46 +902,56 @@ namespace litehtml
 		flex_wrap_wrap_reverse
 	};
 
-#define flex_justify_content_strings		"flex-start;flex-end;center;space-between;space-around"
+#define flex_justify_content_strings		"normal;flex-start;flex-end;center;space-between;space-around;start;end;left;right;space-evenly;stretch"
 
 	enum flex_justify_content
 	{
+		flex_justify_content_normal,
 		flex_justify_content_flex_start,
 		flex_justify_content_flex_end,
 		flex_justify_content_center,
 		flex_justify_content_space_between,
-		flex_justify_content_space_around
+		flex_justify_content_space_around,
+		flex_justify_content_start,
+		flex_justify_content_end,
+		flex_justify_content_left,
+		flex_justify_content_right,
+		flex_justify_content_space_evenly,
+		flex_justify_content_stretch,
 	};
 
-#define flex_align_items_strings		"flex-start;flex-end;center;baseline;stretch"
+#define self_position_strings		"center;start;end;self-start;self-end;flex-start;flex-end"
+#define flex_align_items_strings	"auto;normal;stretch;baseline;" self_position_strings
 
 	enum flex_align_items
 	{
+		flex_align_items_auto, // used for align-self property only
+		flex_align_items_normal,
+		flex_align_items_stretch,
+		flex_align_items_baseline,
+
+		flex_align_items_center,
+		flex_align_items_start,
+		flex_align_items_end,
+		flex_align_items_self_start,
+		flex_align_items_self_end,
 		flex_align_items_flex_start,
 		flex_align_items_flex_end,
-		flex_align_items_center,
-		flex_align_items_baseline,
-		flex_align_items_stretch
+
+		flex_align_items_first = 0x100,
+		flex_align_items_last = 0x200,
+		flex_align_items_unsafe = 0x400,
+		flex_align_items_safe  = 0x800,
 	};
 
-#define flex_align_self_strings		"auto;flex-start;flex-end;center;baseline;stretch"
-
-	enum flex_align_self
-	{
-		flex_align_self_auto,
-		flex_align_self_flex_start,
-		flex_align_self_flex_end,
-		flex_align_self_center,
-		flex_align_self_baseline,
-		flex_align_self_stretch
-	};
-
-#define flex_align_content_strings		"flex-start;flex-end;center;space-between;space-around;stretch"
+#define flex_align_content_strings		"flex-start;start;flex-end;end;center;space-between;space-around;stretch"
 
 	enum flex_align_content
 	{
 		flex_align_content_flex_start,
+		flex_align_content_start,
 		flex_align_content_flex_end,
+		flex_align_content_end,
 		flex_align_content_center,
 		flex_align_content_space_between,
 		flex_align_content_space_around,
@@ -899,6 +969,13 @@ namespace litehtml
 		flex_basis_max_content,
 	};
 
+#define caption_side_strings		"top;bottom"
+
+	enum caption_side
+	{
+		caption_side_top,
+		caption_side_bottom
+	};
 }
 
 #endif  // LH_TYPES_H

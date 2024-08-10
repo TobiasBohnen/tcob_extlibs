@@ -6,6 +6,8 @@
 
 //////////////////////////////////////////////////////////////////////////////////////////
 
+litehtml::line_box_item::~line_box_item() = default;
+
 void litehtml::line_box_item::place_to(int x, int y)
 {
 	m_element->pos().x = x + m_element->content_offset_left();
@@ -51,6 +53,8 @@ litehtml::lbi_start::lbi_start(const std::shared_ptr<render_item>& element) : li
 	m_pos.width = m_element->content_offset_left();
 }
 
+litehtml::lbi_start::~lbi_start() = default;
+
 void litehtml::lbi_start::place_to(int x, int y)
 {
 	m_pos.x = x + m_element->content_offset_left();
@@ -90,6 +94,8 @@ litehtml::lbi_end::lbi_end(const std::shared_ptr<render_item>& element) : lbi_st
 	m_pos.width = m_element->content_offset_right();
 }
 
+litehtml::lbi_end::~lbi_end() = default;
+
 void litehtml::lbi_end::place_to(int x, int y)
 {
 	m_pos.x = x;
@@ -113,6 +119,8 @@ litehtml::lbi_continue::lbi_continue(const std::shared_ptr<render_item>& element
 	m_pos.height = m_element->src_el()->css().get_font_metrics().height;
 	m_pos.width = 0;
 }
+
+litehtml::lbi_continue::~lbi_continue() = default;
 
 void litehtml::lbi_continue::place_to(int x, int y)
 {
@@ -363,7 +371,7 @@ std::list< std::unique_ptr<litehtml::line_box_item> > litehtml::line_box::finish
                 case va_super:
 					{
 						int bl = calc_va_baseline(current_context, lbi->get_el()->css().get_vertical_align(), current_context.fm, line_top, line_bottom);
-						lbi->pos().y = bl - lbi->get_el()->height() + lbi->get_el()->get_base_line() +
+						lbi->pos().y = bl - lbi->get_el()->get_last_baseline() +
 								lbi->get_el()->content_offset_top();
 					}
 					break;
@@ -374,7 +382,7 @@ std::list< std::unique_ptr<litehtml::line_box_item> > litehtml::line_box::finish
 					lbi->pos().y = line_top + lbi->get_el()->content_offset_top();
 					break;
                 case va_baseline:
-					lbi->pos().y = current_context.baseline - lbi->get_el()->height() + lbi->get_el()->get_base_line() +
+					lbi->pos().y = current_context.baseline - lbi->get_el()->get_last_baseline() +
 							lbi->get_el()->content_offset_top();
                     break;
                 case va_text_top:
@@ -520,7 +528,7 @@ std::list< std::unique_ptr<litehtml::line_box_item> > litehtml::line_box::finish
 		ret_items.emplace_front(std::unique_ptr<line_box_item>(new lbi_continue(iter->element)));
 	}
 
-	return std::move(ret_items);
+	return ret_items;
 }
 
 std::shared_ptr<litehtml::render_item> litehtml::line_box::get_first_text_part() const
@@ -551,14 +559,27 @@ std::shared_ptr<litehtml::render_item> litehtml::line_box::get_last_text_part() 
 
 bool litehtml::line_box::can_hold(const std::unique_ptr<line_box_item>& item, white_space ws) const
 {
-    if(!item->get_el()->src_el()->is_inline_box()) return false;
+    if(!item->get_el()->src_el()->is_inline()) return false;
 
 	if(item->get_type() == line_box_item::type_text_part)
 	{
+		// force new line on floats clearing
+		if (item->get_el()->src_el()->is_break() && item->get_el()->css().get_clear() != clear_none)
+		{
+			return false;
+		}
+
 		auto last_el = get_last_text_part();
 
+		// the first word is always can be hold
+		if(!last_el)
+		{
+			return true;
+		}
+
 		// force new line if the last placed element was line break
-		if (last_el && last_el->src_el()->is_break())
+		// Skip If the break item is float clearing
+		if (last_el && last_el->src_el()->is_break() && last_el->css().get_clear() == clear_none)
 		{
 			return false;
 		}
@@ -597,6 +618,12 @@ bool litehtml::line_box::have_last_space()  const
 bool litehtml::line_box::is_empty() const
 {
     if(m_items.empty()) return true;
+	if(m_items.size() == 1 &&
+		m_items.front()->get_el()->src_el()->is_break() &&
+		m_items.front()->get_el()->src_el()->css().get_clear() != clear_none)
+	{
+		return true;
+	}
     for (const auto& el : m_items)
     {
 		if(el->get_type() == line_box_item::type_text_part)

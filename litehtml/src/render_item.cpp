@@ -27,6 +27,36 @@ litehtml::render_item::render_item(std::shared_ptr<element>  _src_el) :
     m_borders.bottom	= doc->to_pixels(src_el()->css().get_borders().bottom.width, fnt_size);
 }
 
+int litehtml::render_item::render(int x, int y, const containing_block_context& containing_block_size, formatting_context* fmt_ctx, bool second_pass)
+{
+	int ret;
+
+	calc_outlines(containing_block_size.width);
+
+	m_pos.clear();
+	m_pos.move_to(x, y);
+
+	int content_left = content_offset_left();
+	int content_top = content_offset_top();
+
+	m_pos.x += content_left;
+	m_pos.y += content_top;
+
+
+	if(src_el()->is_block_formatting_context() || ! fmt_ctx)
+	{
+		formatting_context fmt;
+		fmt.push_position(content_left, content_top);
+		ret = _render(x, y, containing_block_size, &fmt, second_pass);
+		fmt.apply_relative_shift(containing_block_size);
+	} else
+	{
+		fmt_ctx->push_position(x + content_left, y + content_top);
+		ret = _render(x, y, containing_block_size, fmt_ctx, second_pass);
+		fmt_ctx->pop_position(x + content_left, y + content_top);
+	}
+	return ret;
+}
 
 void litehtml::render_item::calc_outlines( int parent_width )
 {
@@ -106,37 +136,6 @@ void litehtml::render_item::apply_relative_shift(const containing_block_context 
             m_pos.y -= offsets.bottom.calc_percent(containing_block_size.height);
         }
     }
-}
-
-bool litehtml::render_item::get_predefined_height(int& p_height, int containing_block_height) const
-{
-    css_length h = src_el()->css().get_height();
-    if(h.is_predefined())
-    {
-        p_height = m_pos.height;
-        return false;
-    }
-    if(h.units() == css_units_percentage)
-    {
-		p_height = h.calc_percent(containing_block_height);
-		return containing_block_height != 0;
-    }
-    p_height = src_el()->get_document()->to_pixels(h, src_el()->css().get_font_size());
-    return true;
-}
-
-int litehtml::render_item::calc_width(int defVal, int containing_block_width) const
-{
-    css_length w = src_el()->css().get_width();
-    if(w.is_predefined() || src_el()->css().get_display() == display_table_cell)
-    {
-        return defVal;
-    }
-    if(w.units() == css_units_percentage)
-    {
-		return w.calc_percent(containing_block_width);
-    }
-    return 	src_el()->get_document()->to_pixels(w, src_el()->css().get_font_size());
 }
 
 std::tuple<
@@ -274,14 +273,10 @@ void litehtml::render_item::render_positioned(render_type rt)
         if(process)
         {
 			containing_block_context containing_block_size;
-            int client_x		= 0;
-            int client_y		= 0;
             if(el_position == element_position_fixed)
             {
 				containing_block_size.height	= wnd_position.height;
 				containing_block_size.width		= wnd_position.width;
-                client_x		= wnd_position.left();
-                client_y		= wnd_position.top();
             } else
             {
 				containing_block_size.height	= m_pos.height;
@@ -438,7 +433,7 @@ void litehtml::render_item::render_positioned(render_type rt)
             if(need_render)
             {
                 position pos = el->m_pos;
-				el->render(el->left(), el->top(), containing_block_size.new_width(el->width()), true);
+				el->render(el->left(), el->top(), containing_block_size.new_width(el->width()), nullptr, true);
                 el->m_pos = pos;
             }
 
@@ -632,7 +627,7 @@ void litehtml::render_item::draw_children(uint_ptr hdc, int x, int y, const posi
                     }
                     break;
                 case draw_block:
-                    if (!el->src_el()->is_inline_box() && el->src_el()->css().get_float() == float_none && !el->src_el()->is_positioned())
+                    if (!el->src_el()->is_inline() && el->src_el()->css().get_float() == float_none && !el->src_el()->is_positioned())
                     {
                         el->src_el()->draw(hdc, pos.x, pos.y, clip, el);
                     }
@@ -646,10 +641,10 @@ void litehtml::render_item::draw_children(uint_ptr hdc, int x, int y, const posi
                     }
                     break;
                 case draw_inlines:
-                    if (el->src_el()->is_inline_box() && el->src_el()->css().get_float() == float_none && !el->src_el()->is_positioned())
+                    if (el->src_el()->is_inline() && el->src_el()->css().get_float() == float_none && !el->src_el()->is_positioned())
                     {
                         el->src_el()->draw(hdc, pos.x, pos.y, clip, el);
-                        if (el->src_el()->css().get_display() == display_inline_block)
+                        if (el->src_el()->css().get_display() == display_inline_block || el->src_el()->css().get_display() == display_inline_flex)
                         {
                             el->draw_stacking_context(hdc, pos.x, pos.y, clip, false);
                             process = false;
@@ -734,7 +729,7 @@ std::shared_ptr<litehtml::element>  litehtml::render_item::get_child_by_point(in
                     }
                     break;
                 case draw_block:
-                    if(!el->src_el()->is_inline_box() && el->src_el()->css().get_float() == float_none && !el->src_el()->is_positioned())
+                    if(!el->src_el()->is_inline() && el->src_el()->css().get_float() == float_none && !el->src_el()->is_positioned())
                     {
                         if(el->is_point_inside(el_pos.x, el_pos.y))
                         {
@@ -755,7 +750,7 @@ std::shared_ptr<litehtml::element>  litehtml::render_item::get_child_by_point(in
                     }
                     break;
                 case draw_inlines:
-                    if(el->src_el()->is_inline_box() && el->src_el()->css().get_float() == float_none && !el->src_el()->is_positioned())
+                    if(el->src_el()->is_inline() && el->src_el()->css().get_float() == float_none && !el->src_el()->is_positioned())
                     {
                         if(el->src_el()->css().get_display() == display_inline_block ||
                                 el->src_el()->css().get_display() == display_inline_table ||
@@ -786,7 +781,7 @@ std::shared_ptr<litehtml::element>  litehtml::render_item::get_child_by_point(in
                 } else
                 {
                     if(	el->src_el()->css().get_float() == float_none &&
-                           el->src_el()->css().get_display() != display_inline_block)
+                           el->src_el()->css().get_display() != display_inline_block && el->src_el()->css().get_display() != display_inline_flex)
                     {
                         element::ptr child = el->get_child_by_point(el_pos.x, el_pos.y, client_x, client_y, flag, zindex);
                         if(child)
@@ -815,25 +810,23 @@ std::shared_ptr<litehtml::element> litehtml::render_item::get_element_by_point(i
         z_indexes[i->src_el()->css().get_z_index()];
     }
 
-    for(const auto& zindex : z_indexes)
+    for(auto iter = z_indexes.rbegin(); iter != z_indexes.rend(); iter++)
     {
-        if(zindex.first > 0)
+        if(iter->first > 0)
         {
-            ret = get_child_by_point(x, y, client_x, client_y, draw_positioned, zindex.first);
-            break;
+            ret = get_child_by_point(x, y, client_x, client_y, draw_positioned, iter->first);
+			if(ret) return ret;
         }
     }
-    if(ret) return ret;
 
     for(const auto& z_index : z_indexes)
     {
         if(z_index.first == 0)
         {
             ret = get_child_by_point(x, y, client_x, client_y, draw_positioned, z_index.first);
-            break;
+			if(ret) return ret;
         }
     }
-    if(ret) return ret;
 
     ret = get_child_by_point(x, y, client_x, client_y, draw_inlines, 0);
     if(ret) return ret;
@@ -845,15 +838,14 @@ std::shared_ptr<litehtml::element> litehtml::render_item::get_element_by_point(i
     if(ret) return ret;
 
 
-    for(const auto& z_index : z_indexes)
-    {
-        if(z_index.first < 0)
+	for(auto iter = z_indexes.rbegin(); iter != z_indexes.rend(); iter++)
+	{
+        if(iter->first < 0)
         {
-            ret = get_child_by_point(x, y, client_x, client_y, draw_positioned, z_index.first);
-            break;
+            ret = get_child_by_point(x, y, client_x, client_y, draw_positioned, iter->first);
+			if(ret) return ret;
         }
     }
-    if(ret) return ret;
 
     if(src_el()->css().get_position() == element_position_fixed)
     {
@@ -1012,8 +1004,55 @@ litehtml::containing_block_context litehtml::render_item::calculate_containing_b
 	// We have to use aut value for display_table_cell also.
 	if (src_el()->css().get_display() != display_table_cell)
 	{
-		calc_cb_length(src_el()->css().get_width(), cb_context.width, ret.width);
-		calc_cb_length(src_el()->css().get_height(), cb_context.height, ret.height);
+		auto par = parent();
+		if(cb_context.size_mode & containing_block_context::size_mode_exact_width)
+		{
+			ret.width.value = cb_context.width;
+			ret.width.type = containing_block_context::cbc_value_type_absolute;
+		} else
+		{
+			auto *width = &css().get_width();
+			if(par && (par->css().get_display() == display_flex || par->css().get_display() == display_inline_flex))
+			{
+				if(!css().get_flex_basis().is_predefined() && css().get_flex_basis().val() >= 0)
+				{
+					if(par->css().get_flex_direction() == flex_direction_row || par->css().get_flex_direction() == flex_direction_row_reverse)
+					{
+						ret.width.type = containing_block_context::cbc_value_type_auto;
+						ret.width.value = 0;
+						width = nullptr;
+					}
+				}
+			}
+			if(width)
+			{
+				calc_cb_length(*width, cb_context.width, ret.width);
+			}
+		}
+		if(cb_context.size_mode & containing_block_context::size_mode_exact_height)
+		{
+			ret.height.value = cb_context.height;
+			ret.height.type = containing_block_context::cbc_value_type_absolute;
+		} else
+		{
+			auto *height = &css().get_height();
+			if(par && (par->css().get_display() == display_flex || par->css().get_display() == display_inline_flex))
+			{
+				if(!css().get_flex_basis().is_predefined() && css().get_flex_basis().val() >= 0)
+				{
+					if(par->css().get_flex_direction() == flex_direction_column || par->css().get_flex_direction() == flex_direction_column_reverse)
+					{
+						ret.height.type = containing_block_context::cbc_value_type_auto;
+						ret.height.value = 0;
+						height = nullptr;
+					}
+				}
+			}
+			if(height)
+			{
+				calc_cb_length(*height, cb_context.height, ret.height);
+			}
+		}
 		if (ret.width.type != containing_block_context::cbc_value_type_auto && (src_el()->css().get_display() == display_table || src_el()->is_root()))
 		{
 			ret.width.value -= content_offset_width();
@@ -1031,46 +1070,27 @@ litehtml::containing_block_context litehtml::render_item::calculate_containing_b
 	calc_cb_length(src_el()->css().get_min_height(), cb_context.height, ret.min_height);
 	calc_cb_length(src_el()->css().get_max_height(), cb_context.height, ret.max_height);
 
-	if (src_el()->css().get_box_sizing() == box_sizing_border_box)
+	// Fix box sizing
+	if(ret.width.type != containing_block_context::cbc_value_type_auto)
 	{
-		if(ret.width.type != containing_block_context::cbc_value_type_auto)
-		{
-			ret.render_width = ret.width - box_sizing_width();
-		}
-		if(ret.min_width.type != containing_block_context::cbc_value_type_none)
-		{
-			ret.min_width.value -= box_sizing_width();
-		}
-		if(ret.max_width.type != containing_block_context::cbc_value_type_none)
-		{
-			ret.max_width.value -= box_sizing_width();
-		}
-		if(ret.min_height.type != containing_block_context::cbc_value_type_none)
-		{
-			ret.min_height.value -= box_sizing_height();
-		}
-		if(ret.max_height.type != containing_block_context::cbc_value_type_none)
-		{
-			ret.max_height.value -= box_sizing_height();
-		}
+		ret.render_width = ret.width - box_sizing_width();
 	}
+	if(ret.min_width.type != containing_block_context::cbc_value_type_none)
+	{
+		ret.min_width.value -= box_sizing_width();
+	}
+	if(ret.max_width.type != containing_block_context::cbc_value_type_none)
+	{
+		ret.max_width.value -= box_sizing_width();
+	}
+	if(ret.min_height.type != containing_block_context::cbc_value_type_none)
+	{
+		ret.min_height.value -= box_sizing_height();
+	}
+	if(ret.max_height.type != containing_block_context::cbc_value_type_none)
+	{
+		ret.max_height.value -= box_sizing_height();
+	}
+
 	return ret;
-}
-
-void litehtml::render_item_table_row::get_inline_boxes( position::vector& boxes ) const
-{
-	position pos;
-	for(auto& el : m_children)
-	{
-		if(el->src_el()->css().get_display() == display_table_cell)
-		{
-			pos.x		= el->left() + el->margin_left();
-			pos.y		= el->top() - m_padding.top - m_borders.top;
-
-			pos.width	= el->right() - pos.x - el->margin_right() - el->margin_left();
-			pos.height	= el->height() + m_padding.top + m_padding.bottom + m_borders.top + m_borders.bottom;
-
-			boxes.push_back(pos);
-		}
-	}
 }

@@ -1,11 +1,11 @@
 #include "html.h"
-#include "render_item.h"
+#include "render_image.h"
 #include "document.h"
 
-int
-litehtml::render_item_image::render(int x, int y, const containing_block_context &containing_block_size, bool second_pass)
+int litehtml::render_item_image::_render(int x, int y, const containing_block_context &containing_block_size, formatting_context* /*fmt_ctx*/, bool /*second_pass*/)
 {
     int parent_width = containing_block_size.width;
+	containing_block_context self_size = calculate_containing_block_context(containing_block_size);
 
     calc_outlines(parent_width);
 
@@ -61,10 +61,10 @@ litehtml::render_item_image::render(int x, int y, const containing_block_context
         }
     } else if(!src_el()->css().get_height().is_predefined() && src_el()->css().get_width().is_predefined())
     {
-        if (!get_predefined_height(m_pos.height, containing_block_size.height))
-        {
-            m_pos.height = (int)src_el()->css().get_height().val();
-        }
+		if(self_size.height.type != containing_block_context::cbc_value_type_auto && self_size.height > 0)
+		{
+			m_pos.height = self_size.height;
+		}
 
         // check for max-height
         if(!src_el()->css().get_max_height().is_predefined())
@@ -108,10 +108,10 @@ litehtml::render_item_image::render(int x, int y, const containing_block_context
     {
         m_pos.width		= (int) src_el()->css().get_width().calc_percent(parent_width);
         m_pos.height	= 0;
-        if (!get_predefined_height(m_pos.height, containing_block_size.height))
-        {
-            m_pos.height = (int)src_el()->css().get_height().val();
-        }
+		if(self_size.height.type != containing_block_context::cbc_value_type_auto && self_size.height > 0)
+		{
+			m_pos.height = self_size.height;
+		}
 
         // check for max-height
         if(!src_el()->css().get_max_height().is_predefined())
