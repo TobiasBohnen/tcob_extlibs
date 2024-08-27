@@ -359,6 +359,16 @@ if(TCOB_ENABLE_ADDON_GFX_LITEHTML)
   list(APPEND TCOB_EXTLIBS_DEFINES LITEHTML_UTF8)
 endif()
 
+# #########################################################################
+if(EMSCRIPTEN)
+  target_compile_options(physfs-static PRIVATE -pthread)
+  target_link_options(physfs-static PRIVATE -pthread)
+  target_compile_options(SDL2-static PRIVATE -pthread)
+  target_link_options(SDL2-static PRIVATE -pthread)
+  target_compile_options(freetype PRIVATE -pthread)
+  target_link_options(freetype PRIVATE -pthread)
+endif()
+
 # ##########################################################################
 add_library(tcob_extlibs STATIC)
 
