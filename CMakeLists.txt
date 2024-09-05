@@ -367,6 +367,8 @@ if(EMSCRIPTEN)
   target_link_options(SDL2-static PRIVATE -pthread)
   target_compile_options(freetype PRIVATE -pthread)
   target_link_options(freetype PRIVATE -pthread)
+  target_compile_options(box2d PRIVATE -pthread)
+  target_link_options(box2d PRIVATE -pthread)
 endif()
 
 # ##########################################################################
