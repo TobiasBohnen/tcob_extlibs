@@ -19,7 +19,8 @@ set(CMAKE_DISABLE_FIND_PACKAGE_GIF ON)
 
 # ##########################################################################
 include(FetchContent)
-set(FETCHCONTENT_BASE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/_deps)
+
+# set(FETCHCONTENT_BASE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/_deps)
 
 # ##########################################################################
 # #required
