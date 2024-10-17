@@ -138,7 +138,10 @@ document::ptr document::createFromString(
 
 		// Finally initialize elements
 		// init() returns pointer to the render_init element because it can change its type
-		doc->m_root_render = doc->m_root_render->init();
+		if(doc->m_root_render)
+		{
+			doc->m_root_render = doc->m_root_render->init();
+		}
 	}
 
 	return doc;
@@ -564,7 +567,7 @@ uint_ptr document::get_font( const char* name, int size, const char* weight, con
 int document::render( int max_width, render_type rt )
 {
 	int ret = 0;
-	if(m_root)
+	if(m_root && m_root_render)
 	{
 		position client_rc;
 		m_container->get_client_rect(client_rc);
@@ -605,7 +608,7 @@ void document::draw( uint_ptr hdc, int x, int y, const position* clip )
 	}
 }
 
-int document::to_pixels( const css_length& val, int fontSize, int size ) const
+int document::to_pixels( const css_length& val, const font_metrics& metrics, int size ) const
 {
 	if(val.is_predefined())
 	{
@@ -618,7 +621,7 @@ int document::to_pixels( const css_length& val, int fontSize, int size ) const
 		ret = val.calc_percent(size);
 		break;
 	case css_units_em:
-		ret = round_f(val.val() * (float) fontSize);
+		ret = round_f(val.val() * (float) metrics.font_size);
 		break;
 
 	// https://drafts.csswg.org/css-values-4/#absolute-lengths
@@ -653,6 +656,12 @@ int document::to_pixels( const css_length& val, int fontSize, int size ) const
 	case css_units_rem:
 		ret = (int) ((double) m_root->css().get_font_size() * (double) val.val());
 		break;
+	case css_units_ex:
+		ret = (int) ((double) metrics.x_height * val.val());
+		break;
+	case css_units_ch:
+		ret = (int) ((double) metrics.ch_width * val.val());
+		break;
 	default:
 		ret = (int) val.val();
 		break;
@@ -660,24 +669,15 @@ int document::to_pixels( const css_length& val, int fontSize, int size ) const
 	return ret;
 }
 
-void document::cvt_units( css_length& val, int fontSize, int /*size*/ ) const
+void document::cvt_units( css_length& val, const font_metrics& metrics, int size ) const
 {
 	if(val.is_predefined())
 	{
 		return;
 	}
-	switch(val.units())
+	if(val.units() != css_units_percentage)
 	{
-		case css_units_em:
-		case css_units_pt:
-		case css_units_in:
-		case css_units_pc:
-		case css_units_cm:
-		case css_units_mm:
-			val.set_value((float)to_pixels(val, fontSize), css_units_px);
-			break;
-		default:
-			break;
+		val.set_value((float)to_pixels(val, metrics, size), css_units_px);
 	}
 }
 
@@ -727,6 +727,7 @@ bool document::on_mouse_over( int x, int y, int client_x, int client_y, position
 		{
 			if(m_over_element->on_mouse_leave())
 			{
+				m_container->on_mouse_event(m_over_element, mouse_event_leave);
 				state_was_changed = true;
 			}
 		}
@@ -748,6 +749,7 @@ bool document::on_mouse_over( int x, int y, int client_x, int client_y, position
 	
 	if(state_was_changed)
 	{
+		m_container->on_mouse_event(m_over_element, mouse_event_enter);
 		return m_root->find_styles_changes(redraw_boxes);
 	}
 	return false;
@@ -763,6 +765,7 @@ bool document::on_mouse_leave( position::vector& redraw_boxes )
 	{
 		if(m_over_element->on_mouse_leave())
 		{
+			m_container->on_mouse_event(m_over_element, mouse_event_leave);
 			return m_root->find_styles_changes(redraw_boxes);
 		}
 	}
@@ -786,6 +789,7 @@ bool document::on_lbutton_down( int x, int y, int client_x, int client_y, positi
 		{
 			if(m_over_element->on_mouse_leave())
 			{
+				m_container->on_mouse_event(m_over_element, mouse_event_leave);
 				state_was_changed = true;
 			}
 		}
@@ -814,6 +818,7 @@ bool document::on_lbutton_down( int x, int y, int client_x, int client_y, positi
 
 	if(state_was_changed)
 	{
+		m_container->on_mouse_event(m_over_element, mouse_event_enter);
 		return m_root->find_styles_changes(redraw_boxes);
 	}
 
