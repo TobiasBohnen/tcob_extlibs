@@ -23,8 +23,8 @@ extern "C" {
 
 
 
-int GLAD_GL_ES_VERSION_2_0 = 0;
-int GLAD_GL_ES_VERSION_3_0 = 0;
+static int GLAD_GL_ES_VERSION_2_0 = 0;
+static int GLAD_GL_ES_VERSION_3_0 = 0;
 
 
 
