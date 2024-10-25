@@ -868,11 +868,6 @@ typedef GLintptr GLvdpauSurfaceNV;
 typedef void (GLAD_API_PTR *GLVULKANPROCNV)(void);
 
 
-#define GL_ES_VERSION_2_0 1
-GLAD_API_CALL int GLAD_GL_ES_VERSION_2_0;
-#define GL_ES_VERSION_3_0 1
-GLAD_API_CALL int GLAD_GL_ES_VERSION_3_0;
-
 
 typedef void (GLAD_API_PTR *PFNGLACTIVETEXTUREPROC)(GLenum texture);
 typedef void (GLAD_API_PTR *PFNGLATTACHSHADERPROC)(GLuint program, GLuint shader);
