@@ -24,7 +24,8 @@ include(FetchContent)
 
 # ##########################################################################
 # #required
-# physfs @3.2.0
+
+# physfs @3.2.0 https://github.com/icculus/physfs
 MESSAGE(STATUS "physfs:")
 
 FetchContent_Declare(
@@ -54,21 +55,21 @@ list(APPEND TCOB_EXTLIBS_INCDIRS ${physfs_SOURCE_DIR}/src/)
 list(APPEND TCOB_EXTLIBS_DEFINES PHYSFS_STATIC)
 list(APPEND TCOB_EXTLIBS_LIBS physfs-static)
 
-# mojoal
+# mojoal https://github.com/icculus/mojoAL
 list(APPEND TCOB_EXTLIBS_SRCFILES ${CMAKE_CURRENT_SOURCE_DIR}/req/AL/mojoal.c)
 list(APPEND TCOB_EXTLIBS_DEFINES AL_LIBTYPE_STATIC)
 
-# miniz @3.0.2
+# miniz @3.0.2 https://github.com/richgel999/miniz
 list(APPEND TCOB_EXTLIBS_SRCFILES ${CMAKE_CURRENT_SOURCE_DIR}/req/miniz/miniz.c)
 list(APPEND TCOB_EXTLIBS_INCDIRS ${CMAKE_CURRENT_SOURCE_DIR}/req/miniz/)
 
-# utfcpp @4.0.2
+# utfcpp @4.0.6 https://github.com/nemtrif/utfcpp
 list(APPEND TCOB_EXTLIBS_INCDIRS ${CMAKE_CURRENT_SOURCE_DIR}/req/utf8/)
 
-# earcut
+# earcut https://github.com/mapbox/earcut.hpp
 list(APPEND TCOB_EXTLIBS_INCDIRS ${CMAKE_CURRENT_SOURCE_DIR}/req/earcut/)
 
-# clipper2 @1.4.0
+# clipper2 @1.4.0 https://github.com/AngusJohnson/Clipper2
 file(GLOB_RECURSE CLIPPER_SRC_FILES ${CMAKE_CURRENT_SOURCE_DIR}/req/Clipper2Lib/src/*.cpp)
 list(APPEND TCOB_EXTLIBS_SRCFILES ${CLIPPER_SRC_FILES})
 list(APPEND TCOB_EXTLIBS_INCDIRS ${CMAKE_CURRENT_SOURCE_DIR}/req/Clipper2Lib/include)
@@ -76,13 +77,13 @@ list(APPEND TCOB_EXTLIBS_INCDIRS ${CMAKE_CURRENT_SOURCE_DIR}/req/Clipper2Lib/inc
 # speech
 list(APPEND TCOB_EXTLIBS_SRCFILES ${CMAKE_CURRENT_SOURCE_DIR}/req/speech/speech.c)
 
-# SDL2 @2.30.8
+# SDL2 @2.30.10 https://github.com/libsdl-org/SDL
 MESSAGE(STATUS "SDL2:")
 
 FetchContent_Declare(
   SDL2
   GIT_REPOSITORY https://github.com/libsdl-org/SDL
-  GIT_TAG release-2.30.8
+  GIT_TAG release-2.30.10
   EXCLUDE_FROM_ALL
 )
 
@@ -112,7 +113,7 @@ list(APPEND TCOB_EXTLIBS_INCDIRS ${SDL2_SOURCE_DIR}/include/)
 list(APPEND TCOB_EXTLIBS_DEFINES SDL_MAIN_HANDLED)
 list(APPEND TCOB_EXTLIBS_LIBS SDL2-static)
 
-# FreeType @2.13.2
+# FreeType @2.13.3 https://github.com/freetype/freetype
 MESSAGE(STATUS "FreeType:")
 
 FetchContent_Declare(
@@ -137,21 +138,21 @@ list(APPEND TCOB_EXTLIBS_LIBS freetype)
 # ##########################################################################
 # #optional
 
-# libogg @1.3.5
+# libogg @1.3.5 https://github.com/xiph/ogg
 if(TCOB_ENABLE_FILETYPES_GFX_THEORA OR TCOB_ENABLE_FILETYPES_AUDIO_OPUS OR TCOB_ENABLE_FILETYPES_AUDIO_VORBIS)
   file(GLOB_RECURSE OGG_SRC_FILES ${CMAKE_CURRENT_SOURCE_DIR}/opt/XiphOrg/ogg/*.c)
   list(APPEND TCOB_EXTLIBS_SRCFILES ${OGG_SRC_FILES})
   list(APPEND TCOB_EXTLIBS_INCDIRS ${CMAKE_CURRENT_SOURCE_DIR}/opt/XiphOrg/ogg/)
 endif()
 
-# libtheora @1.1.1
+# libtheora @1.1.1 https://github.com/xiph/theora
 if(TCOB_ENABLE_FILETYPES_GFX_THEORA)
   file(GLOB_RECURSE OGGTHEORA_SRC_FILES ${CMAKE_CURRENT_SOURCE_DIR}/opt/XiphOrg/theora/*.c)
   list(APPEND TCOB_EXTLIBS_SRCFILES ${OGGTHEORA_SRC_FILES})
   list(APPEND TCOB_EXTLIBS_INCDIRS ${CMAKE_CURRENT_SOURCE_DIR}/opt/XiphOrg/theora/)
 endif()
 
-# opus @libopus: 1.5.2 @opusfile: 0.12 @libopusenc: 0.2.1
+# opus @libopus: 1.5.2 @opusfile: 0.12 @libopusenc: 0.2.1 https://github.com/xiph/opus
 if(TCOB_ENABLE_FILETYPES_AUDIO_OPUS)
   MESSAGE(STATUS "libopus:")
 
@@ -178,20 +179,20 @@ if(TCOB_ENABLE_FILETYPES_AUDIO_OPUS)
   list(APPEND TCOB_EXTLIBS_INCDIRS ${libopus_SOURCE_DIR}/include/)
   list(APPEND TCOB_EXTLIBS_LIBS opus)
 
-  # libopusenc
+  # libopusenc https://github.com/xiph/libopusenc
   file(GLOB_RECURSE OPUSENC_SRC_FILES ${CMAKE_CURRENT_SOURCE_DIR}/opt/XiphOrg/libopusenc/src/*.c)
   list(APPEND TCOB_EXTLIBS_SRCFILES ${OPUSENC_SRC_FILES})
   list(APPEND TCOB_EXTLIBS_INCDIRS ${CMAKE_CURRENT_SOURCE_DIR}/opt/XiphOrg/libopusenc/src/)
   list(APPEND TCOB_EXTLIBS_INCDIRS ${CMAKE_CURRENT_SOURCE_DIR}/opt/XiphOrg/libopusenc/include/)
   list(APPEND TCOB_EXTLIBS_DEFINES OUTSIDE_SPEEX RANDOM_PREFIX=tcob)
 
-  # opusfile
+  # opusfile https://github.com/xiph/opusfile/
   file(GLOB_RECURSE OGGOPUS_SRC_FILES ${CMAKE_CURRENT_SOURCE_DIR}/opt/XiphOrg/opusfile/*.c)
   list(APPEND TCOB_EXTLIBS_SRCFILES ${OGGOPUS_SRC_FILES})
   list(APPEND TCOB_EXTLIBS_INCDIRS ${CMAKE_CURRENT_SOURCE_DIR}/opt/XiphOrg/opusfile/)
 endif()
 
-# vorbis @1.3.7
+# vorbis @1.3.7 https://github.com/xiph/vorbis
 if(TCOB_ENABLE_FILETYPES_AUDIO_VORBIS)
   file(GLOB_RECURSE VORBIS_SRC_FILES ${CMAKE_CURRENT_SOURCE_DIR}/opt/XiphOrg/vorbis/src/*.c)
   list(APPEND TCOB_EXTLIBS_SRCFILES ${VORBIS_SRC_FILES})
@@ -199,19 +200,19 @@ if(TCOB_ENABLE_FILETYPES_AUDIO_VORBIS)
   list(APPEND TCOB_EXTLIBS_INCDIRS ${CMAKE_CURRENT_SOURCE_DIR}/opt/XiphOrg/vorbis/include)
 endif()
 
-# dr_libs @dr_flac: 0.12.41 @dr_mp3: 0.6.37 @dr_wav: 0.13.12
+# dr_libs @dr_flac: 0.12.43 @dr_mp3: 0.6.40 @dr_wav: 0.13.17 https://github.com/mackron/dr_libs
 if(TCOB_ENABLE_FILETYPES_AUDIO_DRLIBS)
   list(APPEND TCOB_EXTLIBS_SRCFILES ${CMAKE_CURRENT_SOURCE_DIR}/opt/dr_libs/dr_libs.c)
 endif()
 
-# Lua @5.4.7
+# Lua @5.4.7 https://github.com/lua/lua
 if(TCOB_ENABLE_ADDON_SCRIPTING_LUA)
   file(GLOB LUA_SRC_FILES ${CMAKE_CURRENT_SOURCE_DIR}/opt/lua/*.cpp)
   list(APPEND TCOB_EXTLIBS_SRCFILES ${LUA_SRC_FILES})
   list(APPEND TCOB_EXTLIBS_INCDIRS ${CMAKE_CURRENT_SOURCE_DIR}/opt/lua/)
 endif()
 
-# Squirrel @3.2 -> 1c1fd9a3709a8b46f64e52fa10bd87e896c0b502
+# Squirrel @3.2 -> 1c1fd9a3709a8b46f64e52fa10bd87e896c0b502 https://github.com/albertodemichelis/squirrel
 if(TCOB_ENABLE_ADDON_SCRIPTING_SQUIRREL)
   MESSAGE(STATUS "Squirrel:")
 
@@ -252,7 +253,7 @@ if(TCOB_ENABLE_ADDON_SCRIPTING_SQUIRREL)
   list(APPEND TCOB_EXTLIBS_INCDIRS ${squirrel_SOURCE_DIR}/include/)
 endif()
 
-# box2d @2.4.2
+# box2d @3.0.0 https://github.com/erincatto/box2d
 if(TCOB_ENABLE_ADDON_PHYSICS_BOX2D)
   MESSAGE(STATUS "box2d:")
 
@@ -276,7 +277,7 @@ if(TCOB_ENABLE_ADDON_PHYSICS_BOX2D)
   list(APPEND TCOB_EXTLIBS_LIBS box2d)
 endif()
 
-# glad 2.0.6
+# glad 2.0.6 https://github.com/Dav1dde/glad
 if(TCOB_ENABLE_RENDERER_OPENGL45) # gl 4.5
   list(APPEND TCOB_EXTLIBS_SRCFILES ${CMAKE_CURRENT_SOURCE_DIR}/opt/glad/gl45.c)
 endif()
@@ -295,14 +296,14 @@ if(TCOB_ENABLE_RENDERER_OPENGL45 OR TCOB_ENABLE_RENDERER_OPENGLES30 OR TCOB_ENAB
   endif()
 endif()
 
-# TinySoundFont @92a8f0e9fe3c98358be7d8564db21fc4b1142d04 @stb_vorbis: 1.22
+# TinySoundFont @cd82859 @stb_vorbis: 1.22 https://github.com/schellingb/TinySoundFont
 if(TCOB_ENABLE_ADDON_AUDIO_TINYSOUNDFONT)
   list(APPEND TCOB_EXTLIBS_SRCFILES ${CMAKE_CURRENT_SOURCE_DIR}/opt/TinySoundFont/TinySoundFont.c)
   list(APPEND TCOB_EXTLIBS_SRCFILES ${CMAKE_CURRENT_SOURCE_DIR}/opt/TinySoundFont/stb_vorbis.c)
   list(APPEND TCOB_EXTLIBS_DEFINES STB_VORBIS_NO_PUSHDATA_API)
 endif()
 
-# libxmp-lite @4.6.0
+# libxmp-lite @4.6.0 https://github.com/libxmp/libxmp
 if(TCOB_ENABLE_FILETYPES_AUDIO_LIBXMP)
   file(GLOB_RECURSE LIBXMP_SRC_FILES ${CMAKE_CURRENT_SOURCE_DIR}/opt/libxmp-lite/src/*.c)
   list(APPEND TCOB_EXTLIBS_SRCFILES ${LIBXMP_SRC_FILES})
@@ -313,24 +314,24 @@ if(TCOB_ENABLE_FILETYPES_AUDIO_LIBXMP)
   list(APPEND TCOB_EXTLIBS_DEFINES LIBXMP_CORE_PLAYER LIBXMP_NO_DEPACKERS LIBXMP_STATIC)
 endif()
 
-# sqlite @3.47.0
+# sqlite @3.47.2 https://www.sqlite.org/
 if(TCOB_ENABLE_ADDON_DATA_SQLITE)
   list(APPEND TCOB_EXTLIBS_SRCFILES ${CMAKE_CURRENT_SOURCE_DIR}/opt/sqlite3/sqlite3.c)
 endif()
 
-# QOI
+# QOI https://github.com/phoboslab/qoi
 if(TCOB_ENABLE_FILETYPES_GFX_QOI)
   list(APPEND TCOB_EXTLIBS_SRCFILES ${CMAKE_CURRENT_SOURCE_DIR}/opt/qoi/qoi.c)
 endif()
 
-# WebP @1.4.0
+# WebP @1.5.0 https://chromium.googlesource.com/webm/libwebp
 if(TCOB_ENABLE_FILETYPES_GFX_WEBP)
   MESSAGE(STATUS "WebP:")
 
   FetchContent_Declare(
     webp
     GIT_REPOSITORY https://chromium.googlesource.com/webm/libwebp
-    GIT_TAG v1.4.0
+    GIT_TAG v1.5.0
     EXCLUDE_FROM_ALL
   )
 
@@ -357,7 +358,7 @@ if(TCOB_ENABLE_FILETYPES_GFX_WEBP)
   list(APPEND TCOB_EXTLIBS_LIBS webp libwebpmux webpdemux)
 endif()
 
-# litehtml @b756c9e28a18e85f0e3af6f924c7746f71da5d9e
+# litehtml @b756c9e28a18e85f0e3af6f924c7746f71da5d9e https://github.com/litehtml/litehtml
 if(TCOB_ENABLE_ADDON_GFX_LITEHTML)
   file(GLOB_RECURSE LITEHTML_SRC_FILES ${CMAKE_CURRENT_SOURCE_DIR}/opt/litehtml/src/*.cpp)
   list(APPEND TCOB_EXTLIBS_SRCFILES ${LITEHTML_SRC_FILES})
@@ -403,12 +404,16 @@ MESSAGE(STATUS "----------------")
 if(EMSCRIPTEN)
   target_compile_options(physfs-static PRIVATE -pthread)
   target_link_options(physfs-static PRIVATE -pthread)
+
   target_compile_options(SDL2-static PRIVATE -pthread)
   target_link_options(SDL2-static PRIVATE -pthread)
+
   target_compile_options(freetype PRIVATE -pthread)
   target_link_options(freetype PRIVATE -pthread)
+
   target_compile_options(box2d PRIVATE -pthread)
   target_link_options(box2d PRIVATE -pthread)
+
   target_compile_options(tcob_extlibs PRIVATE -pthread)
   target_link_options(tcob_extlibs PRIVATE -pthread)
 endif()
