@@ -205,7 +205,7 @@ if(TCOB_ENABLE_FILETYPES_AUDIO_DRLIBS)
   list(APPEND TCOB_EXTLIBS_SRCFILES ${CMAKE_CURRENT_SOURCE_DIR}/opt/dr_libs/dr_libs.c)
 endif()
 
-# Lua @Lua: 5.4.7 https://github.com/lua/lua @LuaJIT: 2.1.0 https:://github.com/LuaJIT/LuaJIT
+# Lua @Lua: 5.4.7 https://github.com/lua/lua @LuaJIT: 2.1.0 https://github.com/LuaJIT/LuaJIT
 if(TCOB_ENABLE_ADDON_SCRIPTING_LUA)
   if(TCOB_USE_LUAJIT)
     set(LUAJIT_BUILD_EXE OFF CACHE BOOL "" FORCE)
