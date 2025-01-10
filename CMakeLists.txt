@@ -152,7 +152,7 @@ if(TCOB_ENABLE_FILETYPES_GFX_THEORA)
   list(APPEND TCOB_EXTLIBS_INCDIRS ${CMAKE_CURRENT_SOURCE_DIR}/opt/XiphOrg/theora/)
 endif()
 
-# opus @libopus: 1.5.2 @opusfile: 0.12 @libopusenc: 0.2.1 https://github.com/xiph/opus
+# opus @libopus: 1.5.2 https://github.com/xiph/opus @opusfile: 0.12 https://github.com/xiph/opusfile @libopusenc: 0.2.1 https://github.com/xiph/libopusenc
 if(TCOB_ENABLE_FILETYPES_AUDIO_OPUS)
   MESSAGE(STATUS "libopus:")
 
