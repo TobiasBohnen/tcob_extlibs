@@ -74,9 +74,6 @@ file(GLOB_RECURSE CLIPPER_SRC_FILES ${CMAKE_CURRENT_SOURCE_DIR}/req/Clipper2Lib/
 list(APPEND TCOB_EXTLIBS_SRCFILES ${CLIPPER_SRC_FILES})
 list(APPEND TCOB_EXTLIBS_INCDIRS ${CMAKE_CURRENT_SOURCE_DIR}/req/Clipper2Lib/include)
 
-# speech
-list(APPEND TCOB_EXTLIBS_SRCFILES ${CMAKE_CURRENT_SOURCE_DIR}/req/speech/speech.c)
-
 # SDL2 @2.30.10 https://github.com/libsdl-org/SDL
 MESSAGE(STATUS "SDL2:")
 
@@ -305,6 +302,11 @@ if(TCOB_ENABLE_RENDERER_OPENGL45 OR TCOB_ENABLE_RENDERER_OPENGLES30 OR TCOB_ENAB
   if(WIN32)
     list(APPEND TCOB_EXTLIBS_LIBS opengl32)
   endif()
+endif()
+
+# speech
+if(TCOB_ENABLE_ADDON_AUDIO_SPEECH)
+  list(APPEND TCOB_EXTLIBS_SRCFILES ${CMAKE_CURRENT_SOURCE_DIR}/opt/speech/speech.c)
 endif()
 
 # TinySoundFont @cd82859 @stb_vorbis: 1.22 https://github.com/schellingb/TinySoundFont
