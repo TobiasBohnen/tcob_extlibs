@@ -1,6 +1,6 @@
 /*
 WAV audio loader and writer. Choice of public domain or MIT-0. See license statements at the end of this file.
-dr_wav - v0.13.17 - 2024-12-17
+dr_wav - v0.14.0 - TBD
 
 David Reid - mackron@gmail.com
 
@@ -146,8 +146,8 @@ extern "C" {
 #define DRWAV_XSTRINGIFY(x)     DRWAV_STRINGIFY(x)
 
 #define DRWAV_VERSION_MAJOR     0
-#define DRWAV_VERSION_MINOR     13
-#define DRWAV_VERSION_REVISION  17
+#define DRWAV_VERSION_MINOR     14
+#define DRWAV_VERSION_REVISION  0
 #define DRWAV_VERSION_STRING    DRWAV_XSTRINGIFY(DRWAV_VERSION_MAJOR) "." DRWAV_XSTRINGIFY(DRWAV_VERSION_MINOR) "." DRWAV_XSTRINGIFY(DRWAV_VERSION_REVISION)
 
 #include <stddef.h> /* For size_t. */
@@ -555,11 +555,11 @@ typedef struct
     /* See drwav_smpl_loop_type. */
     drwav_uint32 type;
 
-    /* The byte offset of the first sample to be played in the loop. */
-    drwav_uint32 firstSampleByteOffset;
+    /* The offset of the first sample to be played in the loop. */
+    drwav_uint32 firstSampleOffset;
 
-    /* The byte offset into the audio data of the last sample to be played in the loop. */
-    drwav_uint32 lastSampleByteOffset;
+    /* The offset into the audio data of the last sample to be played in the loop. */
+    drwav_uint32 lastSampleOffset;
 
     /* A value to represent that playback should occur at a point between samples. This value ranges from 0 to UINT32_MAX. Where a value of 0 means no fraction, and a value of (UINT32_MAX / 2) would mean half a sample. */
     drwav_uint32 sampleFraction;
@@ -637,8 +637,8 @@ typedef struct
     /* Set to 0 for uncompressed formats. Else the last byte in compressed wave data where decompression can begin to find the value of the corresponding sample value. */
     drwav_uint32 blockStart;
 
-    /* For uncompressed formats this is the byte offset of the cue point into the audio data. For compressed formats this is relative to the block specified with blockStart. */
-    drwav_uint32 sampleByteOffset;
+    /* For uncompressed formats this is the offset of the cue point into the audio data. For compressed formats this is relative to the block specified with blockStart. */
+    drwav_uint32 sampleOffset;
 } drwav_cue_point;
 
 typedef struct
@@ -2189,12 +2189,12 @@ DRWAV_PRIVATE drwav_uint64 drwav__read_smpl_to_metadata_obj(drwav__metadata_pars
                 bytesJustRead = drwav__metadata_parser_read(pParser, smplLoopData, sizeof(smplLoopData), &totalBytesRead);
 
                 if (bytesJustRead == sizeof(smplLoopData)) {
-                    pMetadata->data.smpl.pLoops[iSampleLoop].cuePointId            = drwav_bytes_to_u32(smplLoopData + 0);
-                    pMetadata->data.smpl.pLoops[iSampleLoop].type                  = drwav_bytes_to_u32(smplLoopData + 4);
-                    pMetadata->data.smpl.pLoops[iSampleLoop].firstSampleByteOffset = drwav_bytes_to_u32(smplLoopData + 8);
-                    pMetadata->data.smpl.pLoops[iSampleLoop].lastSampleByteOffset  = drwav_bytes_to_u32(smplLoopData + 12);
-                    pMetadata->data.smpl.pLoops[iSampleLoop].sampleFraction        = drwav_bytes_to_u32(smplLoopData + 16);
-                    pMetadata->data.smpl.pLoops[iSampleLoop].playCount             = drwav_bytes_to_u32(smplLoopData + 20);
+                    pMetadata->data.smpl.pLoops[iSampleLoop].cuePointId        = drwav_bytes_to_u32(smplLoopData + 0);
+                    pMetadata->data.smpl.pLoops[iSampleLoop].type              = drwav_bytes_to_u32(smplLoopData + 4);
+                    pMetadata->data.smpl.pLoops[iSampleLoop].firstSampleOffset = drwav_bytes_to_u32(smplLoopData + 8);
+                    pMetadata->data.smpl.pLoops[iSampleLoop].lastSampleOffset  = drwav_bytes_to_u32(smplLoopData + 12);
+                    pMetadata->data.smpl.pLoops[iSampleLoop].sampleFraction    = drwav_bytes_to_u32(smplLoopData + 16);
+                    pMetadata->data.smpl.pLoops[iSampleLoop].playCount         = drwav_bytes_to_u32(smplLoopData + 20);
                 } else {
                     break;
                 }
@@ -2254,7 +2254,7 @@ DRWAV_PRIVATE drwav_uint64 drwav__read_cue_to_metadata_obj(drwav__metadata_parse
                         pMetadata->data.cue.pCuePoints[iCuePoint].dataChunkId[3]    = cuePointData[11];
                         pMetadata->data.cue.pCuePoints[iCuePoint].chunkStart        = drwav_bytes_to_u32(cuePointData + 12);
                         pMetadata->data.cue.pCuePoints[iCuePoint].blockStart        = drwav_bytes_to_u32(cuePointData + 16);
-                        pMetadata->data.cue.pCuePoints[iCuePoint].sampleByteOffset  = drwav_bytes_to_u32(cuePointData + 20);
+                        pMetadata->data.cue.pCuePoints[iCuePoint].sampleOffset      = drwav_bytes_to_u32(cuePointData + 20);
                     } else {
                         break;
                     }
@@ -3465,12 +3465,15 @@ DRWAV_PRIVATE drwav_bool32 drwav_init__internal(drwav* pWav, drwav_chunk_proc on
                     compressionFormat = DR_WAVE_FORMAT_MULAW;
                 } else if (drwav_fourcc_equal(type, "ima4")) {
                     compressionFormat = DR_WAVE_FORMAT_DVI_ADPCM;
-                    sampleSizeInBits = 4;
+                    sampleSizeInBits  = 4;
 
                     /*
                     I haven't been able to figure out how to get correct decoding for IMA ADPCM. Until this is figured out
                     we'll need to abort when we encounter such an encoding. Advice welcome!
                     */
+                    (void)compressionFormat;
+                    (void)sampleSizeInBits;
+
                     return DRWAV_FALSE;
                 } else {
                     return DRWAV_FALSE; /* Unknown or unsupported compression format. Need to abort. */
@@ -3995,8 +3998,8 @@ DRWAV_PRIVATE size_t drwav__write_or_count_metadata(drwav* pWav, drwav_metadata*
                 for (iLoop = 0; iLoop < pMetadata->data.smpl.sampleLoopCount; ++iLoop) {
                     bytesWritten += drwav__write_or_count_u32ne_to_le(pWav, pMetadata->data.smpl.pLoops[iLoop].cuePointId);
                     bytesWritten += drwav__write_or_count_u32ne_to_le(pWav, pMetadata->data.smpl.pLoops[iLoop].type);
-                    bytesWritten += drwav__write_or_count_u32ne_to_le(pWav, pMetadata->data.smpl.pLoops[iLoop].firstSampleByteOffset);
-                    bytesWritten += drwav__write_or_count_u32ne_to_le(pWav, pMetadata->data.smpl.pLoops[iLoop].lastSampleByteOffset);
+                    bytesWritten += drwav__write_or_count_u32ne_to_le(pWav, pMetadata->data.smpl.pLoops[iLoop].firstSampleOffset);
+                    bytesWritten += drwav__write_or_count_u32ne_to_le(pWav, pMetadata->data.smpl.pLoops[iLoop].lastSampleOffset);
                     bytesWritten += drwav__write_or_count_u32ne_to_le(pWav, pMetadata->data.smpl.pLoops[iLoop].sampleFraction);
                     bytesWritten += drwav__write_or_count_u32ne_to_le(pWav, pMetadata->data.smpl.pLoops[iLoop].playCount);
                 }
@@ -4036,7 +4039,7 @@ DRWAV_PRIVATE size_t drwav__write_or_count_metadata(drwav* pWav, drwav_metadata*
                     bytesWritten += drwav__write_or_count(pWav, pMetadata->data.cue.pCuePoints[iCuePoint].dataChunkId, 4);
                     bytesWritten += drwav__write_or_count_u32ne_to_le(pWav, pMetadata->data.cue.pCuePoints[iCuePoint].chunkStart);
                     bytesWritten += drwav__write_or_count_u32ne_to_le(pWav, pMetadata->data.cue.pCuePoints[iCuePoint].blockStart);
-                    bytesWritten += drwav__write_or_count_u32ne_to_le(pWav, pMetadata->data.cue.pCuePoints[iCuePoint].sampleByteOffset);
+                    bytesWritten += drwav__write_or_count_u32ne_to_le(pWav, pMetadata->data.cue.pCuePoints[iCuePoint].sampleOffset);
                 }
             } break;
 
@@ -4704,7 +4707,7 @@ DRWAV_PRIVATE drwav_result drwav_result_from_errno(int e)
     #ifdef ENOSYS
         case ENOSYS: return DRWAV_NOT_IMPLEMENTED;
     #endif
-    #ifdef ENOTEMPTY
+    #if defined(ENOTEMPTY) && ENOTEMPTY != EEXIST   /* In AIX, ENOTEMPTY and EEXIST use the same value. */
         case ENOTEMPTY: return DRWAV_DIRECTORY_NOT_EMPTY;
     #endif
     #ifdef ELOOP
@@ -8360,6 +8363,11 @@ DRWAV_API drwav_bool32 drwav_fourcc_equal(const drwav_uint8* a, const char* b)
 /*
 REVISION HISTORY
 ================
+v0.14.0 - TBD
+  - API CHANGE: The `firstSampleByteOffset`, `lastSampleByteOffset` and `sampleByteOffset` members of `drwav_cue_point` have been renamed to `firstSampleOffset`, `lastSampleOffset` and `sampleOffset`, respectively.
+  - Fix a static analysis warning.
+  - Fix compilation for AIX OS.
+
 v0.13.17 - 2024-12-17
   - Fix a possible crash when reading from MS-ADPCM encoded files.
   - Improve detection of ARM64EC
