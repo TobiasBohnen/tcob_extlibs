@@ -63,8 +63,12 @@ list(APPEND TCOB_EXTLIBS_DEFINES AL_LIBTYPE_STATIC)
 list(APPEND TCOB_EXTLIBS_SRCFILES ${CMAKE_CURRENT_SOURCE_DIR}/req/miniz/miniz.c)
 list(APPEND TCOB_EXTLIBS_INCDIRS ${CMAKE_CURRENT_SOURCE_DIR}/req/miniz/)
 
-# utfcpp @4.0.6 https://github.com/nemtrif/utfcpp
-list(APPEND TCOB_EXTLIBS_INCDIRS ${CMAKE_CURRENT_SOURCE_DIR}/req/utf8/)
+# utf8 @3.2.0 https://github.com/neacsum/utf8
+list(APPEND TCOB_EXTLIBS_SRCFILES ${CMAKE_CURRENT_SOURCE_DIR}/req/utf8/src/casecvt.cpp)
+list(APPEND TCOB_EXTLIBS_SRCFILES ${CMAKE_CURRENT_SOURCE_DIR}/req/utf8/src/utf8.cpp)
+list(APPEND TCOB_EXTLIBS_INCDIRS ${CMAKE_CURRENT_SOURCE_DIR}/req/utf8/include)
+
+# add_executable(gen_casetab ${CMAKE_CURRENT_SOURCE_DIR}/req/utf8/tools/gen_casetab.cpp)
 
 # earcut https://github.com/mapbox/earcut.hpp
 list(APPEND TCOB_EXTLIBS_INCDIRS ${CMAKE_CURRENT_SOURCE_DIR}/req/earcut/)

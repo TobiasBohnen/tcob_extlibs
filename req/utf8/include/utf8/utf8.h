@@ -1,0 +1,537 @@
+﻿/*
+  Copyright (c) Mircea Neacsu (2014-2024) Licensed under MIT License.
+  This is part of UTF8 project. See LICENSE file for full license terms.
+*/
+
+/// \file utf8.h UTF-8 Conversion functions
+#pragma once
+
+#include <string>
+#include <vector>
+#include <fstream>
+
+// ------------- Global configuration options ---------------------------------
+
+/*!
+  If UTF8_USE_WINDOWS_API is not zero, the library issues direct Windows API
+  calls. Otherwise it relies only on standard C++17 functions.
+  If not defined, UTF8_USE_WINDOWS_API defaults to 1 on Windows platform.
+*/
+// #define UTF8_USE_WINDOWS_API 0
+
+/*!
+  If UTF8_KEEP_WIN32_API is defined, WIN32 functions aren't redefined in utf8
+  namespace.
+*/
+// #define UTF8_KEEP_WIN32_API
+
+// --------------- end of configuration options -------------------------------
+
+#define UTF8_USE_WINDOWS_API 0
+
+#if !UTF8_USE_WINDOWS_API
+#include <filesystem>
+
+#if (defined(_MSVC_LANG) && _MSVC_LANG < 201703L)                                                  \
+  || (!defined(_MSVC_LANG) && (__cplusplus < 201703L))
+#error "UTF8 requires c++17 or newer if not using Windows API functions"
+#endif
+
+#endif
+
+namespace utf8 {
+
+/// Exception thrown on encoding/decoding failure
+struct exception : public std::exception
+{
+  /// Possible causes
+  enum cause { invalid_utf8=1, invalid_wchar, invalid_char32 };
+
+  /// Constructor
+  explicit exception (cause c)
+    : code (c)
+  {}
+
+  /// Exception message
+  const char* what() const noexcept
+  {
+    return (code == cause::invalid_utf8)   ? "Invalid UTF-8 encoding"
+         : (code == cause::invalid_wchar)  ? "Invalid UTF-16 encoding"
+         : (code == cause::invalid_char32) ? "Invalid code-point value"
+         : "Other UTF-8 exception";
+  }
+  /// Condition that triggered the exception
+  cause code;
+};
+
+/// Error handling methods
+enum action {
+  replace, ///< Use replacement character for invalid encodings
+  except   ///< Throw an exception on invalid encodings
+};
+
+/// Set error handling mode for this thread
+action error_mode (action mode);
+
+/// Replacement character used for invalid encodings
+const char32_t REPLACEMENT_CHARACTER = 0xfffd;
+
+
+/// \addtogroup basecvt
+/// @{
+std::string narrow (const wchar_t* s, size_t nch=0);
+std::string narrow (const std::wstring& s);
+std::string narrow (const char32_t* s, size_t nch = 0);
+std::string narrow (const std::u32string& s);
+std::string narrow (char32_t r);
+
+std::wstring widen (const char* s, size_t nch = 0);
+std::wstring widen (const std::string& s);
+std::u32string runes (const char* s, size_t nch = 0);
+std::u32string runes (const std::string& s);
+
+char32_t rune (const char* p);
+char32_t rune (const std::string::const_iterator& p);
+/// @}
+
+bool is_valid (const char* p);
+bool is_valid (std::string::const_iterator p, const std::string::const_iterator last);
+bool valid_str (const char* s, size_t nch = 0);
+bool valid_str (const std::string& s);
+
+char32_t next (std::string::const_iterator& ptr, const std::string::const_iterator last);
+char32_t next (std::string::iterator& ptr, const std::string::const_iterator last);
+char32_t next (const char*& ptr);
+char32_t next (char*& p);
+
+char32_t prev (const char*& ptr);
+char32_t prev (char*& ptr);
+char32_t prev (std::string::const_iterator& ptr, const std::string::const_iterator first);
+char32_t prev (std::string::iterator& ptr, const std::string::const_iterator first);
+
+
+size_t length (const std::string& s); 
+size_t length (const char* s);
+
+
+//ADDED
+size_t length (std::string_view s);
+char32_t next (std::string_view::const_iterator& ptr, const std::string_view::const_iterator last);
+
+/*!
+  \addtogroup folding
+  @{
+*/
+void make_lower (std::string& str);
+void make_upper (std::string& str);
+std::string tolower (const std::string& str);
+std::string toupper (const std::string& str);
+int icompare (const std::string& s1, const std::string& s2);
+/// @}
+
+/*!
+  \addtogroup charclass
+  @{
+*/
+
+bool isspace (char32_t r);
+bool isspace (const char* p);
+bool isspace (std::string::const_iterator p);
+
+bool isblank (char32_t r);
+bool isblank (const char* p);
+bool isblank (std::string::const_iterator p);
+
+bool isdigit (char32_t r);
+bool isdigit (const char* p);
+bool isdigit (std::string::const_iterator p);
+
+bool isalnum (char32_t r);
+bool isalnum (const char* p);
+bool isalnum (std::string::const_iterator p);
+
+bool isalpha (char32_t r);
+bool isalpha (const char* p);
+bool isalpha (std::string::const_iterator p);
+
+bool isxdigit (char32_t r);
+bool isxdigit (const char* p);
+bool isxdigit (std::string::const_iterator p);
+
+bool isupper (char32_t r);
+bool isupper (const char* p);
+bool isupper (std::string::const_iterator p);
+
+bool islower (char32_t r);
+bool islower (const char* p);
+bool islower (std::string::const_iterator p);
+/// @}
+
+/// Input stream class using UTF-8 filename
+#ifdef _WIN32
+class ifstream : public std::ifstream
+{
+public:
+  ifstream () : std::ifstream () {};
+  explicit ifstream (const char* filename, std::ios_base::openmode mode = ios_base::in)
+    : std::ifstream (utf8::widen (filename), mode) {};
+  explicit ifstream (const std::string& filename, std::ios_base::openmode mode = ios_base::in)
+    : std::ifstream (utf8::widen (filename), mode) {};
+  ifstream (ifstream&& other) noexcept : std::ifstream ((std::ifstream&&)other) {};
+  ifstream (const ifstream& rhs) = delete;
+
+  void open (const char* filename, std::ios_base::openmode mode = ios_base::in)
+  {
+    std::ifstream::open (utf8::widen (filename), mode);
+  }
+  void open (const std::string& filename, ios_base::openmode mode = ios_base::in)
+  {
+    std::ifstream::open (utf8::widen (filename), mode);
+  }
+};
+/// Output stream class using UTF-8 filename
+class ofstream : public std::ofstream
+{
+public:
+  ofstream () : std::ofstream () {};
+  explicit ofstream (const char* filename, std::ios_base::openmode mode = ios_base::out)
+    : std::ofstream (utf8::widen (filename), mode) {};
+  explicit ofstream (const std::string& filename, std::ios_base::openmode mode = ios_base::out)
+    : std::ofstream (utf8::widen (filename), mode) {};
+  ofstream (ofstream&& other) noexcept : std::ofstream ((std::ofstream&&)other) {};
+  ofstream (const ofstream& rhs) = delete;
+
+  void open (const char* filename, ios_base::openmode mode = ios_base::out)
+  {
+    std::ofstream::open (utf8::widen (filename), mode);
+  }
+  void open (const std::string& filename, ios_base::openmode mode = ios_base::out)
+  {
+    std::ofstream::open (utf8::widen (filename), mode);
+  }
+};
+
+/// Bidirectional stream class using UTF-8 filename
+class fstream : public std::fstream
+{
+public:
+  fstream () : std::fstream () {};
+  explicit fstream (const char* filename, std::ios_base::openmode mode = ios_base::in | ios_base::out)
+    : std::fstream (utf8::widen (filename), mode) {};
+  explicit fstream (const std::string& filename, std::ios_base::openmode mode = ios_base::in | ios_base::out)
+    : std::fstream (utf8::widen (filename), mode) {};
+  fstream (fstream&& other) noexcept : std::fstream ((std::fstream&&)other) {};
+  fstream (const fstream& rhs) = delete;
+
+  void open (const char* filename, ios_base::openmode mode = ios_base::in | ios_base::out)
+  {
+    std::fstream::open (utf8::widen (filename), mode);
+  }
+  void open (const std::string& filename, ios_base::openmode mode = ios_base::in | ios_base::out)
+  {
+    std::fstream::open (utf8::widen (filename), mode);
+  }
+};
+
+#else
+//Under Linux file streams already use UTF-8 filenames
+typedef std::ifstream ifstream;
+typedef std::ofstream ofstream;
+typedef std::fstream fstream;
+#endif
+
+
+// INLINES --------------------------------------------------------------------
+
+/*!
+  Check if pointer points to a valid UTF-8 encoding
+  \param p pointer to string
+  \return `true` if there is a valid UTF-8 encoding at the current pointer position,
+          `false` otherwise.
+*/
+inline
+bool is_valid (const char* p)
+{
+  auto prev_mode = error_mode (action::replace);
+  bool valid =  (next (p) != REPLACEMENT_CHARACTER);
+  error_mode (prev_mode);
+  return valid;
+}
+
+/*!
+  Check if iterator points to a valid UTF-8 encoding
+  \param p    Iterator
+  \param last Iterator pointing to end of range
+  \return `true` if there is a valid UTF-8 encoding at the current iterator position,
+          `false` otherwise.
+*/
+inline
+bool is_valid (std::string::const_iterator p, const std::string::const_iterator last)
+{
+  auto len = last - p;
+  auto prev_mode = error_mode (action::replace);
+  bool valid = (next (p, last) != REPLACEMENT_CHARACTER);
+  error_mode (prev_mode);
+  return valid;
+}
+
+/// @copydoc char32_t prev (std::string::const_iterator& ptr, const std::string::const_iterator first);
+inline
+char32_t next (std::string::iterator& ptr, const std::string::const_iterator last)
+{
+  return next (*(std::string::const_iterator*)(&ptr), last);
+}
+
+/// @copydoc char32_t prev (std::string::const_iterator& ptr, const std::string::const_iterator first);
+inline
+char32_t prev (std::string::iterator& ptr, const std::string::const_iterator first)
+{
+  return prev (*(std::string::const_iterator*)(&ptr), first);
+}
+
+/*!
+  Conversion from UTF-8 to UTF-32
+
+  \param p pointer to character
+  \return UTF-32 encoded character or utf8::REPLACEMENT_CHARACTER (0xfffd)
+          if it is an invalid UTF-8 encoding
+*/
+inline
+char32_t rune (const char* p)
+{
+  return next (p);
+}
+
+
+/*!
+  Decodes a UTF-8 encoded character and advances pointer to next character
+
+  \param ptr    <b>Reference</b> to character pointer to be advanced
+  \return     decoded character
+
+  If the string contains an invalid UTF-8 encoding, the function returns
+  utf8::REPLACEMENT_CHARACTER (0xfffd) and advances pointer to beginning of
+  next character or end of string.
+*/
+inline
+char32_t next (char*& ptr)
+{
+  return next (const_cast<const char*&>(ptr));
+}
+
+/*!
+  Decrements a character pointer to previous UTF-8 character
+
+  \param ptr    <b>Reference</b> to character pointer to be decremented
+  \return       previous UTF-8 encoded character
+
+  If the string contains an invalid UTF-8 encoding, the function returns
+  REPLACEMENT_CHARACTER (0xfffd) and pointer remains unchanged.
+*/
+inline
+char32_t prev (char*& ptr)
+{
+  return prev (const_cast<const char*&>(ptr));
+}
+
+
+/*!
+  Verifies if string is a valid UTF-8 encoded string
+  \param s character string to verify
+  \return `true` if string is a valid UTF-8 encoded string, `false` otherwise
+*/
+inline
+bool valid_str (const std::string& s)
+{
+  return valid_str (s.c_str (), s.size());
+}
+
+/// @copydoc rune()
+inline
+char32_t rune (const std::string::const_iterator& p)
+{
+  return rune (&(*p));
+}
+
+
+/*!
+  Return true if character is blank(-ish).
+  \param p pointer to character to check
+  \return `true` if character is blank, `false` otherwise
+
+  Returns `true` if Unicode character has the "White_Space=yes" property in the
+  [Unicode Character Database](https://www.unicode.org/Public/UCD/latest/ucd/PropList.txt)
+*/
+inline
+bool isspace (const char* p)
+{
+  return isspace (rune (p));
+}
+
+/// \copydoc isspace(const char* p)
+inline
+bool isspace (std::string::const_iterator p)
+{
+  return isspace (rune(p));
+}
+
+
+/*!
+  Check if character is space or tab
+  \param p pointer to character to check
+
+  \return `true` if character is `\t` (0x09) or is in the "Space_Separator" (Zs)
+          category, `false` otherwise.
+
+  See [Unicode Character Database](https://www.unicode.org/Public/UCD/latest/ucd/PropList.txt)
+  for a list of characters in the Zs (Space_Separator) category. The function adds
+  HORIZONTAL_TAB (0x09 or '\\t') to the space separator category for compatibility
+  with standard `isblank (char c)` C function.
+*/
+inline
+bool isblank (const char *p)
+{
+  return isblank(rune(p));
+}
+
+/// \copydoc isblank(const char* p)
+inline
+bool isblank (std::string::const_iterator p)
+{
+  return isblank (rune (p));
+}
+
+/*!
+  Check if character is a decimal digit (0-9)
+  \param r character to check
+  \return true if character is a digit, false otherwise
+*/
+inline
+bool isdigit (char32_t r)
+{
+  return '0' <= r && r <= '9';
+}
+
+/*!
+  Check if character is a decimal digit (0-9)
+  \param p pointer to character to check
+  \return `true` if character is a digit, `false` otherwise
+*/
+inline
+bool isdigit (const char *p)
+{
+  return isdigit (rune (p));
+}
+
+/// \copydoc isdigit(const char* p)
+inline
+bool isdigit (std::string::const_iterator p)
+{
+  return isdigit (rune (p));
+}
+
+/*!
+  Check if character is an alphanumeric character (0-9 or A-Z or a-z)
+  \param r character to check
+  \return `true` if character is alphanumeric, `false` otherwise
+*/
+inline
+bool isalnum (char32_t r)
+{
+  return ('0' <= r && r <= '9') || ('A' <= r && r <= 'Z') || ('a' <= r && r <= 'z');
+}
+
+/*!
+  Check if character is an alphanumeric character (0-9 or A-Z or a-z)
+  \param p pointer to character to check
+  \return `true` if character is alphanumeric, `false` otherwise
+*/
+inline
+bool isalnum (const char *p)
+{
+  return isalnum (rune (p));
+}
+
+/// \copydoc isalnum(const char *p)
+inline
+bool isalnum (std::string::const_iterator p)
+{
+  return isalnum (rune (p));
+}
+
+/*!
+  Check if character is an alphabetic character (A-Z or a-z)
+  \param r character to check
+  \return `true` if character is alphabetic, `false` otherwise
+*/
+inline
+bool isalpha (char32_t r)
+{
+  return ('A' <= r && r <= 'Z') || ('a' <= r && r <= 'z');
+}
+
+/*!
+  Return true if character is an alphabetic character (A-Z or a-z)
+  \param p pointer to character to check
+  \return true if character is alphabetic, false otherwise
+*/
+inline
+bool isalpha (const char *p)
+{
+  return isalpha (rune (p));
+}
+
+/// \copydoc isalpha(const char *p)
+inline
+bool isalpha (std::string::const_iterator p)
+{
+  return isalpha (&*p);
+}
+
+
+/*!
+  Check if character is a hexadecimal digit (0-9 or A-F or a-f)
+  \param r character to check
+  \return `true` if character is hexadecimal, `false` otherwise
+*/
+inline
+bool isxdigit (char32_t r)
+{
+  return ('0' <= r && r <= '9') || ('A' <= r && r <= 'F') || ('a' <= r && r <= 'f');
+}
+
+/*!
+  Check if character is a hexadecimal digit (0-9 or A-F or a-f)
+  \param p pointer to character to check
+  \return `true` if character is hexadecimal, `false` otherwise
+*/
+inline
+bool isxdigit (const char *p)
+{
+  return isxdigit(rune(p));
+}
+
+/// \copydoc isxdigit(const char* p)
+inline
+bool isxdigit (std::string::const_iterator p)
+{
+  return isxdigit (rune(p));
+}
+
+/// \copydoc isupper(const char* p)
+inline
+bool isupper (std::string::const_iterator p)
+{
+  return isupper (rune(p));
+}
+
+/// \copydoc islower(const char*p)
+inline
+bool islower (std::string::const_iterator p)
+{
+  return islower (rune(p));
+}
+
+}; //namespace utf8
+
+
