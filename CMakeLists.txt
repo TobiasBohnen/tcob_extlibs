@@ -55,10 +55,6 @@ list(APPEND TCOB_EXTLIBS_INCDIRS ${physfs_SOURCE_DIR}/src/)
 list(APPEND TCOB_EXTLIBS_DEFINES PHYSFS_STATIC)
 list(APPEND TCOB_EXTLIBS_LIBS physfs-static)
 
-# mojoal https://github.com/icculus/mojoAL
-list(APPEND TCOB_EXTLIBS_SRCFILES ${CMAKE_CURRENT_SOURCE_DIR}/req/AL/mojoal.c)
-list(APPEND TCOB_EXTLIBS_DEFINES AL_LIBTYPE_STATIC)
-
 # miniz @3.0.2 https://github.com/richgel999/miniz
 list(APPEND TCOB_EXTLIBS_SRCFILES ${CMAKE_CURRENT_SOURCE_DIR}/req/miniz/miniz.c)
 list(APPEND TCOB_EXTLIBS_INCDIRS ${CMAKE_CURRENT_SOURCE_DIR}/req/miniz/)
@@ -78,41 +74,36 @@ file(GLOB_RECURSE CLIPPER_SRC_FILES ${CMAKE_CURRENT_SOURCE_DIR}/req/Clipper2Lib/
 list(APPEND TCOB_EXTLIBS_SRCFILES ${CLIPPER_SRC_FILES})
 list(APPEND TCOB_EXTLIBS_INCDIRS ${CMAKE_CURRENT_SOURCE_DIR}/req/Clipper2Lib/include)
 
-# SDL2 @2.32.0 https://github.com/libsdl-org/SDL
-MESSAGE(STATUS "SDL2:")
+# SDL3 @3.2.8 https://github.com/libsdl-org/SDL
+MESSAGE(STATUS "SDL3:")
 
 FetchContent_Declare(
-  SDL2
+  SDL3
   GIT_REPOSITORY https://github.com/libsdl-org/SDL
-  GIT_TAG release-2.32.0
+  GIT_TAG release-3.2.8
   EXCLUDE_FROM_ALL
 )
 
-set(SDL_SENSOR OFF CACHE BOOL "" FORCE)
-set(SDL_POWER OFF CACHE BOOL "" FORCE)
-set(SDL_FILESYSTEM OFF CACHE BOOL "" FORCE)
+set(SDL_INSTALL OFF CACHE BOOL "" FORCE)
+set(SDL_INSTALL_TESTS OFF CACHE BOOL "" FORCE)
+set(SDL_UNINSTALL OFF CACHE BOOL "" FORCE)
 set(SDL_LIBC ON CACHE BOOL "" FORCE)
-set(SDL2_DISABLE_SDL2MAIN ON CACHE BOOL "" FORCE)
-set(SDL2_DISABLE_INSTALL ON CACHE BOOL "" FORCE)
-set(SDL2_DISABLE_UNINSTALL ON CACHE BOOL "" FORCE)
 
 if(NOT BUILD_SHARED_LIBS)
-  set(SDL_SHARED_ENABLED_BY_DEFAULT OFF CACHE BOOL "" FORCE)
   set(SDL_SHARED OFF CACHE BOOL "" FORCE)
   set(SDL_STATIC ON CACHE BOOL "" FORCE)
 endif()
 
-FetchContent_MakeAvailable(SDL2)
-tcob_mark_all_as_advanced("^SDL2_")
+FetchContent_MakeAvailable(SDL3)
 tcob_mark_all_as_advanced("^SDL_")
 
-if(TARGET SDL2-static)
-  tcob_disable_warnings(SDL2-static)
+if(TARGET SDL3-static)
+  tcob_disable_warnings(SDL3-static)
 endif()
 
-list(APPEND TCOB_EXTLIBS_INCDIRS ${SDL2_SOURCE_DIR}/include/)
+list(APPEND TCOB_EXTLIBS_INCDIRS ${SDL3_SOURCE_DIR}/include/)
 list(APPEND TCOB_EXTLIBS_DEFINES SDL_MAIN_HANDLED)
-list(APPEND TCOB_EXTLIBS_LIBS SDL2-static)
+list(APPEND TCOB_EXTLIBS_LIBS SDL3-static)
 
 # FreeType @2.13.3 https://github.com/freetype/freetype
 MESSAGE(STATUS "FreeType:")
