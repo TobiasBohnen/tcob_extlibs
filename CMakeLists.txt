@@ -197,22 +197,11 @@ if(TCOB_ENABLE_FILETYPES_AUDIO_DRLIBS)
   list(APPEND TCOB_EXTLIBS_SRCFILES ${CMAKE_CURRENT_SOURCE_DIR}/opt/dr_libs/dr_libs.c)
 endif()
 
-# Lua @Lua: 5.4.7 https://github.com/lua/lua @LuaJIT: 2.1.0 https://github.com/LuaJIT/LuaJIT
+# Lua @5.4.7 https://github.com/lua/lua
 if(TCOB_ENABLE_ADDON_SCRIPTING_LUA)
-  if(TCOB_USE_LUAJIT)
-    set(LUAJIT_BUILD_EXE OFF CACHE BOOL "" FORCE)
-    add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/opt/luajit/)
-    tcob_disable_warnings(libluajit)
-    tcob_disable_warnings(buildvm)
-    tcob_disable_warnings(minilua)
-
-    list(APPEND TCOB_EXTLIBS_INCDIRS ${CMAKE_CURRENT_SOURCE_DIR}/opt/luajit/LuaJIT/src)
-    list(APPEND TCOB_EXTLIBS_LIBS libluajit)
-  else()
-    file(GLOB LUA_SRC_FILES ${CMAKE_CURRENT_SOURCE_DIR}/opt/lua/*.cpp)
-    list(APPEND TCOB_EXTLIBS_SRCFILES ${LUA_SRC_FILES})
-    list(APPEND TCOB_EXTLIBS_INCDIRS ${CMAKE_CURRENT_SOURCE_DIR}/opt/lua/)
-  endif()
+  file(GLOB LUA_SRC_FILES ${CMAKE_CURRENT_SOURCE_DIR}/opt/lua/*.cpp)
+  list(APPEND TCOB_EXTLIBS_SRCFILES ${LUA_SRC_FILES})
+  list(APPEND TCOB_EXTLIBS_INCDIRS ${CMAKE_CURRENT_SOURCE_DIR}/opt/lua/)
 endif()
 
 # Squirrel @3.2 -> 1c1fd9a3709a8b46f64e52fa10bd87e896c0b502 https://github.com/albertodemichelis/squirrel
