@@ -26,34 +26,10 @@ include(FetchContent)
 # #required
 
 # physfs @3.2.0 https://github.com/icculus/physfs
-MESSAGE(STATUS "physfs:")
-
-FetchContent_Declare(
-  physfs
-  GIT_REPOSITORY https://github.com/icculus/physfs
-  GIT_TAG release-3.2.0
-  EXCLUDE_FROM_ALL
-)
-
-if(NOT BUILD_SHARED_LIBS)
-  set(PHYSFS_BUILD_STATIC ON CACHE BOOL "" FORCE)
-  set(PHYSFS_BUILD_SHARED OFF CACHE BOOL "" FORCE)
-endif()
-
-set(PHYSFS_BUILD_DOCS OFF CACHE BOOL "" FORCE)
-set(PHYSFS_BUILD_TEST OFF CACHE BOOL "" FORCE)
-set(PHYSFS_DISABLE_INSTALL ON CACHE BOOL "" FORCE)
-
-FetchContent_MakeAvailable(physfs)
-tcob_mark_all_as_advanced("^PHYSFS_")
-
-if(TARGET physfs-static)
-  tcob_disable_warnings(physfs-static)
-endif()
-
-list(APPEND TCOB_EXTLIBS_INCDIRS ${physfs_SOURCE_DIR}/src/)
+file(GLOB_RECURSE PHYSFS_SRC_FILES ${CMAKE_CURRENT_SOURCE_DIR}/req/physfs/*.c)
+list(APPEND TCOB_EXTLIBS_SRCFILES ${PHYSFS_SRC_FILES})
+list(APPEND TCOB_EXTLIBS_INCDIRS ${CMAKE_CURRENT_SOURCE_DIR}/req/physfs/)
 list(APPEND TCOB_EXTLIBS_DEFINES PHYSFS_STATIC)
-list(APPEND TCOB_EXTLIBS_LIBS physfs-static)
 
 # miniz @3.0.2 https://github.com/richgel999/miniz
 list(APPEND TCOB_EXTLIBS_SRCFILES ${CMAKE_CURRENT_SOURCE_DIR}/req/miniz/miniz.c)
@@ -108,7 +84,6 @@ if(TARGET SDL3-static)
 endif()
 
 list(APPEND TCOB_EXTLIBS_INCDIRS ${SDL3_SOURCE_DIR}/include/)
-list(APPEND TCOB_EXTLIBS_DEFINES SDL_MAIN_HANDLED)
 list(APPEND TCOB_EXTLIBS_LIBS SDL3-static)
 
 # FreeType @2.13.3 https://github.com/freetype/freetype
@@ -303,7 +278,6 @@ endif()
 if(TCOB_ENABLE_ADDON_AUDIO_TINYSOUNDFONT)
   list(APPEND TCOB_EXTLIBS_SRCFILES ${CMAKE_CURRENT_SOURCE_DIR}/opt/TinySoundFont/TinySoundFont.c)
   list(APPEND TCOB_EXTLIBS_SRCFILES ${CMAKE_CURRENT_SOURCE_DIR}/opt/TinySoundFont/stb_vorbis.c)
-  list(APPEND TCOB_EXTLIBS_DEFINES STB_VORBIS_NO_PUSHDATA_API)
 endif()
 
 # libxmp-lite @4.6.2 https://github.com/libxmp/libxmp
@@ -377,8 +351,6 @@ if(TCOB_ENABLE_ADDON_GFX_LITEHTML)
   if(WIN32)
     list(APPEND TCOB_EXTLIBS_INCDIRS ${CMAKE_CURRENT_SOURCE_DIR}/opt/litehtml/src/gumbo/visualc/include/)
   endif()
-
-  list(APPEND TCOB_EXTLIBS_DEFINES LITEHTML_UTF8)
 endif()
 
 # ##########################################################################
@@ -405,11 +377,8 @@ MESSAGE(STATUS "----------------")
 
 # #########################################################################
 if(EMSCRIPTEN)
-  target_compile_options(physfs-static PRIVATE -pthread)
-  target_link_options(physfs-static PRIVATE -pthread)
-
-  target_compile_options(SDL2-static PRIVATE -pthread)
-  target_link_options(SDL2-static PRIVATE -pthread)
+  target_compile_options(SDL3-static PRIVATE -pthread)
+  target_link_options(SDL3-static PRIVATE -pthread)
 
   target_compile_options(freetype PRIVATE -pthread)
   target_link_options(freetype PRIVATE -pthread)
