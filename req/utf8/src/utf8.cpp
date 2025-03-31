@@ -744,7 +744,7 @@ size_t length (std::string_view s) {
   return nc;
 }
 
-char32_t next (std::string_view::const_iterator& ptr, const std::string_view::const_iterator last) {
+char32_t next_ex (std::string_view::const_iterator& ptr, const std::string_view::const_iterator last) {
   char32_t rune = 0;
   if (ptr == last)
     return throw_or_replace (utf8::exception::invalid_utf8);

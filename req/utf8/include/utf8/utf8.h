@@ -116,7 +116,7 @@ size_t length (const char* s);
 
 //ADDED
 size_t length (std::string_view s);
-char32_t next (std::string_view::const_iterator& ptr, const std::string_view::const_iterator last);
+char32_t next_ex (std::string_view::const_iterator& ptr, const std::string_view::const_iterator last);
 
 /*!
   \addtogroup folding
