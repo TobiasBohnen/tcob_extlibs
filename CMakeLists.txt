@@ -56,7 +56,7 @@ MESSAGE(STATUS "SDL3:")
 FetchContent_Declare(
   SDL3
   GIT_REPOSITORY https://github.com/libsdl-org/SDL
-  GIT_TAG release-3.2.8
+  GIT_TAG release-3.2.10
   EXCLUDE_FROM_ALL
 )
 
@@ -185,45 +185,11 @@ if(TCOB_ENABLE_ADDON_SCRIPTING_LUA)
   list(APPEND TCOB_EXTLIBS_INCDIRS ${CMAKE_CURRENT_SOURCE_DIR}/opt/lua/)
 endif()
 
-# Squirrel @3.2 -> 1c1fd9a3709a8b46f64e52fa10bd87e896c0b502 https://github.com/albertodemichelis/squirrel
+# Squirrel @3.2 -> f77074b https://github.com/albertodemichelis/squirrel
 if(TCOB_ENABLE_ADDON_SCRIPTING_SQUIRREL)
-  MESSAGE(STATUS "Squirrel:")
-
-  FetchContent_Declare(
-    squirrel
-    GIT_REPOSITORY https://github.com/albertodemichelis/squirrel
-    GIT_TAG 1c1fd9a3709a8b46f64e52fa10bd87e896c0b502
-    EXCLUDE_FROM_ALL
-  )
-
-  set(SQ_DISABLE_INTERPRETER ON CACHE BOOL "" FORCE)
-  set(SQ_DISABLE_INSTALLER ON CACHE BOOL "" FORCE)
-  set(SQ_DISABLE_CMAKE_INSTALLER ON CACHE BOOL "" FORCE)
-  set(SQ_DISABLE_HEADER_INSTALLER ON CACHE BOOL "" FORCE)
-
-  if(BUILD_SHARED_LIBS)
-    set(DISABLE_STATIC ON CACHE BOOL "" FORCE)
-    set(DISABLE_DYNAMIC OFF CACHE BOOL "" FORCE)
-    list(APPEND TCOB_EXTLIBS_LIBS squirrel sqstdlib)
-  else()
-    set(DISABLE_STATIC OFF CACHE BOOL "" FORCE)
-    set(DISABLE_DYNAMIC ON CACHE BOOL "" FORCE)
-    list(APPEND TCOB_EXTLIBS_LIBS squirrel_static sqstdlib_static)
-  endif()
-
-  FetchContent_MakeAvailable(squirrel)
-  tcob_mark_all_as_advanced("^SQ_")
-  tcob_mark_all_as_advanced("^DISABLE_")
-
-  if(TARGET squirrel_static)
-    tcob_disable_warnings(squirrel_static)
-  endif()
-
-  if(TARGET sqstdlib_static)
-    tcob_disable_warnings(sqstdlib_static)
-  endif()
-
-  list(APPEND TCOB_EXTLIBS_INCDIRS ${squirrel_SOURCE_DIR}/include/)
+  file(GLOB_RECURSE SQUIRREL_SRC_FILES ${CMAKE_CURRENT_SOURCE_DIR}/opt/squirrel/*.cpp)
+  list(APPEND TCOB_EXTLIBS_SRCFILES ${SQUIRREL_SRC_FILES})
+  list(APPEND TCOB_EXTLIBS_INCDIRS ${CMAKE_CURRENT_SOURCE_DIR}/opt/squirrel/include/)
 endif()
 
 # box2d @3.0.0 https://github.com/erincatto/box2d
