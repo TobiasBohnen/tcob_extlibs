@@ -207,6 +207,10 @@ if(TCOB_ENABLE_ADDON_PHYSICS_BOX2D)
   tcob_mark_all_as_advanced("^BOX2D_")
   tcob_disable_warnings(box2d)
 
+  if(MSVC)
+    target_compile_options(box2d PRIVATE /wd4255)
+  endif()
+
   list(APPEND TCOB_EXTLIBS_INCDIRS ${box2d_SOURCE_DIR}/include/)
   list(APPEND TCOB_EXTLIBS_LIBS box2d)
 endif()
