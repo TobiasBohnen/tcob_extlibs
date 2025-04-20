@@ -192,21 +192,16 @@ if(TCOB_ENABLE_ADDON_SCRIPTING_SQUIRREL)
   list(APPEND TCOB_EXTLIBS_INCDIRS ${CMAKE_CURRENT_SOURCE_DIR}/opt/squirrel/include/)
 endif()
 
-# box2d @3.0.0 https://github.com/erincatto/box2d
+# box2d @3.1.0 https://github.com/erincatto/box2d
 if(TCOB_ENABLE_ADDON_PHYSICS_BOX2D)
   MESSAGE(STATUS "box2d:")
 
   FetchContent_Declare(
     box2d
     GIT_REPOSITORY https://github.com/erincatto/box2d
-    GIT_TAG v3.0.0
+    GIT_TAG v3.1.0
     EXCLUDE_FROM_ALL
   )
-
-  set(BOX2D_BUILD_UNIT_TESTS OFF CACHE BOOL "" FORCE)
-  set(BOX2D_BUILD_TESTBED OFF CACHE BOOL "" FORCE)
-  set(BOX2D_BUILD_DOCS OFF CACHE BOOL "" FORCE)
-  set(BOX2D_USER_SETTINGS OFF CACHE BOOL "" FORCE)
 
   FetchContent_MakeAvailable(box2d)
   tcob_mark_all_as_advanced("^BOX2D_")
