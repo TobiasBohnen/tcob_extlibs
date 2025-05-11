@@ -3536,20 +3536,46 @@ DRWAV_PRIVATE drwav_bool32 drwav_init__internal(drwav* pWav, drwav_chunk_proc on
                 return DRWAV_FALSE;
             }
 
-            /* We need to seek forward by the offset. */
+            /* The position of the audio data starts at an offset. */
             offset = drwav_bytes_to_u32_ex(offsetAndBlockSizeData + 0, pWav->container);
-            if (drwav__seek_forward(pWav->onSeek, offset, pWav->pUserData) == DRWAV_FALSE) {
-                return DRWAV_FALSE;
-            }
-            cursor += offset;
+            pWav->dataChunkDataPos = cursor + offset;
 
-            pWav->dataChunkDataPos = cursor;
+            /* The data chunk size needs to be reduced by the offset or else seeking will break. */
             dataChunkSize = chunkSize;
-
-            /* If we're running in sequential mode, or we're not reading metadata, we have enough now that we can get out of the loop. */
-            if (sequential || !isProcessingMetadata) {
-                break;      /* No need to keep reading beyond the data chunk. */
+            if (dataChunkSize  > offset) {
+                dataChunkSize -= offset;
             } else {
+                dataChunkSize = 0;
+            }
+
+            if (sequential) {
+                if (foundChunk_fmt) {   /* <-- Name is misleading, but will be set to true if the COMM chunk has been parsed. */
+                    /*
+                    Getting here means we're opening in sequential mode and we've found the SSND (data) and COMM (fmt) chunks. We need
+                    to get out of the loop here or else we'll end up going past the data chunk and will have no way of getting back to
+                    it since we're not allowed to seek backwards.
+
+                    One subtle detail here is that there is an offset with the SSND chunk. We need to make sure we seek past this offset
+                    so we're left sitting on the first byte of actual audio data.
+                    */
+                    if (drwav__seek_forward(pWav->onSeek, offset, pWav->pUserData) == DRWAV_FALSE) {
+                        return DRWAV_FALSE;
+                    }
+                    cursor += offset;
+
+                    break;
+                } else {
+                    /*
+                    Getting here means the COMM chunk was not found. In sequential mode, if we haven't yet found the COMM chunk
+                    we'll need to abort because we can't be doing a backwards seek back to the SSND chunk in order to read the
+                    data. For this reason, this configuration of AIFF files are not supported with sequential mode.
+                    */
+                    return DRWAV_FALSE; 
+                }
+            } else {
+                chunkSize += header.paddingSize;                /* <-- Make sure we seek past the padding. */
+                chunkSize -= sizeof(offsetAndBlockSizeData);    /* <-- This was read earlier. */
+
                 if (drwav__seek_forward(pWav->onSeek, chunkSize, pWav->pUserData) == DRWAV_FALSE) {
                     break;
                 }
@@ -3558,7 +3584,6 @@ DRWAV_PRIVATE drwav_bool32 drwav_init__internal(drwav* pWav, drwav_chunk_proc on
                 continue;   /* There may be some more metadata to read. */
             }
         }
-
 
 
         /* Getting here means it's not a chunk that we care about internally, but might need to be handled as metadata by the caller. */
@@ -3652,6 +3677,10 @@ DRWAV_PRIVATE drwav_bool32 drwav_init__internal(drwav* pWav, drwav_chunk_proc on
 
 
     /* At this point we should be sitting on the first byte of the raw audio data. */
+    if (drwav__seek_from_start(pWav->onSeek, pWav->dataChunkDataPos, pWav->pUserData) == DRWAV_FALSE) {
+        drwav_free(pWav->pMetadata, &pWav->allocationCallbacks);
+        return DRWAV_FALSE;
+    }
 
     /*
     I've seen a WAV file in the wild where a RIFF-ecapsulated file has the size of it's "RIFF" and
@@ -3673,18 +3702,30 @@ DRWAV_PRIVATE drwav_bool32 drwav_init__internal(drwav* pWav, drwav_chunk_proc on
         }
     }
 
-    if (drwav__seek_from_start(pWav->onSeek, pWav->dataChunkDataPos, pWav->pUserData) == DRWAV_FALSE) {
-        drwav_free(pWav->pMetadata, &pWav->allocationCallbacks);
-        return DRWAV_FALSE;
-    }
-
-
     pWav->fmt                 = fmt;
     pWav->sampleRate          = fmt.sampleRate;
     pWav->channels            = fmt.channels;
     pWav->bitsPerSample       = fmt.bitsPerSample;
-    pWav->bytesRemaining      = dataChunkSize;
     pWav->translatedFormatTag = translatedFormatTag;
+
+    /*
+    I've had a report where files would start glitching after seeking. The reason for this is the data
+    chunk is not a clean multiple of the PCM frame size in bytes. Where this becomes a problem is when
+    seeking, because the number of bytes remaining in the data chunk is used to calculate the current
+    byte position. If this byte position is not aligned to the number of bytes in a PCM frame, it will
+    result in the seek not being cleanly positioned at the start of the PCM frame thereby resulting in
+    all decoded frames after that being corrupted.
+
+    To address this, we need to round the data chunk size down to the nearest multiple of the frame size.
+    */
+    if (!drwav__is_compressed_format_tag(translatedFormatTag)) {
+        drwav_uint32 bytesPerFrame = drwav_get_bytes_per_pcm_frame(pWav);
+        if (bytesPerFrame > 0) {
+            dataChunkSize -= (dataChunkSize % bytesPerFrame);
+        }
+    }
+
+    pWav->bytesRemaining      = dataChunkSize;
     pWav->dataChunkDataSize   = dataChunkSize;
 
     if (sampleCountFromFactChunk != 0) {

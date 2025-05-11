@@ -50,13 +50,13 @@ file(GLOB_RECURSE CLIPPER_SRC_FILES ${CMAKE_CURRENT_SOURCE_DIR}/req/Clipper2Lib/
 list(APPEND TCOB_EXTLIBS_SRCFILES ${CLIPPER_SRC_FILES})
 list(APPEND TCOB_EXTLIBS_INCDIRS ${CMAKE_CURRENT_SOURCE_DIR}/req/Clipper2Lib/include)
 
-# SDL3 @3.2.8 https://github.com/libsdl-org/SDL
+# SDL3 @3.2.12 https://github.com/libsdl-org/SDL
 MESSAGE(STATUS "SDL3:")
 
 FetchContent_Declare(
   SDL3
   GIT_REPOSITORY https://github.com/libsdl-org/SDL
-  GIT_TAG release-3.2.10
+  GIT_TAG release-3.2.12
   EXCLUDE_FROM_ALL
 )
 
@@ -245,7 +245,7 @@ if(TCOB_ENABLE_ADDON_AUDIO_TINYSOUNDFONT)
   list(APPEND TCOB_EXTLIBS_SRCFILES ${CMAKE_CURRENT_SOURCE_DIR}/opt/TinySoundFont/stb_vorbis.c)
 endif()
 
-# libxmp-lite @4.6.2 https://github.com/libxmp/libxmp
+# libxmp-lite @4.6.3 https://github.com/libxmp/libxmp
 if(TCOB_ENABLE_FILETYPES_AUDIO_LIBXMP)
   file(GLOB_RECURSE LIBXMP_SRC_FILES ${CMAKE_CURRENT_SOURCE_DIR}/opt/libxmp-lite/src/*.c)
   list(APPEND TCOB_EXTLIBS_SRCFILES ${LIBXMP_SRC_FILES})
@@ -256,7 +256,7 @@ if(TCOB_ENABLE_FILETYPES_AUDIO_LIBXMP)
   list(APPEND TCOB_EXTLIBS_DEFINES LIBXMP_CORE_PLAYER LIBXMP_NO_DEPACKERS LIBXMP_STATIC)
 endif()
 
-# sqlite @3.49.1 https://www.sqlite.org/
+# sqlite @3.49.2 https://www.sqlite.org/
 if(TCOB_ENABLE_ADDON_DATA_SQLITE)
   list(APPEND TCOB_EXTLIBS_SRCFILES ${CMAKE_CURRENT_SOURCE_DIR}/opt/sqlite3/sqlite3.c)
 endif()
