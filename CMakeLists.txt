@@ -45,18 +45,18 @@ list(APPEND TCOB_EXTLIBS_INCDIRS ${CMAKE_CURRENT_SOURCE_DIR}/req/utf8/include)
 # earcut https://github.com/mapbox/earcut.hpp
 list(APPEND TCOB_EXTLIBS_INCDIRS ${CMAKE_CURRENT_SOURCE_DIR}/req/earcut/)
 
-# clipper2 @1.5.2 https://github.com/AngusJohnson/Clipper2
+# clipper2 @1.5.3 https://github.com/AngusJohnson/Clipper2
 file(GLOB_RECURSE CLIPPER_SRC_FILES ${CMAKE_CURRENT_SOURCE_DIR}/req/Clipper2Lib/src/*.cpp)
 list(APPEND TCOB_EXTLIBS_SRCFILES ${CLIPPER_SRC_FILES})
 list(APPEND TCOB_EXTLIBS_INCDIRS ${CMAKE_CURRENT_SOURCE_DIR}/req/Clipper2Lib/include)
 
-# SDL3 @3.2.12 https://github.com/libsdl-org/SDL
+# SDL3 @3.2.14 https://github.com/libsdl-org/SDL
 MESSAGE(STATUS "SDL3:")
 
 FetchContent_Declare(
   SDL3
   GIT_REPOSITORY https://github.com/libsdl-org/SDL
-  GIT_TAG release-3.2.12
+  GIT_TAG release-3.2.14
   EXCLUDE_FROM_ALL
 )
 
