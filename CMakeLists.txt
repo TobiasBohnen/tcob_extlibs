@@ -178,7 +178,7 @@ if(TCOB_ENABLE_FILETYPES_AUDIO_DRLIBS)
   list(APPEND TCOB_EXTLIBS_SRCFILES ${CMAKE_CURRENT_SOURCE_DIR}/opt/dr_libs/dr_libs.c)
 endif()
 
-# Lua @5.4.7 https://github.com/lua/lua
+# Lua @5.4.8 https://github.com/lua/lua
 if(TCOB_ENABLE_ADDON_SCRIPTING_LUA)
   file(GLOB LUA_SRC_FILES ${CMAKE_CURRENT_SOURCE_DIR}/opt/lua/*.cpp)
   list(APPEND TCOB_EXTLIBS_SRCFILES ${LUA_SRC_FILES})
