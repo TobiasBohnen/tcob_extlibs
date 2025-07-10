@@ -266,14 +266,14 @@ if(TCOB_ENABLE_FILETYPES_GFX_QOI)
   list(APPEND TCOB_EXTLIBS_SRCFILES ${CMAKE_CURRENT_SOURCE_DIR}/opt/qoi/qoi.c)
 endif()
 
-# WebP @1.6.0 https://chromium.googlesource.com/webm/libwebp
+# WebP @1.5.0 https://chromium.googlesource.com/webm/libwebp
 if(TCOB_ENABLE_FILETYPES_GFX_WEBP)
   MESSAGE(STATUS "WebP:")
 
   FetchContent_Declare(
     webp
     GIT_REPOSITORY https://chromium.googlesource.com/webm/libwebp
-    GIT_TAG v1.6.0
+    GIT_TAG v1.5.0
     EXCLUDE_FROM_ALL
   )
 
