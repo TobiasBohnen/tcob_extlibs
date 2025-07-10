@@ -192,14 +192,14 @@ if(TCOB_ENABLE_ADDON_SCRIPTING_SQUIRREL)
   list(APPEND TCOB_EXTLIBS_INCDIRS ${CMAKE_CURRENT_SOURCE_DIR}/opt/sq/include/)
 endif()
 
-# box2d @3.1.0 https://github.com/erincatto/box2d
+# box2d @3.1.1 https://github.com/erincatto/box2d
 if(TCOB_ENABLE_ADDON_PHYSICS_BOX2D)
   MESSAGE(STATUS "box2d:")
 
   FetchContent_Declare(
     box2d
     GIT_REPOSITORY https://github.com/erincatto/box2d
-    GIT_TAG v3.1.0
+    GIT_TAG v3.1.1
     EXCLUDE_FROM_ALL
   )
 
@@ -256,7 +256,7 @@ if(TCOB_ENABLE_FILETYPES_AUDIO_LIBXMP)
   list(APPEND TCOB_EXTLIBS_DEFINES LIBXMP_CORE_PLAYER LIBXMP_NO_DEPACKERS LIBXMP_STATIC)
 endif()
 
-# sqlite @3.49.2 https://www.sqlite.org/
+# sqlite @3.50.2 https://www.sqlite.org/
 if(TCOB_ENABLE_ADDON_DATA_SQLITE)
   list(APPEND TCOB_EXTLIBS_SRCFILES ${CMAKE_CURRENT_SOURCE_DIR}/opt/sqlite3/sqlite3.c)
 endif()
@@ -266,14 +266,14 @@ if(TCOB_ENABLE_FILETYPES_GFX_QOI)
   list(APPEND TCOB_EXTLIBS_SRCFILES ${CMAKE_CURRENT_SOURCE_DIR}/opt/qoi/qoi.c)
 endif()
 
-# WebP @1.5.0 https://chromium.googlesource.com/webm/libwebp
+# WebP @1.6.0 https://chromium.googlesource.com/webm/libwebp
 if(TCOB_ENABLE_FILETYPES_GFX_WEBP)
   MESSAGE(STATUS "WebP:")
 
   FetchContent_Declare(
     webp
     GIT_REPOSITORY https://chromium.googlesource.com/webm/libwebp
-    GIT_TAG v1.5.0
+    GIT_TAG v1.6.0
     EXCLUDE_FROM_ALL
   )
 
