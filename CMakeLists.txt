@@ -262,14 +262,14 @@ if(TCOB_ENABLE_FILETYPES_GFX_QOI)
   list(APPEND TCOB_EXTLIBS_SRCFILES ${CMAKE_CURRENT_SOURCE_DIR}/opt/qoi/qoi.c)
 endif()
 
-# WebP @1.5.0 https://chromium.googlesource.com/webm/libwebp
+# WebP @1.6.0 https://chromium.googlesource.com/webm/libwebp
 if(TCOB_ENABLE_FILETYPES_GFX_WEBP)
   MESSAGE(STATUS "WebP:")
 
   FetchContent_Declare(
     webp
     GIT_REPOSITORY https://chromium.googlesource.com/webm/libwebp
-    GIT_TAG v1.5.0
+    GIT_TAG v1.6.0
     EXCLUDE_FROM_ALL
   )
 
@@ -282,8 +282,10 @@ if(TCOB_ENABLE_FILETYPES_GFX_WEBP)
   set(WEBP_BUILD_WEBPINFO OFF CACHE BOOL "Build the webpinfo command line tool." FORCE)
   set(WEBP_BUILD_WEBPMUX OFF CACHE BOOL "Build the webpmux command line tool." FORCE)
   set(WEBP_BUILD_EXTRAS OFF CACHE BOOL "Build extras." FORCE)
-  set(WEBP_ENABLE_SIMD ON CACHE BOOL "Enable any SIMD optimization." FORCE)
-  set(WEBP_NEAR_LOSSLESS ON CACHE BOOL "Enable near-lossless encoding" FORCE)
+
+  if(MSVC)
+    set(WEBP_ENABLE_SIMD OFF CACHE BOOL "Enable any SIMD optimization." FORCE)
+  endif()
 
   if(NOT BUILD_SHARED_LIBS)
     set(WEBP_LINK_STATIC ON CACHE BOOL "" FORCE)
