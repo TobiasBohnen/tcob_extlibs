@@ -50,13 +50,13 @@ file(GLOB_RECURSE CLIPPER_SRC_FILES ${CMAKE_CURRENT_SOURCE_DIR}/req/Clipper2Lib/
 list(APPEND TCOB_EXTLIBS_SRCFILES ${CLIPPER_SRC_FILES})
 list(APPEND TCOB_EXTLIBS_INCDIRS ${CMAKE_CURRENT_SOURCE_DIR}/req/Clipper2Lib/include)
 
-# SDL3 @3.2.16 https://github.com/libsdl-org/SDL
+# SDL3 @3.2.18 https://github.com/libsdl-org/SDL
 MESSAGE(STATUS "SDL3:")
 
 FetchContent_Declare(
   SDL3
   GIT_REPOSITORY https://github.com/libsdl-org/SDL
-  GIT_TAG release-3.2.16
+  GIT_TAG release-3.2.18
   EXCLUDE_FROM_ALL
 )
 
@@ -111,7 +111,7 @@ list(APPEND TCOB_EXTLIBS_LIBS freetype)
 # ##########################################################################
 # #optional
 
-# libogg @1.3.5 https://github.com/xiph/ogg
+# libogg @1.3.6 https://github.com/xiph/ogg
 if(TCOB_ENABLE_FILETYPES_GFX_THEORA OR TCOB_ENABLE_FILETYPES_AUDIO_OPUS OR TCOB_ENABLE_FILETYPES_AUDIO_VORBIS)
   file(GLOB_RECURSE OGG_SRC_FILES ${CMAKE_CURRENT_SOURCE_DIR}/opt/XiphOrg/ogg/*.c)
   list(APPEND TCOB_EXTLIBS_SRCFILES ${OGG_SRC_FILES})
@@ -173,7 +173,7 @@ if(TCOB_ENABLE_FILETYPES_AUDIO_VORBIS)
   list(APPEND TCOB_EXTLIBS_INCDIRS ${CMAKE_CURRENT_SOURCE_DIR}/opt/XiphOrg/vorbis/include)
 endif()
 
-# dr_libs @dr_flac: 0.12.44 @dr_mp3: 0.7.0 @dr_wav: 0.14.0 https://github.com/mackron/dr_libs
+# dr_libs @dr_flac: 0.13.0 @dr_mp3: 0.7.1 @dr_wav: 0.14.0 https://github.com/mackron/dr_libs
 if(TCOB_ENABLE_FILETYPES_AUDIO_DRLIBS)
   list(APPEND TCOB_EXTLIBS_SRCFILES ${CMAKE_CURRENT_SOURCE_DIR}/opt/dr_libs/dr_libs.c)
 endif()
