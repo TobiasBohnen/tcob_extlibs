@@ -50,13 +50,13 @@ file(GLOB_RECURSE CLIPPER_SRC_FILES ${CMAKE_CURRENT_SOURCE_DIR}/req/Clipper2Lib/
 list(APPEND TCOB_EXTLIBS_SRCFILES ${CLIPPER_SRC_FILES})
 list(APPEND TCOB_EXTLIBS_INCDIRS ${CMAKE_CURRENT_SOURCE_DIR}/req/Clipper2Lib/include)
 
-# SDL3 @3.2.18 https://github.com/libsdl-org/SDL
+# SDL3 @3.2.22 https://github.com/libsdl-org/SDL
 MESSAGE(STATUS "SDL3:")
 
 FetchContent_Declare(
   SDL3
   GIT_REPOSITORY https://github.com/libsdl-org/SDL
-  GIT_TAG release-3.2.18
+  GIT_TAG release-3.2.22
   EXCLUDE_FROM_ALL
 )
 
@@ -86,13 +86,13 @@ endif()
 list(APPEND TCOB_EXTLIBS_INCDIRS ${SDL3_SOURCE_DIR}/include/)
 list(APPEND TCOB_EXTLIBS_LIBS SDL3-static)
 
-# FreeType @2.13.3 https://github.com/freetype/freetype
+# FreeType @2.14.0 https://github.com/freetype/freetype
 MESSAGE(STATUS "FreeType:")
 
 FetchContent_Declare(
   freetype
   GIT_REPOSITORY https://github.com/freetype/freetype
-  GIT_TAG VER-2-13-3
+  GIT_TAG VER-2-14-0
   EXCLUDE_FROM_ALL
 )
 
