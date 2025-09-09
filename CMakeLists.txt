@@ -183,6 +183,10 @@ if(TCOB_ENABLE_ADDON_SCRIPTING_LUA)
   file(GLOB LUA_SRC_FILES ${CMAKE_CURRENT_SOURCE_DIR}/opt/lua/*.cpp)
   list(APPEND TCOB_EXTLIBS_SRCFILES ${LUA_SRC_FILES})
   list(APPEND TCOB_EXTLIBS_INCDIRS ${CMAKE_CURRENT_SOURCE_DIR}/opt/lua/)
+
+  if(UNIX)
+    list(APPEND TCOB_EXTLIBS_DEFINES LUA_USE_LINUX)
+  endif()
 endif()
 
 # Squirrel @3.2 -> f77074b https://github.com/albertodemichelis/squirrel
