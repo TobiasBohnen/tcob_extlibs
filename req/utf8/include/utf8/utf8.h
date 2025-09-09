@@ -10,35 +10,6 @@
 #include <vector>
 #include <fstream>
 
-// ------------- Global configuration options ---------------------------------
-
-/*!
-  If UTF8_USE_WINDOWS_API is not zero, the library issues direct Windows API
-  calls. Otherwise it relies only on standard C++17 functions.
-  If not defined, UTF8_USE_WINDOWS_API defaults to 1 on Windows platform.
-*/
-// #define UTF8_USE_WINDOWS_API 0
-
-/*!
-  If UTF8_KEEP_WIN32_API is defined, WIN32 functions aren't redefined in utf8
-  namespace.
-*/
-// #define UTF8_KEEP_WIN32_API
-
-// --------------- end of configuration options -------------------------------
-
-#define UTF8_USE_WINDOWS_API 0
-
-#if !UTF8_USE_WINDOWS_API
-#include <filesystem>
-
-#if (defined(_MSVC_LANG) && _MSVC_LANG < 201703L)                                                  \
-  || (!defined(_MSVC_LANG) && (__cplusplus < 201703L))
-#error "UTF8 requires c++17 or newer if not using Windows API functions"
-#endif
-
-#endif
-
 namespace utf8 {
 
 /// Exception thrown on encoding/decoding failure

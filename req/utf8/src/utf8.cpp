@@ -51,16 +51,6 @@ inline char32_t throw_or_replace (exception::cause err)
 */
 std::string narrow (const wchar_t* s, size_t nch)
 {
-#if UTF8_USE_WINDOWS_API
-  int nsz;
-  if (!s || !(nsz = WideCharToMultiByte (CP_UTF8, 0, s, (nch?(int)nch:-1), 0, 0, 0, 0)))
-    return string ();
-
-  string out (nsz, 0);
-  WideCharToMultiByte (CP_UTF8, 0, s, -1, &out[0], nsz, 0, 0);
-  if (!nch)
-    out.resize (nsz - 1); //output is null-terminated
-#else
   std::string out;
   if (!nch)
     nch = wcslen (s);
@@ -89,7 +79,6 @@ std::string narrow (const wchar_t* s, size_t nch)
     encode (c, out);
     --nch;
   }
-#endif
   return out;
 }
 
@@ -101,14 +90,6 @@ std::string narrow (const wchar_t* s, size_t nch)
 */
 std::string narrow (const std::wstring& ws)
 {
-#if UTF8_USE_WINDOWS_API
-  size_t nsz = WideCharToMultiByte (CP_UTF8, 0, ws.c_str(), (int)ws.size(), 0, 0, 0, 0);
-  if (!nsz)
-    return string ();
-
-  string out (nsz, 0);
-  WideCharToMultiByte (CP_UTF8, 0, ws.c_str (), (int)ws.size(), &out[0], (int)nsz, 0, 0);
-#else
   std::string out;
   auto in = ws.cbegin ();
   while (in != ws.end ())
@@ -133,7 +114,6 @@ std::string narrow (const std::wstring& ws)
     }
     encode (c, out);
   }
-#endif
   return out;
 }
 
@@ -206,16 +186,6 @@ std::string narrow (char32_t r)
 */
 std::wstring widen (const char* s, size_t nch)
 {
-#if UTF8_USE_WINDOWS_API
-  size_t wsz;
-  if (!s || !(wsz = MultiByteToWideChar (CP_UTF8, 0, s, (nch?(int)nch:-1), 0, 0)))
-    return wstring ();
-
-  wstring out (wsz, 0);
-  MultiByteToWideChar (CP_UTF8, 0, s, -1, &out[0], (int)wsz);
-  if (!nch)
-    out.resize (wsz - 1); //output is null-terminated
-#else
   wstring out;
 
   auto end = s + (nch ? nch : strlen (s));
@@ -233,7 +203,6 @@ std::wstring widen (const char* s, size_t nch)
       out.push_back (sl);
     }
   }
-#endif
   return out;
 }
 
@@ -245,14 +214,6 @@ std::wstring widen (const char* s, size_t nch)
 */
 std::wstring widen (const std::string& s)
 {
-#if UTF8_USE_WINDOWS_API
-  size_t wsz = MultiByteToWideChar (CP_UTF8, 0, s.c_str(), (int)s.size(), 0, 0);
-  if (!wsz)
-    return wstring ();
-
-  wstring out (wsz, 0);
-  MultiByteToWideChar (CP_UTF8, 0, s.c_str (), (int)s.size(), &out[0], (int)wsz);
-#else
   wstring out;
   auto in = s.cbegin ();
   while (in != s.end ())
@@ -269,7 +230,6 @@ std::wstring widen (const std::string& s)
       out.push_back (sl);
     }
   }
-#endif
   return out;
 }
 
