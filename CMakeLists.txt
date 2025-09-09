@@ -257,11 +257,6 @@ if(TCOB_ENABLE_ADDON_DATA_SQLITE)
   list(APPEND TCOB_EXTLIBS_SRCFILES ${CMAKE_CURRENT_SOURCE_DIR}/opt/sqlite3/sqlite3.c)
 endif()
 
-# QOI https://github.com/phoboslab/qoi
-if(TCOB_ENABLE_FILETYPES_GFX_QOI)
-  list(APPEND TCOB_EXTLIBS_SRCFILES ${CMAKE_CURRENT_SOURCE_DIR}/opt/qoi/qoi.c)
-endif()
-
 # WebP @1.6.0 https://chromium.googlesource.com/webm/libwebp
 if(TCOB_ENABLE_FILETYPES_GFX_WEBP)
   MESSAGE(STATUS "WebP:")
