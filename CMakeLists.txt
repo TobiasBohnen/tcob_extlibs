@@ -80,13 +80,6 @@ FetchContent_MakeAvailable(SDL3)
 tcob_mark_all_as_advanced("^SDL_")
 
 if(TARGET SDL3-static)
-  get_target_property(opts SDL3-static COMPILE_OPTIONS)
-
-  if(opts)
-    list(REMOVE_ITEM opts "/W3" "$<$<COMPILE_LANGUAGE:C,CXX>:/W3>")
-    set_target_properties(SDL3-static PROPERTIES COMPILE_OPTIONS "${opts}")
-  endif()
-
   tcob_disable_warnings(SDL3-static)
 endif()
 
@@ -111,6 +104,7 @@ set(FT_DISABLE_BROTLI ON CACHE BOOL "" FORCE)
 
 FetchContent_MakeAvailable(freetype)
 tcob_mark_all_as_advanced("^FT_")
+tcob_disable_warnings(freetype)
 
 list(APPEND TCOB_EXTLIBS_INCDIRS ${freetype_SOURCE_DIR}/include/)
 list(APPEND TCOB_EXTLIBS_LIBS freetype)
@@ -153,7 +147,6 @@ if(TCOB_ENABLE_FILETYPES_AUDIO_OPUS)
 
   FetchContent_MakeAvailable(libopus)
   tcob_mark_all_as_advanced("^OPUS_")
-
   tcob_disable_warnings(opus)
 
   list(APPEND TCOB_EXTLIBS_INCDIRS ${libopus_SOURCE_DIR}/include/)
@@ -299,6 +292,9 @@ if(TCOB_ENABLE_FILETYPES_GFX_WEBP)
 
   FetchContent_MakeAvailable(webp)
   tcob_mark_all_as_advanced("^WEBP_")
+  tcob_disable_warnings(webp)
+  tcob_disable_warnings(libwebpmux)
+  tcob_disable_warnings(webpdemux)
 
   list(APPEND TCOB_EXTLIBS_INCDIRS ${webp_SOURCE_DIR}/src/)
   list(APPEND TCOB_EXTLIBS_LIBS webp libwebpmux webpdemux)
