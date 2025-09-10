@@ -80,6 +80,13 @@ FetchContent_MakeAvailable(SDL3)
 tcob_mark_all_as_advanced("^SDL_")
 
 if(TARGET SDL3-static)
+  get_target_property(opts SDL3-static COMPILE_OPTIONS)
+
+  if(opts)
+    list(REMOVE_ITEM opts "/W3" "$<$<COMPILE_LANGUAGE:C,CXX>:/W3>")
+    set_target_properties(SDL3-static PROPERTIES COMPILE_OPTIONS "${opts}")
+  endif()
+
   tcob_disable_warnings(SDL3-static)
 endif()
 
