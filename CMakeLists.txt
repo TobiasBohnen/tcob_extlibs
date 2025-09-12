@@ -45,7 +45,7 @@ list(APPEND TCOB_EXTLIBS_INCDIRS ${CMAKE_CURRENT_SOURCE_DIR}/req/utf8/include)
 # earcut https://github.com/mapbox/earcut.hpp
 list(APPEND TCOB_EXTLIBS_INCDIRS ${CMAKE_CURRENT_SOURCE_DIR}/req/earcut/)
 
-# clipper2 @1.5.3 https://github.com/AngusJohnson/Clipper2
+# clipper2 @1.5.4 https://github.com/AngusJohnson/Clipper2
 file(GLOB_RECURSE CLIPPER_SRC_FILES ${CMAKE_CURRENT_SOURCE_DIR}/req/Clipper2Lib/src/*.cpp)
 list(APPEND TCOB_EXTLIBS_SRCFILES ${CLIPPER_SRC_FILES})
 list(APPEND TCOB_EXTLIBS_INCDIRS ${CMAKE_CURRENT_SOURCE_DIR}/req/Clipper2Lib/include)
@@ -173,7 +173,7 @@ if(TCOB_ENABLE_FILETYPES_AUDIO_VORBIS)
   list(APPEND TCOB_EXTLIBS_INCDIRS ${CMAKE_CURRENT_SOURCE_DIR}/opt/XiphOrg/vorbis/include)
 endif()
 
-# dr_libs @dr_flac: 0.13.0 @dr_mp3: 0.7.1 @dr_wav: 0.14.0 https://github.com/mackron/dr_libs
+# dr_libs @dr_flac: 0.13.1 @dr_mp3: 0.7.1 @dr_wav: 0.14.1 https://github.com/mackron/dr_libs
 if(TCOB_ENABLE_FILETYPES_AUDIO_DRLIBS)
   list(APPEND TCOB_EXTLIBS_SRCFILES ${CMAKE_CURRENT_SOURCE_DIR}/opt/dr_libs/dr_libs.c)
 endif()
@@ -256,7 +256,7 @@ if(TCOB_ENABLE_FILETYPES_AUDIO_LIBXMP)
   list(APPEND TCOB_EXTLIBS_DEFINES LIBXMP_CORE_PLAYER LIBXMP_NO_DEPACKERS LIBXMP_STATIC)
 endif()
 
-# sqlite @3.50.2 https://www.sqlite.org/
+# sqlite @3.50.4 https://www.sqlite.org/
 if(TCOB_ENABLE_ADDON_DATA_SQLITE)
   list(APPEND TCOB_EXTLIBS_SRCFILES ${CMAKE_CURRENT_SOURCE_DIR}/opt/sqlite3/sqlite3.c)
 endif()
