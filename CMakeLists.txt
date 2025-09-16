@@ -189,13 +189,6 @@ if(TCOB_ENABLE_ADDON_SCRIPTING_LUA)
   endif()
 endif()
 
-# Squirrel @3.2 -> f77074b https://github.com/albertodemichelis/squirrel
-if(TCOB_ENABLE_ADDON_SCRIPTING_SQUIRREL)
-  file(GLOB_RECURSE SQUIRREL_SRC_FILES ${CMAKE_CURRENT_SOURCE_DIR}/opt/sq/*.cpp)
-  list(APPEND TCOB_EXTLIBS_SRCFILES ${SQUIRREL_SRC_FILES})
-  list(APPEND TCOB_EXTLIBS_INCDIRS ${CMAKE_CURRENT_SOURCE_DIR}/opt/sq/include/)
-endif()
-
 # box2d @3.1.1 https://github.com/erincatto/box2d
 if(TCOB_ENABLE_ADDON_PHYSICS_BOX2D)
   MESSAGE(STATUS "box2d:")
