@@ -109,6 +109,36 @@ tcob_disable_warnings(freetype)
 list(APPEND TCOB_EXTLIBS_INCDIRS ${freetype_SOURCE_DIR}/include/)
 list(APPEND TCOB_EXTLIBS_LIBS freetype)
 
+# box2d @3.1.1 https://github.com/erincatto/box2d
+MESSAGE(STATUS "box2d:")
+
+FetchContent_Declare(
+  box2d
+  GIT_REPOSITORY https://github.com/erincatto/box2d
+  GIT_TAG v3.1.1
+  EXCLUDE_FROM_ALL
+)
+
+FetchContent_MakeAvailable(box2d)
+tcob_mark_all_as_advanced("^BOX2D_")
+tcob_disable_warnings(box2d)
+
+if(MSVC)
+  target_compile_options(box2d PRIVATE /wd4255)
+endif()
+
+list(APPEND TCOB_EXTLIBS_INCDIRS ${box2d_SOURCE_DIR}/include/)
+list(APPEND TCOB_EXTLIBS_LIBS box2d)
+
+# Lua @5.4.8 https://github.com/lua/lua
+file(GLOB LUA_SRC_FILES ${CMAKE_CURRENT_SOURCE_DIR}/req/lua/*.cpp)
+list(APPEND TCOB_EXTLIBS_SRCFILES ${LUA_SRC_FILES})
+list(APPEND TCOB_EXTLIBS_INCDIRS ${CMAKE_CURRENT_SOURCE_DIR}/req/lua/)
+
+if(UNIX)
+  list(APPEND TCOB_EXTLIBS_DEFINES LUA_USE_LINUX)
+endif()
+
 # ##########################################################################
 # #optional
 
@@ -176,40 +206,6 @@ endif()
 # dr_libs @dr_flac: 0.13.1 @dr_mp3: 0.7.1 @dr_wav: 0.14.1 https://github.com/mackron/dr_libs
 if(TCOB_ENABLE_FILETYPES_AUDIO_DRLIBS)
   list(APPEND TCOB_EXTLIBS_SRCFILES ${CMAKE_CURRENT_SOURCE_DIR}/opt/dr_libs/dr_libs.c)
-endif()
-
-# Lua @5.4.8 https://github.com/lua/lua
-if(TCOB_ENABLE_ADDON_SCRIPTING_LUA)
-  file(GLOB LUA_SRC_FILES ${CMAKE_CURRENT_SOURCE_DIR}/opt/lua/*.cpp)
-  list(APPEND TCOB_EXTLIBS_SRCFILES ${LUA_SRC_FILES})
-  list(APPEND TCOB_EXTLIBS_INCDIRS ${CMAKE_CURRENT_SOURCE_DIR}/opt/lua/)
-
-  if(UNIX)
-    list(APPEND TCOB_EXTLIBS_DEFINES LUA_USE_LINUX)
-  endif()
-endif()
-
-# box2d @3.1.1 https://github.com/erincatto/box2d
-if(TCOB_ENABLE_ADDON_PHYSICS_BOX2D)
-  MESSAGE(STATUS "box2d:")
-
-  FetchContent_Declare(
-    box2d
-    GIT_REPOSITORY https://github.com/erincatto/box2d
-    GIT_TAG v3.1.1
-    EXCLUDE_FROM_ALL
-  )
-
-  FetchContent_MakeAvailable(box2d)
-  tcob_mark_all_as_advanced("^BOX2D_")
-  tcob_disable_warnings(box2d)
-
-  if(MSVC)
-    target_compile_options(box2d PRIVATE /wd4255)
-  endif()
-
-  list(APPEND TCOB_EXTLIBS_INCDIRS ${box2d_SOURCE_DIR}/include/)
-  list(APPEND TCOB_EXTLIBS_LIBS box2d)
 endif()
 
 # glad 2.0.6 https://github.com/Dav1dde/glad
