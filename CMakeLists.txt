@@ -156,45 +156,6 @@ if(TCOB_ENABLE_FILETYPES_GFX_THEORA)
   list(APPEND TCOB_EXTLIBS_INCDIRS ${CMAKE_CURRENT_SOURCE_DIR}/opt/XiphOrg/theora/)
 endif()
 
-# opus @libopus: 1.5.2 https://github.com/xiph/opus @opusfile: 0.12 https://github.com/xiph/opusfile @libopusenc: 0.2.1 https://github.com/xiph/libopusenc
-if(TCOB_ENABLE_FILETYPES_AUDIO_OPUS)
-  MESSAGE(STATUS "libopus:")
-
-  FetchContent_Declare(
-    libopus
-    GIT_REPOSITORY https://github.com/xiph/opus
-    GIT_TAG v1.5.2
-    EXCLUDE_FROM_ALL
-  )
-
-  if(MSVC AND TCOB_USE_DEFAULT_MSVC_OPTIONS AND NOT TCOB_IS_CI)
-    set(OPUS_STATIC_RUNTIME ON CACHE BOOL "" FORCE)
-  endif()
-
-  set(OPUS_BUILD_TESTING OFF CACHE BOOL "" FORCE)
-  set(OPUS_INSTALL_PKG_CONFIG_MODULE OFF CACHE BOOL "" FORCE)
-  set(OPUS_INSTALL_CMAKE_CONFIG_MODULE OFF CACHE BOOL "" FORCE)
-
-  FetchContent_MakeAvailable(libopus)
-  tcob_mark_all_as_advanced("^OPUS_")
-  tcob_disable_warnings(opus)
-
-  list(APPEND TCOB_EXTLIBS_INCDIRS ${libopus_SOURCE_DIR}/include/)
-  list(APPEND TCOB_EXTLIBS_LIBS opus)
-
-  # libopusenc https://github.com/xiph/libopusenc
-  file(GLOB_RECURSE OPUSENC_SRC_FILES ${CMAKE_CURRENT_SOURCE_DIR}/opt/XiphOrg/libopusenc/src/*.c)
-  list(APPEND TCOB_EXTLIBS_SRCFILES ${OPUSENC_SRC_FILES})
-  list(APPEND TCOB_EXTLIBS_INCDIRS ${CMAKE_CURRENT_SOURCE_DIR}/opt/XiphOrg/libopusenc/src/)
-  list(APPEND TCOB_EXTLIBS_INCDIRS ${CMAKE_CURRENT_SOURCE_DIR}/opt/XiphOrg/libopusenc/include/)
-  list(APPEND TCOB_EXTLIBS_DEFINES OUTSIDE_SPEEX RANDOM_PREFIX=tcob)
-
-  # opusfile https://github.com/xiph/opusfile/
-  file(GLOB_RECURSE OGGOPUS_SRC_FILES ${CMAKE_CURRENT_SOURCE_DIR}/opt/XiphOrg/opusfile/*.c)
-  list(APPEND TCOB_EXTLIBS_SRCFILES ${OGGOPUS_SRC_FILES})
-  list(APPEND TCOB_EXTLIBS_INCDIRS ${CMAKE_CURRENT_SOURCE_DIR}/opt/XiphOrg/opusfile/)
-endif()
-
 # vorbis @1.3.7 https://github.com/xiph/vorbis
 if(TCOB_ENABLE_FILETYPES_AUDIO_VORBIS)
   file(GLOB_RECURSE VORBIS_SRC_FILES ${CMAKE_CURRENT_SOURCE_DIR}/opt/XiphOrg/vorbis/src/*.c)
@@ -228,10 +189,9 @@ if(TCOB_ENABLE_ADDON_AUDIO_SPEECH)
   list(APPEND TCOB_EXTLIBS_SRCFILES ${CMAKE_CURRENT_SOURCE_DIR}/opt/speech/speech.c)
 endif()
 
-# TinySoundFont @cd82859 @stb_vorbis: 1.22 https://github.com/schellingb/TinySoundFont
+# TinySoundFont @cd82859 https://github.com/schellingb/TinySoundFont
 if(TCOB_ENABLE_ADDON_AUDIO_TINYSOUNDFONT)
   list(APPEND TCOB_EXTLIBS_SRCFILES ${CMAKE_CURRENT_SOURCE_DIR}/opt/TinySoundFont/TinySoundFont.c)
-  list(APPEND TCOB_EXTLIBS_SRCFILES ${CMAKE_CURRENT_SOURCE_DIR}/opt/TinySoundFont/stb_vorbis.c)
 endif()
 
 # libxmp-lite @4.6.3 https://github.com/libxmp/libxmp
