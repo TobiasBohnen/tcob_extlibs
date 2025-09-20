@@ -266,6 +266,8 @@ target_link_libraries(tcob_extlibs PRIVATE ${TCOB_EXTLIBS_LIBS})
 tcob_disable_warnings(tcob_extlibs)
 set_target_properties(tcob_extlibs PROPERTIES
   DEBUG_POSTFIX "_d"
+  C_STANDARD 17
+  C_STANDARD_REQUIRED TRUE
   CXX_STANDARD 23
   CXX_STANDARD_REQUIRED TRUE)
 
