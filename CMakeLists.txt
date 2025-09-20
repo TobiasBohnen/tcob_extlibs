@@ -110,25 +110,9 @@ list(APPEND TCOB_EXTLIBS_INCDIRS ${freetype_SOURCE_DIR}/include/)
 list(APPEND TCOB_EXTLIBS_LIBS freetype)
 
 # box2d @3.1.1 https://github.com/erincatto/box2d
-MESSAGE(STATUS "box2d:")
-
-FetchContent_Declare(
-  box2d
-  GIT_REPOSITORY https://github.com/erincatto/box2d
-  GIT_TAG v3.1.1
-  EXCLUDE_FROM_ALL
-)
-
-FetchContent_MakeAvailable(box2d)
-tcob_mark_all_as_advanced("^BOX2D_")
-tcob_disable_warnings(box2d)
-
-if(MSVC)
-  target_compile_options(box2d PRIVATE /wd4255)
-endif()
-
-list(APPEND TCOB_EXTLIBS_INCDIRS ${box2d_SOURCE_DIR}/include/)
-list(APPEND TCOB_EXTLIBS_LIBS box2d)
+file(GLOB_RECURSE BOX2D_SRC_FILES ${CMAKE_CURRENT_SOURCE_DIR}/req/box2d/src/*.c)
+list(APPEND TCOB_EXTLIBS_SRCFILES ${BOX2D_SRC_FILES})
+list(APPEND TCOB_EXTLIBS_INCDIRS ${CMAKE_CURRENT_SOURCE_DIR}/req/box2d/include)
 
 # Lua @5.4.8 https://github.com/lua/lua
 file(GLOB LUA_SRC_FILES ${CMAKE_CURRENT_SOURCE_DIR}/req/lua/*.cpp)
