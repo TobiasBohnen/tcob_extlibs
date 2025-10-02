@@ -283,8 +283,8 @@ if(EMSCRIPTEN)
   target_compile_options(freetype PRIVATE -pthread)
   target_link_options(freetype PRIVATE -pthread)
 
-  target_compile_options(box2d PRIVATE -pthread)
-  target_link_options(box2d PRIVATE -pthread)
+  target_compile_definitions(tcob_extlibs PRIVATE BOX2D_VALIDATE)
+  target_compile_options(tcob_extlibs PRIVATE -msimd128 -msse2)
 
   target_compile_options(tcob_extlibs PRIVATE -pthread)
   target_link_options(tcob_extlibs PRIVATE -pthread)
