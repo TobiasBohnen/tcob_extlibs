@@ -263,13 +263,9 @@ target_include_directories(tcob_extlibs SYSTEM PUBLIC
   ${TCOB_EXTLIBS_INCDIRS}
 )
 target_link_libraries(tcob_extlibs PRIVATE ${TCOB_EXTLIBS_LIBS})
+target_compile_features(tcob_extlibs PUBLIC c_std_17 cxx_std_23)
 tcob_disable_warnings(tcob_extlibs)
-set_target_properties(tcob_extlibs PROPERTIES
-  DEBUG_POSTFIX "_d"
-  C_STANDARD 17
-  C_STANDARD_REQUIRED TRUE
-  CXX_STANDARD 23
-  CXX_STANDARD_REQUIRED TRUE)
+set_target_properties(tcob_extlibs PROPERTIES DEBUG_POSTFIX "_d")
 
 MESSAGE(STATUS "----------------")
 MESSAGE(STATUS "exiting extlibs")
