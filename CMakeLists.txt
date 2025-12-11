@@ -148,7 +148,7 @@ if(TCOB_ENABLE_FILETYPES_AUDIO_VORBIS)
   list(APPEND TCOB_EXTLIBS_INCDIRS ${CMAKE_CURRENT_SOURCE_DIR}/opt/XiphOrg/vorbis/include)
 endif()
 
-# dr_libs @dr_flac: 0.13.1 @dr_mp3: 0.7.1 @dr_wav: 0.14.1 https://github.com/mackron/dr_libs
+# dr_libs @dr_flac: 0.13.2 @dr_mp3: 0.7.2 @dr_wav: 0.14.2 https://github.com/mackron/dr_libs
 if(TCOB_ENABLE_FILETYPES_AUDIO_DRLIBS)
   list(APPEND TCOB_EXTLIBS_SRCFILES ${CMAKE_CURRENT_SOURCE_DIR}/opt/dr_libs/dr_libs.c)
 endif()
