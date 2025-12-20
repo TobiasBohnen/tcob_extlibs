@@ -123,11 +123,16 @@ if(UNIX)
   list(APPEND TCOB_EXTLIBS_DEFINES LUA_USE_LINUX)
 endif()
 
+# sqlite @3.51.0 https://www.sqlite.org/
+if(TCOB_ENABLE_ADDON_DATA_SQLITE)
+  list(APPEND TCOB_EXTLIBS_SRCFILES ${CMAKE_CURRENT_SOURCE_DIR}/req/sqlite3/sqlite3.c)
+endif()
+
 # ##########################################################################
 # #optional
 
 # libogg @1.3.6 https://github.com/xiph/ogg
-if(TCOB_ENABLE_FILETYPES_GFX_THEORA OR TCOB_ENABLE_FILETYPES_AUDIO_OPUS OR TCOB_ENABLE_FILETYPES_AUDIO_VORBIS)
+if(TCOB_ENABLE_FILETYPES_GFX_THEORA OR TCOB_ENABLE_FILETYPES_AUDIO_VORBIS)
   file(GLOB_RECURSE OGG_SRC_FILES ${CMAKE_CURRENT_SOURCE_DIR}/opt/XiphOrg/ogg/*.c)
   list(APPEND TCOB_EXTLIBS_SRCFILES ${OGG_SRC_FILES})
   list(APPEND TCOB_EXTLIBS_INCDIRS ${CMAKE_CURRENT_SOURCE_DIR}/opt/XiphOrg/ogg/)
@@ -187,11 +192,6 @@ if(TCOB_ENABLE_FILETYPES_AUDIO_LIBXMP)
     ${CMAKE_CURRENT_SOURCE_DIR}/opt/libxmp-lite/src/
   )
   list(APPEND TCOB_EXTLIBS_DEFINES LIBXMP_CORE_PLAYER LIBXMP_NO_DEPACKERS LIBXMP_STATIC)
-endif()
-
-# sqlite @3.51.0 https://www.sqlite.org/
-if(TCOB_ENABLE_ADDON_DATA_SQLITE)
-  list(APPEND TCOB_EXTLIBS_SRCFILES ${CMAKE_CURRENT_SOURCE_DIR}/opt/sqlite3/sqlite3.c)
 endif()
 
 # WebP @1.6.0 https://chromium.googlesource.com/webm/libwebp
