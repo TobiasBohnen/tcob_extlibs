@@ -124,9 +124,7 @@ if(UNIX)
 endif()
 
 # sqlite @3.51.0 https://www.sqlite.org/
-if(TCOB_ENABLE_ADDON_DATA_SQLITE)
-  list(APPEND TCOB_EXTLIBS_SRCFILES ${CMAKE_CURRENT_SOURCE_DIR}/req/sqlite3/sqlite3.c)
-endif()
+list(APPEND TCOB_EXTLIBS_SRCFILES ${CMAKE_CURRENT_SOURCE_DIR}/req/sqlite3/sqlite3.c)
 
 # ##########################################################################
 # #optional
