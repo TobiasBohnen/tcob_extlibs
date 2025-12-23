@@ -50,13 +50,13 @@ file(GLOB_RECURSE CLIPPER_SRC_FILES ${CMAKE_CURRENT_SOURCE_DIR}/req/Clipper2Lib/
 list(APPEND TCOB_EXTLIBS_SRCFILES ${CLIPPER_SRC_FILES})
 list(APPEND TCOB_EXTLIBS_INCDIRS ${CMAKE_CURRENT_SOURCE_DIR}/req/Clipper2Lib/include)
 
-# SDL3 @3.2.26 https://github.com/libsdl-org/SDL
+# SDL3 @3.2.28 https://github.com/libsdl-org/SDL
 MESSAGE(STATUS "SDL3:")
 
 FetchContent_Declare(
   SDL3
   GIT_REPOSITORY https://github.com/libsdl-org/SDL
-  GIT_TAG release-3.2.26
+  GIT_TAG release-3.2.28
   EXCLUDE_FROM_ALL
 )
 
