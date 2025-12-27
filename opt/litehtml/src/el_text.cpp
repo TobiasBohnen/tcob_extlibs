@@ -1,6 +1,7 @@
 #include "html.h"
 #include "el_text.h"
 #include "render_item.h"
+#include "document_container.h"
 
 litehtml::el_text::el_text(const char* text, const document::ptr& doc) : element(doc)
 {
@@ -13,12 +14,12 @@ litehtml::el_text::el_text(const char* text, const document::ptr& doc) : element
 	css_w().set_display(display_inline_text);
 }
 
-void litehtml::el_text::get_content_size( size& sz, int /*max_width*/ )
+void litehtml::el_text::get_content_size( size& sz, pixel_t /*max_width*/ )
 {
 	sz = m_size;
 }
 
-void litehtml::el_text::get_text( string& text )
+void litehtml::el_text::get_text( string& text ) const
 {
 	text += m_text;
 }
@@ -28,7 +29,7 @@ void litehtml::el_text::compute_styles(bool /*recursive*/)
 	element::ptr el_parent = parent();
 	if (el_parent)
 	{
-		css_w().set_line_height(el_parent->css().get_line_height());
+		css_w().line_height_w() = el_parent->css().line_height();
 		css_w().set_font(el_parent->css().get_font());
 		css_w().set_font_metrics(el_parent->css().get_font_metrics());
 		css_w().set_white_space(el_parent->css().get_white_space());
@@ -100,7 +101,7 @@ void litehtml::el_text::compute_styles(bool /*recursive*/)
 	m_draw_spaces = fm.draw_spaces;
 }
 
-void litehtml::el_text::draw(uint_ptr hdc, int x, int y, const position *clip, const std::shared_ptr<render_item> &ri)
+void litehtml::el_text::draw(uint_ptr hdc, pixel_t x, pixel_t y, const position *clip, const std::shared_ptr<render_item> &ri)
 {
 	if(is_white_space() && !m_draw_spaces)
 	{
@@ -110,6 +111,7 @@ void litehtml::el_text::draw(uint_ptr hdc, int x, int y, const position *clip, c
 	position pos = ri->pos();
 	pos.x	+= x;
 	pos.y	+= y;
+	pos.round();
 
 	if(pos.does_intersect(clip))
 	{

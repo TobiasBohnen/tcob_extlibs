@@ -25,6 +25,8 @@
 #include "render_item.h"
 #include "render_table.h"
 #include "render_block.h"
+#include "document_container.h"
+#include "types.h"
 
 namespace litehtml
 {
@@ -36,7 +38,7 @@ document::document(document_container* container)
 
 document::~document()
 {
-	m_over_element = nullptr;
+	m_over_element = m_active_element = nullptr;
 	if(m_container)
 	{
 		for(auto& font : m_fonts)
@@ -47,9 +49,9 @@ document::~document()
 }
 
 document::ptr document::createFromString(
-	const estring& str, 
-	document_container* container, 
-	const string& master_styles, 
+	const estring& str,
+	document_container* container,
+	const string& master_styles,
 	const string& user_styles )
 {
 	// Create litehtml::document
@@ -132,7 +134,7 @@ document::ptr document::createFromString(
 		doc->m_root_render = doc->m_root->create_render_item(nullptr);
 
 		// Now the m_tabular_elements is filled with tabular elements.
-		// We have to check the tabular elements for missing table elements 
+		// We have to check the tabular elements for missing table elements
 		// and create the anonymous boxes in visual table layout
 		doc->fix_tables_layout();
 
@@ -216,7 +218,7 @@ GumboOutput* document::parse_html(estring str)
 {
 	// https://html.spec.whatwg.org/multipage/parsing.html#the-input-byte-stream
 	encoding_sniffing_algorithm(str);
-	// cannot store output in local variable because gumbo keeps pointers into it, 
+	// cannot store output in local variable because gumbo keeps pointers into it,
 	// which will be accessed later in gumbo_tag_from_original_text
 	if (str.encoding == encoding::utf_8)
 		m_text = str;
@@ -441,82 +443,17 @@ element::ptr document::create_element(const char* tag_name, const string_map& at
 	return newTag;
 }
 
-uint_ptr document::add_font( const char* name, int size, const char* weight, const char* style, const char* decoration, font_metrics* fm )
+uint_ptr document::add_font( const font_description& descr, font_metrics* fm )
 {
 	uint_ptr ret = 0;
 
-	if(!name)
-	{
-		name = m_container->get_default_font_name();
-	}
-
-	char strSize[20];
-	t_itoa(size, strSize, 20, 10);
-
-	string key = name;
-	key += ":";
-	key += strSize;
-	key += ":";
-	key += weight;
-	key += ":";
-	key += style;
-	key += ":";
-	key += decoration;
+	std::string key = descr.hash();
 
 	if(m_fonts.find(key) == m_fonts.end())
 	{
-		font_style fs = (font_style) value_index(style, font_style_strings, font_style_normal);
-		int	fw = value_index(weight, font_weight_strings, -1);
-		if(fw >= 0)
-		{
-			switch(fw)
-			{
-			case font_weight_bold:
-				fw = 700;
-				break;
-			case font_weight_bolder:
-				fw = 600;
-				break;
-			case font_weight_lighter:
-				fw = 300;
-				break;
-			case font_weight_normal:
-				fw = 400;
-				break;
-			}
-		} else
-		{
-			fw = atoi(weight);
-			if(fw < 100)
-			{
-				fw = 400;
-			}
-		}
+		font_item fi = {0, {}};
 
-		unsigned int decor = 0;
-
-		if(decoration)
-		{
-			std::vector<string> tokens;
-			split_string(decoration, tokens, " ");
-			for(auto & token : tokens)
-			{
-				if(!t_strcasecmp(token.c_str(), "underline"))
-				{
-					decor |= font_decoration_underline;
-				} else if(!t_strcasecmp(token.c_str(), "line-through"))
-				{
-					decor |= font_decoration_linethrough;
-				} else if(!t_strcasecmp(token.c_str(), "overline"))
-				{
-					decor |= font_decoration_overline;
-				}
-			}
-		}
-
-		font_item fi= {0, {}};
-
-		fi.font = m_container->create_font(name, size, fw, fs, decor, &fi.metrics);
+		fi.font = m_container->create_font(descr, this, &fi.metrics);
 		m_fonts[key] = fi;
 		ret = fi.font;
 		if(fm)
@@ -527,29 +464,14 @@ uint_ptr document::add_font( const char* name, int size, const char* weight, con
 	return ret;
 }
 
-uint_ptr document::get_font( const char* name, int size, const char* weight, const char* style, const char* decoration, font_metrics* fm )
+uint_ptr document::get_font( const font_description& descr, font_metrics* fm )
 {
-	if(!size)
+	if(descr.size == 0)
 	{
 		return 0;
 	}
-	if(!name)
-	{
-		name = m_container->get_default_font_name();
-	}
 
-	char strSize[20];
-	t_itoa(size, strSize, 20, 10);
-
-	string key = name;
-	key += ":";
-	key += strSize;
-	key += ":";
-	key += weight;
-	key += ":";
-	key += style;
-	key += ":";
-	key += decoration;
+	auto key = descr.hash();
 
 	auto el = m_fonts.find(key);
 
@@ -561,20 +483,20 @@ uint_ptr document::get_font( const char* name, int size, const char* weight, con
 		}
 		return el->second.font;
 	}
-	return add_font(name, size, weight, style, decoration, fm);
+	return add_font(descr, fm);
 }
 
-int document::render( int max_width, render_type rt )
+pixel_t document::render( pixel_t max_width, render_type rt )
 {
-	int ret = 0;
+	pixel_t ret = 0;
 	if(m_root && m_root_render)
 	{
-		position client_rc;
-		m_container->get_client_rect(client_rc);
+		position viewport;
+		m_container->get_viewport(viewport);
 		containing_block_context cb_context;
 		cb_context.width = max_width;
 		cb_context.width.type = containing_block_context::cbc_value_type_absolute;
-		cb_context.height = client_rc.height;
+		cb_context.height = viewport.height;
 		cb_context.height.type = containing_block_context::cbc_value_type_absolute;
 
 		if(rt == render_fixed_only)
@@ -599,7 +521,7 @@ int document::render( int max_width, render_type rt )
 	return ret;
 }
 
-void document::draw( uint_ptr hdc, int x, int y, const position* clip )
+void document::draw( uint_ptr hdc, pixel_t x, pixel_t y, const position* clip )
 {
 	if(m_root && m_root_render)
 	{
@@ -608,68 +530,68 @@ void document::draw( uint_ptr hdc, int x, int y, const position* clip )
 	}
 }
 
-int document::to_pixels( const css_length& val, const font_metrics& metrics, int size ) const
+pixel_t document::to_pixels( const css_length& val, const font_metrics& metrics, pixel_t size ) const
 {
 	if(val.is_predefined())
 	{
 		return 0;
 	}
-	int ret;
+	pixel_t ret;
 	switch(val.units())
 	{
 	case css_units_percentage:
 		ret = val.calc_percent(size);
 		break;
 	case css_units_em:
-		ret = round_f(val.val() * (float) metrics.font_size);
+		ret = val.val() * metrics.font_size;
 		break;
 
 	// https://drafts.csswg.org/css-values-4/#absolute-lengths
 	case css_units_pt:
-		ret = m_container->pt_to_px(round_f(val.val()));
+		ret = m_container->pt_to_px(val.val());
 		break;
 	case css_units_in:
-		ret = m_container->pt_to_px(round_f(val.val() * 72)); // 1in = 72pt
+		ret = m_container->pt_to_px(val.val() * 72); // 1in = 72pt
 		break;
 	case css_units_pc:
-		ret = m_container->pt_to_px(round_f(val.val() * 12)); // 1pc = (1/6)in = 12pt
+		ret = m_container->pt_to_px(val.val() * 12); // 1pc = (1/6)in = 12pt
 		break;
 	case css_units_cm:
-		ret = m_container->pt_to_px(round_f(val.val() * 0.3937f * 72)); // 1cm = (1/2.54)in = (72/2.54)pt
+		ret = m_container->pt_to_px(val.val() * 72 / 2.54f); // 1cm = (1/2.54)in = (72/2.54)pt
 		break;
 	case css_units_mm:
-		ret = m_container->pt_to_px(round_f(val.val() * 0.3937f * 72 / 10));
+		ret = m_container->pt_to_px(val.val() * 72 / 2.54f / 10);
 		break;
 
 	case css_units_vw:
-		ret = (int)((double)m_media.width * (double)val.val() / 100.0);
+		ret = (pixel_t) (m_media.width * val.val() / 100.0);
 		break;
 	case css_units_vh:
-		ret = (int)((double)m_media.height * (double)val.val() / 100.0);
+		ret = (pixel_t) (m_media.height * val.val() / 100.0);
 		break;
 	case css_units_vmin:
-		ret = (int)((double)std::min(m_media.height, m_media.width) * (double)val.val() / 100.0);
+		ret = (pixel_t) (std::min(m_media.height, m_media.width) * val.val() / 100.0);
 		break;
 	case css_units_vmax:
-		ret = (int)((double)std::max(m_media.height, m_media.width) * (double)val.val() / 100.0);
+		ret = (pixel_t) (std::max(m_media.height, m_media.width) * val.val() / 100.0);
 		break;
 	case css_units_rem:
-		ret = (int) ((double) m_root->css().get_font_size() * (double) val.val());
+		ret = (pixel_t) (m_root->css().get_font_size() * val.val());
 		break;
 	case css_units_ex:
-		ret = (int) ((double) metrics.x_height * val.val());
+		ret = (pixel_t) (metrics.x_height * val.val());
 		break;
 	case css_units_ch:
-		ret = (int) ((double) metrics.ch_width * val.val());
+		ret = (pixel_t) (metrics.ch_width * val.val());
 		break;
 	default:
-		ret = (int) val.val();
+		ret = (pixel_t) val.val();
 		break;
 	}
 	return ret;
 }
 
-void document::cvt_units( css_length& val, const font_metrics& metrics, int size ) const
+void document::cvt_units( css_length& val, const font_metrics& metrics, pixel_t size ) const
 {
 	if(val.is_predefined())
 	{
@@ -681,22 +603,22 @@ void document::cvt_units( css_length& val, const font_metrics& metrics, int size
 	}
 }
 
-int document::width() const
+pixel_t document::width() const
 {
 	return m_size.width;
 }
 
-int document::height() const
+pixel_t document::height() const
 {
 	return m_size.height;
 }
 
-int document::content_width() const
+pixel_t document::content_width() const
 {
 	return m_content_size.width;
 }
 
-int document::content_height() const
+pixel_t document::content_height() const
 {
 	return m_content_size.height;
 }
@@ -710,7 +632,7 @@ void document::add_stylesheet( const char* str, const char* baseurl, const char*
 	}
 }
 
-bool document::on_mouse_over( int x, int y, int client_x, int client_y, position::vector& redraw_boxes )
+bool document::on_mouse_over( pixel_t x, pixel_t y, pixel_t client_x, pixel_t client_y, position::vector& redraw_boxes )
 {
 	if(!m_root || !m_root_render)
 	{
@@ -744,9 +666,9 @@ bool document::on_mouse_over( int x, int y, int client_x, int client_y, position
 		}
 		cursor = m_over_element->css().get_cursor();
 	}
-	
+
 	m_container->set_cursor(cursor.c_str());
-	
+
 	if(state_was_changed)
 	{
 		m_container->on_mouse_event(m_over_element, mouse_event_enter);
@@ -763,16 +685,18 @@ bool document::on_mouse_leave( position::vector& redraw_boxes )
 	}
 	if(m_over_element)
 	{
-		if(m_over_element->on_mouse_leave())
+		auto el = m_over_element;
+		m_over_element = nullptr;
+		if(el->on_mouse_leave())
 		{
-			m_container->on_mouse_event(m_over_element, mouse_event_leave);
+			m_container->on_mouse_event(el, mouse_event_leave);
 			return m_root->find_styles_changes(redraw_boxes);
 		}
 	}
 	return false;
 }
 
-bool document::on_lbutton_down( int x, int y, int client_x, int client_y, position::vector& redraw_boxes )
+bool document::on_lbutton_down( pixel_t x, pixel_t y, pixel_t client_x, pixel_t client_y, position::vector& redraw_boxes )
 {
 	if(!m_root || !m_root_render)
 	{
@@ -780,6 +704,7 @@ bool document::on_lbutton_down( int x, int y, int client_x, int client_y, positi
 	}
 
 	element::ptr over_el = m_root_render->get_element_by_point(x, y, client_x, client_y);
+    m_active_element = over_el;
 
 	bool state_was_changed = false;
 
@@ -825,7 +750,7 @@ bool document::on_lbutton_down( int x, int y, int client_x, int client_y, positi
 	return false;
 }
 
-bool document::on_lbutton_up( int /*x*/, int /*y*/, int /*client_x*/, int /*client_y*/, position::vector& redraw_boxes )
+bool document::on_lbutton_up( pixel_t /*x*/, pixel_t /*y*/, pixel_t /*client_x*/, pixel_t /*client_y*/, position::vector& redraw_boxes )
 {
 	if(!m_root || !m_root_render)
 	{
@@ -833,12 +758,17 @@ bool document::on_lbutton_up( int /*x*/, int /*y*/, int /*client_x*/, int /*clie
 	}
 	if(m_over_element)
 	{
-		if(m_over_element->on_lbutton_up())
+		if(m_over_element->on_lbutton_up(m_active_element == m_over_element))
 		{
 			return m_root->find_styles_changes(redraw_boxes);
 		}
 	}
 	return false;
+}
+
+bool document::on_button_cancel(position::vector& redraw_boxes) {
+	m_active_element = nullptr;
+	return on_mouse_leave(redraw_boxes);
 }
 
 void document::get_fixed_boxes( position::vector& fixed_boxes )
@@ -1136,7 +1066,7 @@ void document::append_children_from_string(element& parent, const char* str)
 		child->compute_styles();
 
 		// Now the m_tabular_elements is filled with tabular elements.
-		// We have to check the tabular elements for missing table elements 
+		// We have to check the tabular elements for missing table elements
 		// and create the anonymous boxes in visual table layout
 		fix_tables_layout();
 

@@ -30,8 +30,6 @@
 #ifndef LITEHTML_URL_H__
 #define LITEHTML_URL_H__
 
-#include <ostream>
-
 #include "types.h"
 
 // https://datatracker.ietf.org/doc/html/rfc3986
@@ -104,6 +102,9 @@ public:
     {
         return !fragment_.empty();
     }
+
+	static string encode(const string& str);
+	static string decode(const string& str);
 
 protected:
     string str_;

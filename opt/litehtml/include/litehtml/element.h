@@ -1,12 +1,12 @@
 #ifndef LH_ELEMENT_H
 #define LH_ELEMENT_H
 
+#include <functional>
 #include <memory>
 #include <tuple>
 #include <list>
+#include "types.h"
 #include "stylesheet.h"
-#include "css_offsets.h"
-#include "css_margins.h"
 #include "css_properties.h"
 
 namespace litehtml
@@ -94,16 +94,16 @@ namespace litehtml
 		virtual bool				on_mouse_over();
 		virtual bool				on_mouse_leave();
 		virtual bool				on_lbutton_down();
-		virtual bool				on_lbutton_up();
+		virtual bool				on_lbutton_up(bool is_click = true);
 		virtual void				on_click();
 		virtual bool				set_pseudo_class(string_id cls, bool add);
 		virtual bool				set_class(const char* pclass, bool add);
 		virtual bool				is_replaced() const;
 		virtual void				compute_styles(bool recursive = true);
-		virtual void				draw(uint_ptr hdc, int x, int y, const position *clip, const std::shared_ptr<render_item>& ri);
-		virtual void				draw_background(uint_ptr hdc, int x, int y, const position *clip, const std::shared_ptr<render_item> &ri);
+		virtual void				draw(uint_ptr hdc, pixel_t x, pixel_t y, const position *clip, const std::shared_ptr<render_item>& ri);
+		virtual void				draw_background(uint_ptr hdc, pixel_t x, pixel_t y, const position *clip, const std::shared_ptr<render_item> &ri);
 
-		virtual void				get_text(string& text);
+		virtual void				get_text(string& text) const;
 		virtual void				parse_attributes();
 		virtual int					select(const css_selector::vector& selector_list, bool apply_pseudo = true);
 		virtual int					select(const string& selector);
@@ -113,7 +113,7 @@ namespace litehtml
 		virtual bool				is_ancestor(const ptr &el) const;
 		virtual element::ptr		find_adjacent_sibling(const element::ptr& el, const css_selector& selector, bool apply_pseudo = true, bool* is_pseudo = nullptr);
 		virtual element::ptr		find_sibling(const element::ptr& el, const css_selector& selector, bool apply_pseudo = true, bool* is_pseudo = nullptr);
-		virtual void				get_content_size(size& sz, int max_width);
+		virtual void				get_content_size(size& sz, pixel_t max_width);
 		virtual bool				is_nth_child(const element::ptr& el, int num, int off, bool of_type, const css_selector::vector& selector_list = {}) const;
 		virtual bool				is_nth_last_child(const element::ptr& el, int num, int off, bool of_type, const css_selector::vector& selector_list = {}) const;
 		virtual bool				is_only_child(const element::ptr& el, bool of_type) const;
@@ -155,7 +155,9 @@ namespace litehtml
 
 	inline bool litehtml::element::in_normal_flow() const
 	{
-		if(css().get_position() != element_position_absolute && css().get_display() != display_none)
+		if(css().get_position() != element_position_absolute &&
+		   css().get_display() != display_none &&
+		   css().get_position() != element_position_fixed)
 		{
 			return true;
 		}

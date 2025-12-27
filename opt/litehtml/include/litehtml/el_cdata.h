@@ -1,7 +1,7 @@
 #ifndef LH_EL_CDATA_H
 #define LH_EL_CDATA_H
 
-#include "html_tag.h"
+#include "element.h"
 
 namespace litehtml
 {
@@ -11,7 +11,7 @@ namespace litehtml
 	public:
 		explicit el_cdata(const std::shared_ptr<document>& doc);
 
-		void get_text(string& text) override;
+		void get_text(string& text) const override;
 		void set_data(const char* data) override;
 	};
 }

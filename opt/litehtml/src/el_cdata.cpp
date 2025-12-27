@@ -1,4 +1,3 @@
-#include "html.h"
 #include "el_cdata.h"
 
 litehtml::el_cdata::el_cdata(const std::shared_ptr<document>& doc) : element(doc)
@@ -6,7 +5,7 @@ litehtml::el_cdata::el_cdata(const std::shared_ptr<document>& doc) : element(doc
 	//m_skip = true;
 }
 
-void litehtml::el_cdata::get_text( string& text )
+void litehtml::el_cdata::get_text( string& text ) const
 {
 	text += m_text;
 }

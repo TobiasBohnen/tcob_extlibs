@@ -3,6 +3,7 @@
 #include "html.h"
 #include "html_tag.h"
 #include "document.h"
+#include "html_microsyntaxes.h"
 #include "iterators.h"
 #include "stylesheet.h"
 #include "table.h"
@@ -10,6 +11,7 @@
 #include "line_box.h"
 #include "render_item.h"
 #include "internal.h"
+#include "document_container.h"
 
 namespace litehtml
 {
@@ -126,7 +128,7 @@ litehtml::elements_list litehtml::html_tag::select_all(const string& selector )
 {
 	css_selector sel;
 	sel.parse(selector, get_document()->mode());
-	
+
 	return select_all(sel);
 }
 
@@ -143,7 +145,7 @@ void litehtml::html_tag::select_all(const css_selector& selector, elements_list&
 	{
 		res.push_back(shared_from_this());
 	}
-	
+
 	for(auto& el : m_children)
 	{
 		el->select_all(selector, res);
@@ -275,7 +277,7 @@ void litehtml::html_tag::apply_stylesheet( const litehtml::css& stylesheet )
 	}
 }
 
-void litehtml::html_tag::get_content_size( size& sz, int max_width )
+void litehtml::html_tag::get_content_size( size& sz, pixel_t max_width )
 {
 	sz.height	= 0;
 	if(m_css.get_display() == display_block)
@@ -287,7 +289,7 @@ void litehtml::html_tag::get_content_size( size& sz, int max_width )
 	}
 }
 
-void litehtml::html_tag::draw(uint_ptr hdc, int x, int y, const position *clip, const std::shared_ptr<render_item> &ri)
+void litehtml::html_tag::draw(uint_ptr hdc, pixel_t x, pixel_t y, const position *clip, const std::shared_ptr<render_item> &ri)
 {
 	position pos = ri->pos();
 	pos.x	+= x;
@@ -295,7 +297,7 @@ void litehtml::html_tag::draw(uint_ptr hdc, int x, int y, const position *clip, 
 
 	draw_background(hdc, x, y, clip, ri);
 
-	if(m_css.get_display() == display_list_item && 
+	if(m_css.get_display() == display_list_item &&
 		(m_css.get_list_style_type() != list_style_type_none || m_css.get_list_style_image() != ""))
 	{
 		if(m_css.get_overflow() > overflow_visible)
@@ -312,7 +314,7 @@ void litehtml::html_tag::draw(uint_ptr hdc, int x, int y, const position *clip, 
 			get_document()->container()->set_clip(pos, bdr_radius);
 		}
 
-		draw_list_marker(hdc, pos);
+		draw_list_marker(hdc, pos, ri);
 
 		if(m_css.get_overflow() > overflow_visible)
 		{
@@ -743,7 +745,7 @@ void litehtml::html_tag::parse_attributes()
 	}
 }
 
-void litehtml::html_tag::get_text( string& text )
+void litehtml::html_tag::get_text( string& text ) const
 {
 	for (auto& el : m_children)
 	{
@@ -816,7 +818,7 @@ bool litehtml::html_tag::on_lbutton_down()
 	return ret;
 }
 
-bool litehtml::html_tag::on_lbutton_up()
+bool litehtml::html_tag::on_lbutton_up(bool is_click)
 {
 	bool ret = false;
 
@@ -830,7 +832,7 @@ bool litehtml::html_tag::on_lbutton_up()
 		el = el->parent();
 	}
 
-	on_click();
+	if (is_click) on_click();
 
 	return ret;
 }
@@ -839,10 +841,13 @@ void litehtml::html_tag::on_click()
 {
 	if (!is_root())
 	{
-		element::ptr el_parent = parent();
-		if (el_parent)
+		if(!get_document()->container()->on_element_click(shared_from_this()))
 		{
-			el_parent->on_click();
+			element::ptr el_parent = parent();
+			if (el_parent)
+			{
+				el_parent->on_click();
+			}
 		}
 	}
 }
@@ -852,7 +857,7 @@ bool litehtml::html_tag::is_break() const
 	return false;
 }
 
-void litehtml::html_tag::draw_background(uint_ptr hdc, int x, int y, const position *clip,
+void litehtml::html_tag::draw_background(uint_ptr hdc, pixel_t x, pixel_t y, const position *clip,
 										 const std::shared_ptr<render_item> &ri)
 {
 	if(m_css.get_display() != display_inline && m_css.get_display() != display_table_row)
@@ -878,12 +883,19 @@ void litehtml::html_tag::draw_background(uint_ptr hdc, int x, int y, const posit
 				for(int i = num_layers - 1; i >= 0; i--)
 				{
 					background_layer layer;
+
 					if(!bg->get_layer(i, pos, this, ri, layer)) continue;
+
 					if(is_root() && (clip != nullptr))
 					{
 						layer.clip_box = *clip;
 						layer.border_box = *clip;
 					}
+
+					layer.border_box.round();
+					layer.clip_box.round();
+					layer.origin_box.round();
+
 					bg->draw_layer(hdc, i, layer, get_document()->container());
 				}
 			}
@@ -891,6 +903,7 @@ void litehtml::html_tag::draw_background(uint_ptr hdc, int x, int y, const posit
 			borders bdr = m_css.get_borders();
 			if(bdr.is_visible())
 			{
+				border_box.round();
 				bdr.radius = m_css.get_borders().radius.calc_percents(border_box.width, border_box.height);
 				get_document()->container()->draw_borders(hdc, bdr, border_box, is_root());
 			}
@@ -935,7 +948,7 @@ void litehtml::html_tag::draw_background(uint_ptr hdc, int x, int y, const posit
 					bdr.radius.top_right_y		= m_css.get_borders().radius.top_right_y;
 				}
 
-				
+
 				bdr.top		= m_css.get_borders().top;
 				bdr.bottom	= m_css.get_borders().bottom;
 				if(box == boxes.begin())
@@ -953,8 +966,15 @@ void litehtml::html_tag::draw_background(uint_ptr hdc, int x, int y, const posit
 					for(int i = num_layers - 1; i >= 0; i--)
 					{
 						background_layer layer;
+
 						if(!bg->get_layer(i, content_box, this, ri, layer)) continue;
-						layer.border_radius = bdr.radius.calc_percents(layer.border_box.width, layer.border_box.width);
+
+						layer.border_radius = bdr.radius.calc_percents(box->width, box->height);
+
+						layer.border_box.round();
+						layer.clip_box.round();
+						layer.origin_box.round();
+
 						bg->draw_layer(hdc, i, layer, get_document()->container());
 					}
 				}
@@ -962,6 +982,7 @@ void litehtml::html_tag::draw_background(uint_ptr hdc, int x, int y, const posit
 				{
 					borders b = bdr;
 					b.radius = bdr.radius.calc_percents(box->width, box->height);
+					box->round();
 					get_document()->container()->draw_borders(hdc, b, *box, false);
 				}
 			}
@@ -1042,7 +1063,7 @@ bool litehtml::html_tag::is_replaced() const
 	return false;
 }
 
-void litehtml::html_tag::draw_list_marker( uint_ptr hdc, const position& pos )
+void litehtml::html_tag::draw_list_marker( uint_ptr hdc, const position& pos, const std::shared_ptr<render_item> &ri )
 {
 	list_marker lm;
 
@@ -1057,28 +1078,30 @@ void litehtml::html_tag::draw_list_marker( uint_ptr hdc, const position& pos )
 		lm.baseurl = nullptr;
 	}
 
-	int ln_height	= css().get_line_height();
-	int sz_font		= css().get_font_size();
+	pixel_t ln_height	= css().line_height().computed_value;
+	pixel_t sz_font		= css().get_font_size();
 	lm.pos.x		= pos.x;
-	lm.pos.width    = sz_font - sz_font * 2 / 3;
+	lm.pos.width    = sz_font / 3;
 	lm.color        = css().get_color();
 	lm.marker_type  = css().get_list_style_type();
 	lm.font         = css().get_font();
 
 	if (css().get_list_style_type() >= list_style_type_armenian)
 	{
-		lm.pos.y = pos.y;
-		lm.pos.height = pos.height;
+		auto li_baseline = pos.y + ri->get_first_baseline() - ri->content_offset_top();
+		lm.pos.y = li_baseline - css().get_font_metrics().ascent;
+		lm.pos.height = css().get_font_metrics().height;
+
 		lm.index = atoi(get_attr("list_index", "0"));
 	}
 	else
 	{
-		lm.pos.height = sz_font - sz_font * 2 / 3;
+		lm.pos.height = sz_font / 3;
 		lm.pos.y = pos.y + ln_height / 2 - lm.pos.height / 2;
 		lm.index = -1;
 	}
 
-	if(img_size.width && img_size.height)
+	if(img_size.width != 0 && img_size.height != 0)
 	{
 		if(lm.pos.y + img_size.height > pos.y + pos.height)
 		{
@@ -1116,7 +1139,6 @@ void litehtml::html_tag::draw_list_marker( uint_ptr hdc, const position& pos )
 	if (m_css.get_list_style_type() >= list_style_type_armenian)
 	{
 		auto marker_text = get_list_marker_text(lm.index);
-		lm.pos.height = ln_height;
 		if (marker_text.empty())
 		{
 			get_document()->container()->draw_list_marker(hdc, lm);
@@ -1130,6 +1152,7 @@ void litehtml::html_tag::draw_list_marker( uint_ptr hdc, const position& pos )
 				auto text_pos = lm.pos;
 				text_pos.move_to(text_pos.right() - tw, text_pos.y);
 				text_pos.width = tw;
+				text_pos.round();
 				get_document()->container()->draw_text(hdc, marker_text.c_str(), lm.font, lm.color, text_pos);
 			}
 		}
@@ -1192,7 +1215,7 @@ bool html_tag::is_nth_child(const element::ptr& el, int num, int off, bool of_ty
 	{
 		if(child->css().get_display() != display_inline_text)
 		{
-			if( (!of_type && selector_list.empty()) || 
+			if( (!of_type && selector_list.empty()) ||
 				(of_type && child->tag() == el->tag()) || child->select(selector_list) )
 			{
 				if(el == child)
@@ -1502,7 +1525,7 @@ const litehtml::background* litehtml::html_tag::get_background(bool own_only)
 		}
 		return nullptr;
 	}
-	
+
 	if(is_body())
 	{
 		element::ptr el_parent = parent();
@@ -1578,7 +1601,7 @@ void html_tag::map_to_dimension_property_ignoring_zero(string_id prop_name, stri
 		tok = {DIMENSION,  x, css_number_number, "px"};
 	else
 		tok = {PERCENTAGE, x, css_number_number};
-		
+
 	m_style.add_property(prop_name, {tok});
 }
 

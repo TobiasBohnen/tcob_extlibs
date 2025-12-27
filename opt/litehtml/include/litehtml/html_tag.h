@@ -4,8 +4,6 @@
 #include "element.h"
 #include "style.h"
 #include "background.h"
-#include "css_margins.h"
-#include "borders.h"
 #include "css_selector.h"
 #include "stylesheet.h"
 #include "line_box.h"
@@ -61,14 +59,14 @@ namespace litehtml
 		bool				on_mouse_over() override;
 		bool				on_mouse_leave() override;
 		bool				on_lbutton_down() override;
-		bool				on_lbutton_up() override;
+		bool				on_lbutton_up(bool is_click) override;
 		void				on_click() override;
 		bool				set_pseudo_class(string_id cls, bool add) override;
 		bool				set_class(const char* pclass, bool add) override;
 		bool				is_replaced() const override;
 		void				compute_styles(bool recursive = true) override;
-		void				draw(uint_ptr hdc, int x, int y, const position *clip, const std::shared_ptr<render_item> &ri) override;
-		void				draw_background(uint_ptr hdc, int x, int y, const position *clip,
+		void				draw(uint_ptr hdc, pixel_t x, pixel_t y, const position *clip, const std::shared_ptr<render_item> &ri) override;
+		void				draw_background(uint_ptr hdc, pixel_t x, pixel_t y, const position *clip,
 									const std::shared_ptr<render_item> &ri) override;
 
 		template<class Type>
@@ -93,10 +91,10 @@ namespace litehtml
 		element::ptr		find_ancestor(const css_selector& selector, bool apply_pseudo = true, bool* is_pseudo = nullptr) override;
 		element::ptr		find_adjacent_sibling(const element::ptr& el, const css_selector& selector, bool apply_pseudo = true, bool* is_pseudo = nullptr) override;
 		element::ptr		find_sibling(const element::ptr& el, const css_selector& selector, bool apply_pseudo = true, bool* is_pseudo = nullptr) override;
-		void				get_text(string& text) override;
+		void				get_text(string& text) const override;
 		void				parse_attributes() override;
 
-		void				get_content_size(size& sz, int max_width) override;
+		void				get_content_size(size& sz, pixel_t max_width) override;
 		void				add_style(const style& style) override;
 
 		bool				is_nth_child(const element::ptr& el, int num, int off, bool of_type, const css_selector::vector& selector_list) const override;
@@ -107,7 +105,7 @@ namespace litehtml
 		string				dump_get_name() override;
 
 	protected:
-		void				draw_list_marker( uint_ptr hdc, const position &pos );
+		void				draw_list_marker( uint_ptr hdc, const position &pos, const std::shared_ptr<render_item> &ri );
 		string				get_list_marker_text(int index);
 		element::ptr		get_element_before(const style& style, bool create);
 		element::ptr		get_element_after(const style& style, bool create);

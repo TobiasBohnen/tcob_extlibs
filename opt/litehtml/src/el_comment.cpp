@@ -1,4 +1,3 @@
-#include "html.h"
 #include "el_comment.h"
 
 litehtml::el_comment::el_comment(const std::shared_ptr<document>& doc) : element(doc)
@@ -11,7 +10,7 @@ bool litehtml::el_comment::is_comment() const
 	return true;
 }
 
-void litehtml::el_comment::get_text( string& text )
+void litehtml::el_comment::get_text( string& text ) const
 {
 	text += m_text;
 }

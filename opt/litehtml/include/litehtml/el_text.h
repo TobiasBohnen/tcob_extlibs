@@ -1,7 +1,8 @@
 #ifndef LH_EL_TEXT_H
 #define LH_EL_TEXT_H
 
-#include "html_tag.h"
+#include "element.h"
+#include "document.h"
 
 namespace litehtml
 {
@@ -16,15 +17,15 @@ namespace litehtml
 	public:
 		el_text(const char* text, const document::ptr& doc);
 
-		void				get_text(string& text) override;
+		void				get_text(string& text) const override;
 		void				compute_styles(bool recursive) override;
 		bool				is_text() const override { return true; }
 
-		void draw(uint_ptr hdc, int x, int y, const position *clip, const std::shared_ptr<render_item> &ri) override;
+		void draw(uint_ptr hdc, pixel_t x, pixel_t y, const position *clip, const std::shared_ptr<render_item> &ri) override;
 		string				dump_get_name() override;
 		std::vector<std::tuple<string, string>> dump_get_attrs() override;
 	protected:
-		void				get_content_size(size& sz, int max_width) override;
+		void				get_content_size(size& sz, pixel_t max_width) override;
 	};
 }
 

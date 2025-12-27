@@ -1,28 +1,31 @@
 #include "html.h"
 #include "css_properties.h"
 #include <cmath>
+#include "document.h"
+#include "html_tag.h"
+#include "document_container.h"
+#include "types.h"
 
 #define offset(member) ((uint_ptr)&this->member - (uint_ptr)this)
+//#define offset(func)	[](const css_properties& css) { return css.func; }
 
 void litehtml::css_properties::compute(const html_tag* el, const document::ptr& doc)
 {
-	compute_font(el, doc);
-	int font_size = get_font_size();
 	m_color = el->get_property<web_color>(_color_, true, web_color::black, offset(m_color));
 
-	m_el_position	 = (element_position) el->get_property<int>( _position_,		false,	element_position_static, offset(m_el_position));
-	m_display		 = (style_display)	  el->get_property<int>( _display_,			false,	display_inline,			 offset(m_display));
-	m_visibility	 = (visibility)		  el->get_property<int>( _visibility_,		true,	visibility_visible,		 offset(m_visibility));
-	m_float			 = (element_float)	  el->get_property<int>( _float_,			false,	float_none,				 offset(m_float));
-	m_clear			 = (element_clear)	  el->get_property<int>( _clear_,			false,	clear_none,				 offset(m_clear));
-	m_appearance	 = (appearance)		  el->get_property<int>( _appearance_,		false,	appearance_none,		 offset(m_appearance));
-	m_box_sizing	 = (box_sizing)		  el->get_property<int>( _box_sizing_,		false,	box_sizing_content_box,	 offset(m_box_sizing));
-	m_overflow		 = (overflow)		  el->get_property<int>( _overflow_,		false,	overflow_visible,		 offset(m_overflow));
-	m_text_align	 = (text_align)		  el->get_property<int>( _text_align_,		true,	text_align_left,		 offset(m_text_align));
-	m_vertical_align = (vertical_align)	  el->get_property<int>( _vertical_align_,	false,	va_baseline,			 offset(m_vertical_align));
-	m_text_transform = (text_transform)	  el->get_property<int>( _text_transform_,	true,	text_transform_none,	 offset(m_text_transform));
-	m_white_space	 = (white_space)	  el->get_property<int>( _white_space_,		true,	white_space_normal,		 offset(m_white_space));
-	m_caption_side	 = (caption_side)	  el->get_property<int>( _caption_side_,	true,	caption_side_top,		 offset(m_caption_side));
+	m_el_position	 = (element_position)	el->get_property<int>( _position_,		false,	element_position_static,	 offset(m_el_position));
+	m_display		 = (style_display)		el->get_property<int>( _display_,			false,	display_inline,			 offset(m_display));
+	m_visibility	 = (visibility)			el->get_property<int>( _visibility_,		true,	visibility_visible,		 offset(m_visibility));
+	m_float			 = (element_float)		el->get_property<int>( _float_,			false,	float_none,				 offset(m_float));
+	m_clear			 = (element_clear)		el->get_property<int>( _clear_,			false,	clear_none,				 offset(m_clear));
+	m_appearance	 = (appearance)			el->get_property<int>( _appearance_,		false,	appearance_none,			 offset(m_appearance));
+	m_box_sizing	 = (box_sizing)			el->get_property<int>( _box_sizing_,		false,	box_sizing_content_box,	 offset(m_box_sizing));
+	m_overflow		 = (overflow)			el->get_property<int>( _overflow_,		false,	overflow_visible,		 offset(m_overflow));
+	m_text_align	 = (text_align)			el->get_property<int>( _text_align_,		true,	text_align_left,			offset(m_text_align));
+	m_vertical_align = (vertical_align)		el->get_property<int>( _vertical_align_,	false,	va_baseline,				 offset(m_vertical_align));
+	m_text_transform = (text_transform)		el->get_property<int>( _text_transform_,	true,	text_transform_none,		 offset(m_text_transform));
+	m_white_space	 = (white_space)		el->get_property<int>( _white_space_,		true,	white_space_normal,		 offset(m_white_space));
+	m_caption_side	 = (caption_side)		el->get_property<int>( _caption_side_,	true,	caption_side_top,		 offset(m_caption_side));
 
 	// https://www.w3.org/TR/CSS22/visuren.html#dis-pos-flo
 	if (m_display == display_none)
@@ -98,9 +101,15 @@ void litehtml::css_properties::compute(const html_tag* el, const document::ptr& 
 			{
 				m_display = display_block;
 			}
+		} else if(el->is_replaced() && m_display == display_inline)
+		{
+			m_display = display_inline_block;
 		}
 	}
 	// 5. Otherwise, the remaining 'display' property values apply as specified.
+
+	compute_font(el, doc);
+	pixel_t font_size = get_font_size();
 
 	const css_length _auto = css_length::predef_value(0);
 	const css_length none = _auto, normal = _auto;
@@ -167,10 +176,10 @@ void litehtml::css_properties::compute(const html_tag* el, const document::ptr& 
 	if (m_css_borders.bottom.style == border_style_none || m_css_borders.bottom.style == border_style_hidden)
 		m_css_borders.bottom.width = 0;
 
-	doc->cvt_units(m_css_borders.left.width,	m_font_metrics, 0);
-	doc->cvt_units(m_css_borders.right.width,	m_font_metrics, 0);
-	doc->cvt_units(m_css_borders.top.width,		m_font_metrics, 0);
-	doc->cvt_units(m_css_borders.bottom.width,	m_font_metrics, 0);
+	snap_border_width(m_css_borders.left.width,		doc);
+	snap_border_width(m_css_borders.right.width,	doc);
+	snap_border_width(m_css_borders.top.width,		doc);
+	snap_border_width(m_css_borders.bottom.width,	doc);
 
 	m_css_borders.radius.top_left_x = el->get_property<css_length>(_border_top_left_radius_x_, false, 0, offset(m_css_borders.radius.top_left_x));
 	m_css_borders.radius.top_left_y = el->get_property<css_length>(_border_top_left_radius_y_, false, 0, offset(m_css_borders.radius.top_left_y));
@@ -188,8 +197,8 @@ void litehtml::css_properties::compute(const html_tag* el, const document::ptr& 
 	doc->cvt_units( m_css_borders.radius.top_left_y,			m_font_metrics, 0);
 	doc->cvt_units( m_css_borders.radius.top_right_x,			m_font_metrics, 0);
 	doc->cvt_units( m_css_borders.radius.top_right_y,			m_font_metrics, 0);
-	doc->cvt_units( m_css_borders.radius.bottom_left_x,			m_font_metrics, 0);
-	doc->cvt_units( m_css_borders.radius.bottom_left_y,			m_font_metrics, 0);
+	doc->cvt_units( m_css_borders.radius.bottom_left_x,		m_font_metrics, 0);
+	doc->cvt_units( m_css_borders.radius.bottom_left_y,		m_font_metrics, 0);
 	doc->cvt_units( m_css_borders.radius.bottom_right_x,		m_font_metrics, 0);
 	doc->cvt_units( m_css_borders.radius.bottom_right_y,		m_font_metrics, 0);
 
@@ -218,17 +227,17 @@ void litehtml::css_properties::compute(const html_tag* el, const document::ptr& 
 	m_css_text_indent = el->get_property<css_length>(_text_indent_, true, 0, offset(m_css_text_indent));
 	doc->cvt_units(m_css_text_indent, m_font_metrics, 0);
 
-	m_css_line_height = el->get_property<css_length>(_line_height_, true, normal, offset(m_css_line_height));
-	if(m_css_line_height.is_predefined())
+	m_line_height.css_value = el->get_property<css_length>(_line_height_, true, normal, offset(m_line_height.css_value));
+	if(m_line_height.css_value.is_predefined())
 	{
-		m_line_height = m_font_metrics.height;
-	} else if(m_css_line_height.units() == css_units_none)
+		m_line_height.computed_value = m_font_metrics.height;
+	} else if(m_line_height.css_value.units() == css_units_none)
 	{
-		m_line_height = (int) std::nearbyint(m_css_line_height.val() * font_size);
+		m_line_height.computed_value = (pixel_t) (m_line_height.css_value.val() * font_size);
 	} else
 	{
-		m_line_height = doc->to_pixels(m_css_line_height, m_font_metrics, m_font_metrics.font_size);
-		m_css_line_height = (float) m_line_height;
+		m_line_height.computed_value = doc->to_pixels(m_line_height.css_value, m_font_metrics, m_font_metrics.font_size);
+		m_line_height.css_value = (float) m_line_height.computed_value;
 	}
 
 	m_list_style_type     = (list_style_type)     el->get_property<int>(_list_style_type_,     true, list_style_type_disc,        offset(m_list_style_type));
@@ -255,7 +264,7 @@ litehtml::web_color litehtml::css_properties::get_color_property(const html_tag*
 	return color;
 }
 
-static const int font_size_table[8][7] =
+static const litehtml::pixel_t font_size_table[8][7] =
 {
 		{ 9,    9,     9,     9,    11,    14,    18},
 		{ 9,    9,     9,    10,    12,    15,    20},
@@ -272,8 +281,8 @@ void litehtml::css_properties::compute_font(const html_tag* el, const document::
 	// initialize font size
 	css_length sz = el->get_property<css_length>(_font_size_, true, css_length::predef_value(font_size_medium), offset(m_font_size));
 
-	int parent_sz = 0;
-	int doc_font_size = doc->container()->get_default_font_size();
+	pixel_t parent_sz = 0;
+	pixel_t doc_font_size = doc->container()->get_default_font_size();
 	element::ptr el_parent = el->parent();
 	if (el_parent)
 	{
@@ -282,12 +291,12 @@ void litehtml::css_properties::compute_font(const html_tag* el, const document::
 	{
 		parent_sz = doc_font_size;
 	}
-	
-	int font_size = parent_sz;
+
+	pixel_t font_size = parent_sz;
 
 	if(sz.is_predefined())
 	{
-		int idx_in_table = doc_font_size - 9;
+		int idx_in_table = round_f(doc_font_size - 9);
 		if(idx_in_table >= 0 && idx_in_table <= 7)
 		{
 			if(sz.predef() >= font_size_xx_small && sz.predef() <= font_size_xx_large)
@@ -295,10 +304,10 @@ void litehtml::css_properties::compute_font(const html_tag* el, const document::
 				font_size = font_size_table[idx_in_table][sz.predef()];
 			} else if(sz.predef() == font_size_smaller)
 			{
-				font_size = (int) (parent_sz / 1.2);
+				font_size = parent_sz / (pixel_t) 1.2;
 			}  else if(sz.predef() == font_size_larger)
 			{
-				font_size = (int) (parent_sz * 1.2);
+				font_size = parent_sz * (pixel_t) 1.2;
 			} else
 			{
 				font_size = parent_sz;
@@ -326,10 +335,10 @@ void litehtml::css_properties::compute_font(const html_tag* el, const document::
 					font_size = doc_font_size * 2;
 					break;
 				case font_size_smaller:
-					font_size = (int) (parent_sz / 1.2);
+					font_size = parent_sz / (pixel_t) 1.2;
 					break;
 				case font_size_larger:
-					font_size = (int) (parent_sz * 1.2);
+					font_size = parent_sz * (pixel_t) 1.2;
 					break;
 				default:
 					font_size = parent_sz;
@@ -348,22 +357,96 @@ void litehtml::css_properties::compute_font(const html_tag* el, const document::
 			font_size = doc->to_pixels(sz, fm, 0);
 		}
 	}
-	
+
 	m_font_size = (float)font_size;
 
 	// initialize font
 	m_font_family		=              el->get_property<string>(    _font_family_,		true, doc->container()->get_default_font_name(),	offset(m_font_family));
 	m_font_weight		=              el->get_property<css_length>(_font_weight_,		true, css_length::predef_value(font_weight_normal), offset(m_font_weight));
 	m_font_style		= (font_style) el->get_property<int>(       _font_style_,		true, font_style_normal,							offset(m_font_style));
-	m_text_decoration	=              el->get_property<string>(    _text_decoration_,	true, "none",										offset(m_text_decoration));
+	bool propagate_decoration = !is_one_of(m_display, display_inline_block, display_inline_table, display_inline_flex) &&
+								m_float == float_none && !is_one_of(m_el_position, element_position_absolute, element_position_fixed);
 
-	m_font = doc->get_font(
-		m_font_family.c_str(), 
-		font_size, 
-		m_font_weight.is_predefined() ? index_value(m_font_weight.predef(), font_weight_strings).c_str() : std::to_string(m_font_weight.val()).c_str(),
-		index_value(m_font_style, font_style_strings).c_str(),
-		m_text_decoration.c_str(), 
-		&m_font_metrics);
+	m_text_decoration_line = el->get_property<int>(_text_decoration_line_, propagate_decoration, text_decoration_line_none, offset(m_text_decoration_line));
+
+	// Merge parent text decoration with child text decoration
+	if (propagate_decoration && el->parent())
+	{
+		m_text_decoration_line |= el->parent()->css().get_text_decoration_line();
+	}
+
+	if(m_text_decoration_line)
+	{
+		m_text_decoration_thickness = el->get_property<css_length>(_text_decoration_thickness_, propagate_decoration, css_length::predef_value(text_decoration_thickness_auto), offset(m_text_decoration_thickness));
+		m_text_decoration_style = (text_decoration_style) el->get_property<int>(_text_decoration_style_, propagate_decoration, text_decoration_style_solid, offset(m_text_decoration_style));
+		m_text_decoration_color = get_color_property(el, _text_decoration_color_, propagate_decoration, web_color::current_color, offset(m_text_decoration_color));
+	} else
+	{
+		m_text_decoration_thickness = css_length::predef_value(text_decoration_thickness_auto);
+		m_text_decoration_color = web_color::current_color;
+	}
+
+	// text-emphasis
+	m_text_emphasis_style = el->get_property<string>(_text_emphasis_style_, true, "", offset(m_text_emphasis_style));
+	m_text_emphasis_position = el->get_property<int>(_text_emphasis_position_, true, text_emphasis_position_over, offset(m_text_emphasis_position));
+	m_text_emphasis_color = get_color_property(el, _text_emphasis_color_, true, web_color::current_color, offset(m_text_emphasis_color));
+
+	if(el->parent())
+	{
+		if(m_text_emphasis_style.empty() || m_text_emphasis_style == "initial" || m_text_emphasis_style == "unset")
+		{
+			m_text_emphasis_style = el->parent()->css().get_text_emphasis_style();
+		}
+		if(m_text_emphasis_color == web_color::current_color)
+		{
+			m_text_emphasis_color = el->parent()->css().get_text_emphasis_color();
+		}
+		m_text_emphasis_position |= el->parent()->css().get_text_emphasis_position();
+	}
+
+	if(m_font_weight.is_predefined())
+	{
+		switch(m_font_weight.predef())
+		{
+			case font_weight_bold:
+				m_font_weight = 700;
+				break;
+			case font_weight_bolder:
+				{
+					const int inherited = (int) el->parent()->css().m_font_weight.val();
+					if(inherited < 400) m_font_weight = 400;
+					else if(inherited >= 400 && inherited < 600) m_font_weight = 700;
+					else m_font_weight = 900;
+				}
+				break;
+			case font_weight_lighter:
+				{
+					const int inherited = (int) el->parent()->css().m_font_weight.val();
+					if(inherited < 600) m_font_weight = 100;
+					else if(inherited >= 600 && inherited < 800) m_font_weight = 400;
+					else m_font_weight = 700;
+				}
+				break;
+			default:
+				m_font_weight = 400;
+				break;
+		}
+	}
+
+	font_description descr;
+	descr.family 				= m_font_family;
+	descr.size					= std::round(font_size);
+	descr.style					= m_font_style;
+	descr.weight				= (int) m_font_weight.val();
+	descr.decoration_line		= m_text_decoration_line;
+	descr.decoration_thickness	= m_text_decoration_thickness;
+	descr.decoration_style		= m_text_decoration_style;
+	descr.decoration_color		= m_text_decoration_color;
+	descr.emphasis_style		= m_text_emphasis_style;
+	descr.emphasis_color		= m_text_emphasis_color;
+	descr.emphasis_position		= m_text_emphasis_position;
+
+	m_font = doc->get_font(descr, &m_font_metrics);
 }
 
 void litehtml::css_properties::compute_background(const html_tag* el, const document::ptr& doc)
@@ -452,6 +535,27 @@ void litehtml::css_properties::compute_flex(const html_tag* el, const document::
 	}
 }
 
+// https://www.w3.org/TR/css-values-4/#snap-a-length-as-a-border-width
+void litehtml::css_properties::snap_border_width(css_length& width, const std::shared_ptr<document>& doc)
+{
+	if (width.is_predefined() || width.units() == css_units_percentage)
+	{
+		return;
+	}
+
+	pixel_t px = doc->to_pixels(width, m_font_metrics, 0);
+	
+	if (px > 0 && px < 1)
+	{
+		px = 1;
+	} else
+	{
+		px = std::floor(px);
+	}
+
+	width.set_value(px, css_units_px);
+}
+
 std::vector<std::tuple<litehtml::string, litehtml::string>> litehtml::css_properties::dump_get_attrs()
 {
 	std::vector<std::tuple<string, string>> ret;
@@ -480,7 +584,7 @@ std::vector<std::tuple<litehtml::string, litehtml::string>> litehtml::css_proper
 	ret.emplace_back("max_height", m_css_max_width.to_string());
 	ret.emplace_back("offsets", m_css_offsets.to_string());
 	ret.emplace_back("text_indent", m_css_text_indent.to_string());
-	ret.emplace_back("line_height", std::to_string(m_line_height));
+	ret.emplace_back("line_height", std::to_string(m_line_height.computed_value));
 	ret.emplace_back("list_style_type", index_value(m_list_style_type, list_style_type_strings));
 	ret.emplace_back("list_style_position", index_value(m_list_style_position, list_style_position_strings));
 	ret.emplace_back("border_spacing_x", m_css_border_spacing_x.to_string());
