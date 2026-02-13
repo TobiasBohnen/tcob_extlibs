@@ -90,24 +90,17 @@ list(APPEND TCOB_EXTLIBS_LIBS SDL3-static)
 # FreeType @2.14.1 https://github.com/freetype/freetype
 MESSAGE(STATUS "FreeType:")
 
-FetchContent_Declare(
-  freetype
-  GIT_REPOSITORY https://github.com/freetype/freetype
-  GIT_TAG VER-2-14-1
-  EXCLUDE_FROM_ALL
-)
-
 set(FT_DISABLE_ZLIB ON CACHE BOOL "" FORCE)
 set(FT_DISABLE_BZIP2 ON CACHE BOOL "" FORCE)
 set(FT_DISABLE_PNG ON CACHE BOOL "" FORCE)
 set(FT_DISABLE_HARFBUZZ ON CACHE BOOL "" FORCE)
 set(FT_DISABLE_BROTLI ON CACHE BOOL "" FORCE)
 
-FetchContent_MakeAvailable(freetype)
+add_subdirectory(req/freetype)
 tcob_mark_all_as_advanced("^FT_")
 tcob_disable_warnings(freetype)
 
-list(APPEND TCOB_EXTLIBS_INCDIRS ${freetype_SOURCE_DIR}/include/)
+list(APPEND TCOB_EXTLIBS_INCDIRS ${CMAKE_CURRENT_SOURCE_DIR}/req/freetype/include)
 list(APPEND TCOB_EXTLIBS_LIBS freetype)
 
 # box2d @3.1.1 https://github.com/erincatto/box2d
