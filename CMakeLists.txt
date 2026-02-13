@@ -72,7 +72,7 @@ if(TARGET SDL3-static)
   tcob_disable_warnings(SDL3-static)
 endif()
 
-list(APPEND TCOB_EXTLIBS_INCDIRS req/SDL3/include/)
+list(APPEND TCOB_EXTLIBS_INCDIRS ${CMAKE_CURRENT_SOURCE_DIR}/req/SDL3/include/)
 list(APPEND TCOB_EXTLIBS_LIBS SDL3-static)
 
 # FreeType @2.14.1 https://github.com/freetype/freetype
