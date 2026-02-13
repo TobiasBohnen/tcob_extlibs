@@ -193,45 +193,6 @@ if(TCOB_ENABLE_FILETYPES_AUDIO_LIBXMP)
   list(APPEND TCOB_EXTLIBS_DEFINES LIBXMP_CORE_PLAYER LIBXMP_NO_DEPACKERS LIBXMP_STATIC)
 endif()
 
-# WebP @1.6.0 https://chromium.googlesource.com/webm/libwebp
-if(TCOB_ENABLE_FILETYPES_GFX_WEBP)
-  MESSAGE(STATUS "WebP:")
-
-  FetchContent_Declare(
-    webp
-    GIT_REPOSITORY https://chromium.googlesource.com/webm/libwebp
-    GIT_TAG v1.6.0
-    EXCLUDE_FROM_ALL
-  )
-
-  set(WEBP_BUILD_ANIM_UTILS OFF CACHE BOOL "Build animation utilities." FORCE)
-  set(WEBP_BUILD_CWEBP OFF CACHE BOOL "Build the cwebp command line tool." FORCE)
-  set(WEBP_BUILD_DWEBP OFF CACHE BOOL "Build the dwebp command line tool." FORCE)
-  set(WEBP_BUILD_GIF2WEBP OFF CACHE BOOL "Build the gif2webp conversion tool." FORCE)
-  set(WEBP_BUILD_IMG2WEBP OFF CACHE BOOL "Build the img2webp animation tool." FORCE)
-  set(WEBP_BUILD_VWEBP OFF CACHE BOOL "Build the vwebp viewer tool." FORCE)
-  set(WEBP_BUILD_WEBPINFO OFF CACHE BOOL "Build the webpinfo command line tool." FORCE)
-  set(WEBP_BUILD_WEBPMUX OFF CACHE BOOL "Build the webpmux command line tool." FORCE)
-  set(WEBP_BUILD_EXTRAS OFF CACHE BOOL "Build extras." FORCE)
-
-  if(MSVC)
-    set(WEBP_ENABLE_SIMD OFF CACHE BOOL "Enable any SIMD optimization." FORCE)
-  endif()
-
-  if(NOT BUILD_SHARED_LIBS)
-    set(WEBP_LINK_STATIC ON CACHE BOOL "" FORCE)
-  endif()
-
-  FetchContent_MakeAvailable(webp)
-  tcob_mark_all_as_advanced("^WEBP_")
-  tcob_disable_warnings(webp)
-  tcob_disable_warnings(libwebpmux)
-  tcob_disable_warnings(webpdemux)
-
-  list(APPEND TCOB_EXTLIBS_INCDIRS ${webp_SOURCE_DIR}/src/)
-  list(APPEND TCOB_EXTLIBS_LIBS webp libwebpmux webpdemux)
-endif()
-
 # litehtml @3f4efa2 https://github.com/litehtml/litehtml
 if(TCOB_ENABLE_ADDON_GFX_LITEHTML)
   file(GLOB_RECURSE LITEHTML_SRC_FILES ${CMAKE_CURRENT_SOURCE_DIR}/opt/litehtml/src/*.cpp)
