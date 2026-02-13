@@ -18,11 +18,6 @@ set(CMAKE_DISABLE_FIND_PACKAGE_TIFF ON)
 set(CMAKE_DISABLE_FIND_PACKAGE_GIF ON)
 
 # ##########################################################################
-include(FetchContent)
-
-# set(FETCHCONTENT_BASE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/_deps)
-
-# ##########################################################################
 # #required
 
 # physfs @3.2.0 https://github.com/icculus/physfs
@@ -53,13 +48,6 @@ list(APPEND TCOB_EXTLIBS_INCDIRS ${CMAKE_CURRENT_SOURCE_DIR}/req/Clipper2Lib/inc
 # SDL3 @3.4.0 https://github.com/libsdl-org/SDL
 MESSAGE(STATUS "SDL3:")
 
-FetchContent_Declare(
-  SDL3
-  GIT_REPOSITORY https://github.com/libsdl-org/SDL
-  GIT_TAG release-3.4.0
-  EXCLUDE_FROM_ALL
-)
-
 set(SDL_INSTALL OFF CACHE BOOL "" FORCE)
 set(SDL_INSTALL_TESTS OFF CACHE BOOL "" FORCE)
 set(SDL_UNINSTALL OFF CACHE BOOL "" FORCE)
@@ -77,14 +65,14 @@ if(NOT BUILD_SHARED_LIBS)
   set(SDL_STATIC ON CACHE BOOL "" FORCE)
 endif()
 
-FetchContent_MakeAvailable(SDL3)
+add_subdirectory(req/SDL3)
 tcob_mark_all_as_advanced("^SDL_")
 
 if(TARGET SDL3-static)
   tcob_disable_warnings(SDL3-static)
 endif()
 
-list(APPEND TCOB_EXTLIBS_INCDIRS ${SDL3_SOURCE_DIR}/include/)
+list(APPEND TCOB_EXTLIBS_INCDIRS req/SDL3/include/)
 list(APPEND TCOB_EXTLIBS_LIBS SDL3-static)
 
 # FreeType @2.14.1 https://github.com/freetype/freetype
