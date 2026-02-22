@@ -55,6 +55,9 @@ namespace litehtml
 		bool						is_float()					const;
 		bool						is_block_formatting_context() const;
 
+		pixel_t						v_scroll(pixel_t dy)		const;
+		pixel_t						h_scroll(pixel_t dx)		const;
+
 		bool						is_root() const;
 		element::ptr				parent() const;
 		void						parent(const element::ptr& par);
@@ -63,6 +66,8 @@ namespace litehtml
 
 		std::shared_ptr<document>	get_document() const;
 		const std::list<std::shared_ptr<element>>& children() const;
+
+		std::shared_ptr<render_item> get_render_item();
 
 		virtual elements_list		select_all(const string& selector);
 		virtual elements_list		select_all(const css_selector& selector);
@@ -143,6 +148,8 @@ namespace litehtml
 		void				increment_counter(const string_id& counter_name_id, const int increment = 1);
 		void				reset_counter(const string_id& counter_name_id, const int value = 0);
 
+		void				run_on_renderers(const std::function<bool(const std::shared_ptr<render_item>&)>& func);
+
 	private:
 		std::vector<element::ptr> get_siblings_before() const;
 		bool				find_counter(const string_id& counter_name_id, std::map<string_id, int>::iterator& map_iterator);
@@ -219,6 +226,15 @@ namespace litehtml
 	inline const std::list<std::shared_ptr<element>>& element::children() const
 	{
 		return m_children;
+	}
+
+	inline std::shared_ptr<render_item> element::get_render_item()
+	{
+		if(m_renders.empty())
+		{
+			return nullptr;
+		}
+		return m_renders.front().lock();
 	}
 }
 

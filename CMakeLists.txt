@@ -174,7 +174,7 @@ if(TCOB_ENABLE_FILETYPES_AUDIO_LIBXMP)
   list(APPEND TCOB_EXTLIBS_DEFINES LIBXMP_CORE_PLAYER LIBXMP_NO_DEPACKERS LIBXMP_STATIC)
 endif()
 
-# litehtml @3f4efa2 https://github.com/litehtml/litehtml
+# litehtml @8836bc1 https://github.com/litehtml/litehtml
 if(TCOB_ENABLE_ADDON_GFX_LITEHTML)
   file(GLOB_RECURSE LITEHTML_SRC_FILES ${CMAKE_CURRENT_SOURCE_DIR}/opt/litehtml/src/*.cpp)
   list(APPEND TCOB_EXTLIBS_SRCFILES ${LITEHTML_SRC_FILES})
