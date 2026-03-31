@@ -163,7 +163,7 @@ if(TCOB_ENABLE_ADDON_AUDIO_TINYSOUNDFONT)
   list(APPEND TCOB_EXTLIBS_SRCFILES ${CMAKE_CURRENT_SOURCE_DIR}/opt/TinySoundFont/TinySoundFont.c)
 endif()
 
-# libxmp-lite @4.6.3 https://github.com/libxmp/libxmp
+# libxmp-lite @4.7.0 https://github.com/libxmp/libxmp
 if(TCOB_ENABLE_FILETYPES_AUDIO_LIBXMP)
   file(GLOB_RECURSE LIBXMP_SRC_FILES ${CMAKE_CURRENT_SOURCE_DIR}/opt/libxmp-lite/src/*.c)
   list(APPEND TCOB_EXTLIBS_SRCFILES ${LIBXMP_SRC_FILES})
