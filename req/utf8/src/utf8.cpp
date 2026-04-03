@@ -9,6 +9,7 @@
 #include <vector>
 #include <cassert>
 #include <cstring>
+#include <algorithm>
 
 using namespace std;
 namespace utf8 {
