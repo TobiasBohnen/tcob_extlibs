@@ -75,7 +75,7 @@ endif()
 list(APPEND TCOB_EXTLIBS_INCDIRS ${CMAKE_CURRENT_SOURCE_DIR}/req/SDL3/include/)
 list(APPEND TCOB_EXTLIBS_LIBS SDL3-static)
 
-# FreeType @2.14.1 https://github.com/freetype/freetype
+# FreeType @2.14.3 https://github.com/freetype/freetype
 MESSAGE(STATUS "FreeType:")
 
 set(FT_DISABLE_ZLIB ON CACHE BOOL "" FORCE)
@@ -105,7 +105,7 @@ if(UNIX)
   list(APPEND TCOB_EXTLIBS_DEFINES LUA_USE_LINUX)
 endif()
 
-# sqlite @3.51.0 https://www.sqlite.org/
+# sqlite @3.53.0 https://www.sqlite.org/
 list(APPEND TCOB_EXTLIBS_SRCFILES ${CMAKE_CURRENT_SOURCE_DIR}/req/sqlite3/sqlite3.c)
 
 # ##########################################################################
