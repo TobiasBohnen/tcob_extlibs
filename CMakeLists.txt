@@ -153,11 +153,6 @@ if(TCOB_ENABLE_RENDERER_OPENGL45 OR TCOB_ENABLE_RENDERER_OPENGLES30)
   endif()
 endif()
 
-# speech
-if(TCOB_ENABLE_ADDON_AUDIO_SPEECH)
-  list(APPEND TCOB_EXTLIBS_SRCFILES ${CMAKE_CURRENT_SOURCE_DIR}/opt/speech/speech.c)
-endif()
-
 # TinySoundFont @cd82859 https://github.com/schellingb/TinySoundFont
 if(TCOB_ENABLE_ADDON_AUDIO_TINYSOUNDFONT)
   list(APPEND TCOB_EXTLIBS_SRCFILES ${CMAKE_CURRENT_SOURCE_DIR}/opt/TinySoundFont/TinySoundFont.c)
