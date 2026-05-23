@@ -23,8 +23,8 @@ extern "C" {
 
 
 
-static int GLAD_GL_ES_VERSION_2_0 = 0;
-static int GLAD_GL_ES_VERSION_3_0 = 0;
+int GLAD_GL_ES_VERSION_2_0 = 0;
+int GLAD_GL_ES_VERSION_3_0 = 0;
 
 
 
@@ -623,7 +623,7 @@ static int glad_gles30_gl_find_extensions_gles2(void) {
     char **exts_i = NULL;
     if (!glad_gles30_gl_get_extensions(&exts, &exts_i)) return 0;
 
-    GLAD_UNUSED(glad_gles30_gl_has_extension);
+    GLAD_UNUSED(&glad_gles30_gl_has_extension);
 
     glad_gles30_gl_free_extensions(exts_i);
 

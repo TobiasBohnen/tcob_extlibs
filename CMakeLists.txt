@@ -154,7 +154,7 @@ if(TCOB_ENABLE_FILETYPES_AUDIO_DRLIBS)
   list(APPEND TCOB_EXTLIBS_SRCFILES ${CMAKE_CURRENT_SOURCE_DIR}/opt/dr_libs/dr_libs.c)
 endif()
 
-# glad 2.0.6 https://github.com/Dav1dde/glad
+# glad 2.0.8 https://github.com/Dav1dde/glad
 if(TCOB_ENABLE_RENDERER_OPENGL45) # gl 4.5
   list(APPEND TCOB_EXTLIBS_SRCFILES ${CMAKE_CURRENT_SOURCE_DIR}/opt/glad/gl45.c)
 endif()
