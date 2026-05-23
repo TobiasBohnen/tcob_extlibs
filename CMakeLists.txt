@@ -108,6 +108,22 @@ endif()
 # sqlite @3.53.0 https://www.sqlite.org/
 list(APPEND TCOB_EXTLIBS_SRCFILES ${CMAKE_CURRENT_SOURCE_DIR}/req/sqlite3/sqlite3.c)
 
+# litehtml @8836bc1 https://github.com/litehtml/litehtml
+file(GLOB_RECURSE LITEHTML_SRC_FILES ${CMAKE_CURRENT_SOURCE_DIR}/req/litehtml/src/*.cpp)
+list(APPEND TCOB_EXTLIBS_SRCFILES ${LITEHTML_SRC_FILES})
+file(GLOB_RECURSE GUMBO_SRC_FILES ${CMAKE_CURRENT_SOURCE_DIR}/req/litehtml/src/gumbo/*.c)
+list(APPEND TCOB_EXTLIBS_SRCFILES ${GUMBO_SRC_FILES})
+list(APPEND TCOB_EXTLIBS_INCDIRS
+  ${CMAKE_CURRENT_SOURCE_DIR}/req/litehtml/include/
+  ${CMAKE_CURRENT_SOURCE_DIR}/req/litehtml/include/litehtml/
+  ${CMAKE_CURRENT_SOURCE_DIR}/req/litehtml/src/gumbo/include/
+  ${CMAKE_CURRENT_SOURCE_DIR}/req/litehtml/src/gumbo/include/gumbo/
+)
+
+if(WIN32)
+  list(APPEND TCOB_EXTLIBS_INCDIRS ${CMAKE_CURRENT_SOURCE_DIR}/req/litehtml/src/gumbo/visualc/include/)
+endif()
+
 # ##########################################################################
 # #optional
 
@@ -167,24 +183,6 @@ if(TCOB_ENABLE_FILETYPES_AUDIO_LIBXMP)
     ${CMAKE_CURRENT_SOURCE_DIR}/opt/libxmp-lite/src/
   )
   list(APPEND TCOB_EXTLIBS_DEFINES LIBXMP_CORE_PLAYER LIBXMP_NO_DEPACKERS LIBXMP_STATIC)
-endif()
-
-# litehtml @8836bc1 https://github.com/litehtml/litehtml
-if(TCOB_ENABLE_ADDON_GFX_LITEHTML)
-  file(GLOB_RECURSE LITEHTML_SRC_FILES ${CMAKE_CURRENT_SOURCE_DIR}/opt/litehtml/src/*.cpp)
-  list(APPEND TCOB_EXTLIBS_SRCFILES ${LITEHTML_SRC_FILES})
-  file(GLOB_RECURSE GUMBO_SRC_FILES ${CMAKE_CURRENT_SOURCE_DIR}/opt/litehtml/src/gumbo/*.c)
-  list(APPEND TCOB_EXTLIBS_SRCFILES ${GUMBO_SRC_FILES})
-  list(APPEND TCOB_EXTLIBS_INCDIRS
-    ${CMAKE_CURRENT_SOURCE_DIR}/opt/litehtml/include/
-    ${CMAKE_CURRENT_SOURCE_DIR}/opt/litehtml/include/litehtml/
-    ${CMAKE_CURRENT_SOURCE_DIR}/opt/litehtml/src/gumbo/include/
-    ${CMAKE_CURRENT_SOURCE_DIR}/opt/litehtml/src/gumbo/include/gumbo/
-  )
-
-  if(WIN32)
-    list(APPEND TCOB_EXTLIBS_INCDIRS ${CMAKE_CURRENT_SOURCE_DIR}/opt/litehtml/src/gumbo/visualc/include/)
-  endif()
 endif()
 
 # ##########################################################################
