@@ -137,7 +137,7 @@ if(TCOB_ENABLE_FILETYPES_GFX_THEORA OR TCOB_ENABLE_FILETYPES_AUDIO_VORBIS)
   list(APPEND TCOB_EXTLIBS_INCDIRS ${CMAKE_CURRENT_SOURCE_DIR}/opt/XiphOrg/ogg/)
 endif()
 
-# theora @libtheora: 1.1.1 https://github.com/xiph/theora @theoraplay: 672cf6d https://github.com/icculus/theoraplay
+# theora @libtheora: 1.2.0 https://github.com/xiph/theora @theoraplay: 672cf6d https://github.com/icculus/theoraplay
 if(TCOB_ENABLE_FILETYPES_GFX_THEORA)
   file(GLOB_RECURSE OGGTHEORA_SRC_FILES ${CMAKE_CURRENT_SOURCE_DIR}/opt/XiphOrg/theora/*.c)
   list(APPEND TCOB_EXTLIBS_SRCFILES ${OGGTHEORA_SRC_FILES})
