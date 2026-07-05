@@ -172,7 +172,7 @@ if(TCOB_ENABLE_RENDERER_OPENGL45 OR TCOB_ENABLE_RENDERER_OPENGLES30)
   endif()
 endif()
 
-# libxmp-lite @4.7.0 https://github.com/libxmp/libxmp
+# libxmp-lite @4.7.1 https://github.com/libxmp/libxmp
 if(TCOB_ENABLE_FILETYPES_AUDIO_LIBXMP)
   file(GLOB_RECURSE LIBXMP_SRC_FILES ${CMAKE_CURRENT_SOURCE_DIR}/opt/libxmp-lite/src/*.c)
   list(APPEND TCOB_EXTLIBS_SRCFILES ${LIBXMP_SRC_FILES})
