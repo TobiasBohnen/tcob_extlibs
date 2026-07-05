@@ -26,7 +26,7 @@ list(APPEND TCOB_EXTLIBS_SRCFILES ${PHYSFS_SRC_FILES})
 list(APPEND TCOB_EXTLIBS_INCDIRS ${CMAKE_CURRENT_SOURCE_DIR}/req/physfs/)
 list(APPEND TCOB_EXTLIBS_DEFINES PHYSFS_STATIC)
 
-# miniz @3.1.1 https://github.com/richgel999/miniz
+# miniz @3.1.2 https://github.com/richgel999/miniz
 list(APPEND TCOB_EXTLIBS_SRCFILES ${CMAKE_CURRENT_SOURCE_DIR}/req/miniz/miniz.c)
 list(APPEND TCOB_EXTLIBS_INCDIRS ${CMAKE_CURRENT_SOURCE_DIR}/req/miniz/)
 
